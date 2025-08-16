@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- Basic Page Info -->
+		<meta charset="utf-8" />
+		<title>SIMTA - Detail Telaah icp_id</title>
+
+		<!-- Site favicon -->
+		<link
+			rel="apple-touch-icon"
+			sizes="180x180"
+			href="vendors/images/apple-touch-icon.png"
+		/>
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="32x32"
+			href="vendors/images/logo.png"
+		/>
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="16x16"
+			href="vendors/images/logo.png"
+		/>
+
+		<!-- Mobile Specific Metas -->
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, maximum-scale=1"
+		/>
+
+		<!-- Google Font -->
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+			rel="stylesheet"
+		/>
+		<!-- CSS -->
+		<link rel="stylesheet" type="text/css" href="vendors/styles/core.css" />
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="vendors/styles/icon-font.min.css"
+		/>
+		<link rel="stylesheet" type="text/css" href="vendors/styles/style.css" />
+		<!-- Add DataTables CSS -->
+		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css">
+		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.7/css/responsive.dataTables.min.css">
+
+		<style>
+			.alert-wrapper {
+				position: fixed;
+				top: 20px;
+				left: 50%;
+				transform: translateX(-50%);
+				z-index: 9999;
+				width: 80%;
+				max-width: 500px;
+			}
+		
+			.alert {
+				padding: 15px;
+				border-radius: 4px;
+				margin-bottom: 10px;
+				text-align: center;
+			}
+		
+			.alert-success {
+				background-color: #d4edda;
+				border-color: #c3e6cb;
+				color: #155724;
+			}
+		
+			.alert-danger {
+				background-color: #f8d7da;
+				border-color: #f5c2c7;
+				color: #842029;
+			}
+
+			.detail-section {
+				background: #fff;
+				padding: 20px;
+				border-radius: 5px;
+				box-shadow: 0 0 28px rgba(0,0,0,0.08);
+				margin-bottom: 20px;
+			}
+
+			.section-title {
+				font-size: 1.2em;
+				font-weight: 600;
+				color: #1b00ff;
+				margin-bottom: 15px;
+				padding-bottom: 10px;
+				border-bottom: 1px solid #e5e5e5;
+			}
+
+			.info-table {
+				width: 100%;
+			}
+
+			.info-table td {
+				padding: 8px 0;
+			}
+
+			.info-table td:first-child {
+				width: 200px;
+				color: #666;
+			}
+
+			.badge-empty {
+				background-color: #dc3545;
+				color: white;
+				padding: 5px 10px;
+				border-radius: 4px;
+			}
+
+			.badge-exists {
+				background-color: #28a745;
+				color: white;
+				padding: 5px 10px;
+				border-radius: 4px;
+			}
+
+			.btn-download {
+				display: inline-block;
+				padding: 5px 10px;
+				color: #1b00ff;
+				text-decoration: none;
+				margin-left: 10px;
+			}
+
+			.btn-download:hover {
+				text-decoration: underline;
+			}
+		</style>
+
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script
+			async
+			src="https://www.googletagmanager.com/gtag/js?id=G-GBZ3SGGX85"
+		></script>
+		<script
+			async
+			src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2973766580778258"
+			crossorigin="anonymous"
+		></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() {
+				dataLayer.push(arguments);
+			}
+			gtag("js", new Date());
+
+			gtag("config", "G-GBZ3SGGX85");
+		</script>
+		<!-- Google Tag Manager -->
+		<script>
+			(function (w, d, s, l, i) {
+				w[l] = w[l] || [];
+				w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+				var f = d.getElementsByTagName(s)[0],
+					j = d.createElement(s),
+					dl = l != "dataLayer" ? "&l=" + l : "";
+				j.async = true;
+				j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+				f.parentNode.insertBefore(j, f);
+			})(window, document, "script", "dataLayer", "GTM-NXZMQSS");
+		</script>
+		<!-- End Google Tag Manager -->
+	</head>
+
+	<body>
+		<div class="pre-loader">
+			<div class="pre-loader-box">
+				<div class="loader-logo">
+					<img src="vendors/images/logo_loading.png" alt="" />
+				</div>
+				<div class="loader-progress" id="progress_div">
+					<div class="bar" id="bar1"></div>
+				</div>
+				<div class="percent" id="percent1">0%</div>
+				<div class="loading-text">Loading...</div>
+			</div>
+		</div>
+
+		<div class="header">
+			<div class="header-left">
+				<div class="menu-icon bi bi-list"></div>
+				<div
+					class="search-toggle-icon bi bi-search"
+					data-toggle="header_search"
+				></div>
+			</div>
+
+			<div class="header-right">
+				<div class="dashboard-setting user-notification">
+					<div class="dropdown">
+						<a
+							class="dropdown-toggle no-arrow"
+							href="javascript:;"
+							data-toggle="right-sidebar"
+						>
+							<i class="dw dw-settings2"></i>
+						</a>
+					</div>
+				</div>
+
+				<div class="user-info-dropdown">
+					<div class="dropdown">
+						<a
+							class="dropdown-toggle"
+							href="#"
+							role="button"
+							data-toggle="dropdown"
+							style="display: flex; align-items: center; padding-top: 15px;"
+						>
+							<span class="user-name" id="username"></span>
+						</a>
+						<div
+							class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list"
+						>
+							<a class="dropdown-item" href="#" onclick="redirectToProfile(); return false;">
+								<i class="dw dw-user1"></i> Profile
+							</a>
+							<a class="dropdown-item" href="#" onclick="logout(); return false;">
+								<i class="dw dw-logout"></i> Log Out
+							</a>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		<div class="right-sidebar">
+			<div class="sidebar-title">
+				<h3 class="weight-600 font-16 text-blue">
+					Layout Settings
+					<span class="btn-block font-weight-400 font-12"
+						>User Interface Settings</span
+					>
+				</h3>
+				<div class="close-sidebar" data-toggle="right-sidebar-close">
+					<i class="icon-copy ion-close-round"></i>
+				</div>
+			</div>
+			<div class="right-sidebar-body customscroll">
+				<div class="right-sidebar-body-content">
+					<h4 class="weight-600 font-18 pb-10">Header Background</h4>
+					<div class="sidebar-btn-group pb-30 mb-10">
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary header-white active"
+							>White</a
+						>
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary header-dark"
+							>Dark</a
+						>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Sidebar Background</h4>
+					<div class="sidebar-btn-group pb-30 mb-10">
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary sidebar-light"
+							>White</a
+						>
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary sidebar-dark active"
+							>Dark</a
+						>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Menu Dropdown Icon</h4>
+					<div class="sidebar-radio-group pb-10 mb-10">
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-1"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-1"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebaricon-1"
+								><i class="fa fa-angle-down"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-2"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-2"
+							/>
+							<label class="custom-control-label" for="sidebaricon-2"
+								><i class="ion-plus-round"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-3"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-3"
+							/>
+							<label class="custom-control-label" for="sidebaricon-3"
+								><i class="fa fa-angle-double-right"></i
+							></label>
+						</div>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Menu List Icon</h4>
+					<div class="sidebar-radio-group pb-30 mb-10">
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-1"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-1"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebariconlist-1"
+								><i class="ion-minus-round"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-2"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-2"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-2"
+								><i class="fa fa-circle-o" aria-hidden="true"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-3"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-3"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-3"
+								><i class="dw dw-check"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-4"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-4"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebariconlist-4"
+								><i class="icon-copy dw dw-next-2"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-5"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-5"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-5"
+								><i class="dw dw-fast-forward-1"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-6"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-6"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-6"
+								><i class="dw dw-next"></i
+							></label>
+						</div>
+					</div>
+
+					<div class="reset-options pt-30 text-center">
+						<button class="btn btn-danger" id="reset-settings">
+							Reset Settings
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="left-side-bar">
+			<div class="brand-logo">
+				<a href="/admin/dashboard">
+					<img src="vendors/images/logo_admin_panel.png" alt="" class="dark-logo" />
+				<div class="close-sidebar" data-toggle="left-sidebar-close">
+					<i class="ion-close-round"></i>
+				</div>
+			</div>
+
+			<div class="menu-block customscroll">
+				<div class="sidebar-menu">
+					<ul id="accordion-menu">
+						<li>
+							<a href="/admin/dashboard" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-house"></span
+								><span class="mtext">Home</span>
+							</a>
+						</li>
+
+						<li>
+							<a href="/admin/adduser" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-textarea-resize"></span
+								><span class="mtext">Add User</span>
+							</a>
+						</li>
+
+						<li>
+							<a href="/admin/listuser" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-table"></span
+								><span class="mtext">List Taruna</span>
+							</a>
+						</li>
+
+						<li>
+							<a href="/admin/listdosen" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-table"></span
+								><span class="mtext">List Dosen</span>
+							</a>
+						</li>
+
+						<li class="dropdown">
+							<a href="javascript:;" class="dropdown-toggle">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">ICP</span>
+							</a>
+							<ul class="submenu">
+								<li><a href="/admin/penelaah_icp">Penelaah ICP</a></li>
+								<li><a href="/admin/list_icp">List ICP</a></li>
+								<li><a href="/admin/revisi_icp">Revisi ICP</a></li>
+							</ul>
+						</li>
+
+						<li>
+							<a href="/admin/dosbing_proposal" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Dosen Pembimbing</span>
+							</a>
+						</li>
+
+						<li class="dropdown">
+							<a href="javascript:;" class="dropdown-toggle">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Proposal</span>
+							</a>
+							<ul class="submenu">
+								<li><a href="/admin/penguji_proposal">Penguji Proposal</a></li>
+								<li><a href="/admin/listproposal">List Proposal</a></li>
+								<li><a href="/admin/revisi_proposal">Revisi Proposal</a></li>
+							</ul>
+						</li>
+
+						<li class="dropdown">
+							<a href="javascript:;" class="dropdown-toggle">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Laporan 70%</span>
+							</a>
+							<ul class="submenu">
+								<li><a href="/admin/penguji_laporan70">Penguji Laporan 70%</a></li>
+								<li><a href="/admin/listlaporan70">List Laporan 70%</a></li>
+							</ul>
+						</li>
+
+						<li class="dropdown">
+							<a href="javascript:;" class="dropdown-toggle">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Laporan 100%</span>
+							</a>
+							<ul class="submenu">
+								<li><a href="/admin/penguji_laporan100">Penguji Laporan 100%</a></li>
+								<li><a href="/admin/listlaporan100">List Laporan 100%</a></li>
+							</ul>
+						</li>
+
+						<li>
+							<a href="/admin/repositori" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Repositori</span>
+							</a>
+						</li>
+
+						<li>
+							<a href="/admin/notification" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-textarea-resize"></span
+								><span class="mtext">Notification</span>
+							</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="mobile-menu-overlay"></div>
+
+		<div class="main-container">
+
+			<!-- Tambahkan div untuk alert di bawah ini -->
+			<div class="alert-wrapper" id="alertContainer" style="display: none;">
+				<div class="alert" id="alertMessage" role="alert">
+				</div>
+			</div>
+
+			<div class="pd-ltr-20 xs-pd-20-10">
+				<div class="min-height-200px">
+
+					<!-- Header section with filters -->
+					<div class="page-header">
+						<div class="row">
+							<div class="col-md-6 col-sm-12">
+								<div class="title">
+									<h4>Detail Telaah icp_id</h4>
+								</div>
+								<nav aria-label="breadcrumb" role="navigation">
+									<ol class="breadcrumb">
+										<li class="breadcrumb-item">
+											<a href="/admin/listicp">List ICP</a>
+										</li>
+										<li class="breadcrumb-item active" aria-current="page">
+											Detail Telaah ICP
+										</li>
+									</ol>
+								</nav>
+							</div>
+						</div>
+					</div>
+
+					<!-- Informasi Taruna -->
+					<div class="detail-section">
+						<div class="section-title">Informasi Taruna</div>
+						<table class="info-table">
+							<tr>
+								<td>Nama Taruna</td>
+								<td>: <span id="nama-taruna">-</span></td>
+							</tr>
+							<tr>
+								<td>Jurusan</td>
+								<td>: <span id="jurusan">-</span></td>
+							</tr>
+							<tr>
+								<td>Kelas</td>
+								<td>: <span id="kelas">-</span></td>
+							</tr>
+							<tr>
+								<td>Topik Penelitian</td>
+								<td>: <span id="topik-penelitian">-</span></td>
+							</tr>
+							<tr>
+								<td>Status ICP</td>
+								<td>: <span id="status-icp">-</span></td>
+							</tr>
+							<tr>
+								<td>Status Telaah</td>
+								<td>: <span id="status-telaah">-</span></td>
+							</tr>
+						</table>
+					</div>
+
+					<!-- Informasi Telaah ICP -->
+					<div class="card-box mb-30">
+						<div class="pd-20">
+							<h4 class="text-blue h4">Informasi Telaah ICP</h4>
+						</div>
+
+						<!-- Wrapper scroll horizontal -->
+						<div class="table-responsive">
+							<table class="data-table table stripe hover nowrap">
+								<thead>
+									<tr>
+										<th class="table-plus datatable-nosort">Nama Penelaah</th>
+										<th class="table-plus datatable-nosort">Status Telaah</th>
+										<th class="table-plus datatable-nosort">Tanggal Telaah</th>
+										<th class="table-plus datatable-nosort">File Telaah</th>
+									</tr>
+								</thead>
+								<tbody>
+									<!-- Data akan dimuat di sini lewat JavaScript -->
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<!-- Simple Datatable End -->
+
+				</div>
+
+			</div>
+
+					
+		</div>
+
+
+		<!-- js -->
+		<script src="vendors/scripts/core.js"></script>
+		<script src="vendors/scripts/script.min.js"></script>
+		<script src="vendors/scripts/process.js"></script>
+		<script src="vendors/scripts/layout-settings.js"></script>
+		<!-- Add DataTables JS -->
+		<script type="text/javascript" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+		<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.7/js/dataTables.responsive.min.js"></script>
+		<!-- Google Tag Manager (noscript) -->
+		<noscript
+			><iframe
+				src="https://www.googletagmanager.com/ns.html?id=GTM-NXZMQSS"
+				height="0"
+				width="0"
+				style="display: none; visibility: hidden"
+			></iframe
+		></noscript>
+		<!-- End Google Tag Manager (noscript) -->
+
+		<script>
+			// Fungsi Logout
+			async function logout() {
+				try {
+					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+					
+					const response = await fetch('http://104.43.89.154:8085/logout', {
+						method: 'POST',
+						headers: {
+							'Authorization': token ? `Bearer ${token}` : '',
+							'Content-Type': 'application/json'
+						},
+						credentials: 'include'
+					});
+
+					const data = await response.json();
+					
+					if (response.ok && data.status === 'success') {
+						// Clear localStorage
+						localStorage.clear();
+						
+						// Clear sessionStorage
+						sessionStorage.clear();
+						
+						// Clear all cookies for all possible paths
+						const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
+						const cookies = document.cookie.split(';');
+						
+						for (let cookie of cookies) {
+							const eqPos = cookie.indexOf('=');
+							const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+							
+							// Hapus cookie untuk setiap path
+							paths.forEach(path => {
+								document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+							});
+						}
+						
+						// Clear cache if browser supports it
+						if (window.caches) {
+							caches.keys().then(names => {
+								names.forEach(name => {
+									caches.delete(name);
+								});
+							});
+						}
+
+						// Clear application cache
+						if (window.applicationCache) {
+							window.applicationCache.abort();
+						}
+
+						// Clear service workers if any
+						if (navigator.serviceWorker) {
+							navigator.serviceWorker.getRegistrations().then(registrations => {
+								registrations.forEach(registration => {
+									registration.unregister();
+								});
+							});
+						}
+						
+						console.log('Logout berhasil');
+						
+						// Force reload halaman login untuk membersihkan cache
+						window.location.href = '/loginusers';
+						window.location.reload(true);
+					} else {
+						throw new Error(data.message || 'Gagal logout');
+					}
+				} catch (error) {
+					console.error('Error during logout:', error);
+					alert('Gagal logout. Silakan coba lagi.');
+				}
+			}
+
+			// Tambahkan pengecekan autentikasi saat halaman dimuat
+			document.addEventListener('DOMContentLoaded', function() {
+				// Cek token
+				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+				if (!token) {
+					window.location.replace('/loginusers');
+					return;
+				}
+
+				// Ambil ID user dari token
+				const userId = localStorage.getItem('userId');
+
+				// Ambil data user dari API
+				fetch(`http://104.43.89.154:8086/users?id=${userId}`, {
+					headers: {
+						'Authorization': `Bearer ${token}`
+					}
+				})
+				.then(response => {
+					if (!response.ok) {
+						throw new Error('Gagal mengambil data user');
+					}
+					return response.json();
+				})
+				.then(user => {
+					// Update username di header
+					const usernameElement = document.getElementById('username');
+					if (usernameElement) {
+						usernameElement.textContent = user.username || user.nama_lengkap || 'User';
+					}
+				})
+				.catch(error => {
+					console.error('Error:', error);
+					const usernameElement = document.getElementById('username');
+					if (usernameElement) {
+						usernameElement.textContent = 'User';
+					}
+				});
+
+				// Validasi token dengan server
+				fetch('http://104.43.89.154:8085/taruna/dashboard', { // Ubah ke endpoint taruna
+					headers: {
+						'Authorization': `Bearer ${token}`
+					}
+				}).catch(() => {
+					window.location.replace('/loginusers');
+				});
+			});
+
+			// Pastikan event listener untuk tombol logout terpasang dengan benar
+			document.addEventListener('DOMContentLoaded', function() {
+				const logoutButton = document.querySelector('a[onclick="logout()"]');
+				if (logoutButton) {
+					logoutButton.addEventListener('click', function(e) {
+						e.preventDefault();
+						logout();
+					});
+				}
+			});
+
+			// Fungsi untuk menampilkan alert
+			function showAlert(message, type) {
+				const alertContainer = document.getElementById('alertContainer');
+				const alertMessage = document.getElementById('alertMessage');
+				
+				alertMessage.className = `alert alert-${type}`;
+				alertMessage.textContent = message;
+				alertContainer.style.display = 'block';
+				
+				// Sembunyikan alert setelah 5 detik
+				setTimeout(() => {
+					alertContainer.style.display = 'none';
+				}, 5000);
+			}
+
+			// Fungsi untuk redirect ke profile
+			function redirectToProfile() {
+				window.location.href = '/admin/profile';
+			}
+
+			// Fungsi untuk memuat detail telaah ICP
+			document.addEventListener("DOMContentLoaded", function () {
+				loadDetailTelaah();
+			});
+
+			// Fungsi untuk memuat detail telaah ICP
+			// Fungsi untuk memuat detail telaah ICP
+			async function loadDetailTelaah() {
+				const params = new URLSearchParams(window.location.search);
+				const icpId = params.get('id');
+
+				console.log('Fetching detail telaah for ICP ID:', icpId);
+
+				if (!icpId) {
+					showAlert('ID ICP tidak valid', 'danger');
+					return;
+				}
+
+				try {
+					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+					const response = await fetch(`http://104.43.89.154:8087/hasiltelaah/detail?id=${icpId}`, {
+						headers: {
+							'Authorization': `Bearer ${token}`
+						}
+					});
+
+					const result = await response.json();
+					console.log('Detail telaah ICP:', result);
+
+					if (result.status !== 'success') {
+						showAlert(result.message || 'Gagal mengambil data', 'danger');
+						return;
+					}
+
+					const { info: taruna, telaah } = result;
+
+					// Tampilkan info taruna
+					document.getElementById('nama-taruna').textContent = taruna.nama_taruna || '-';
+					document.getElementById('jurusan').textContent = taruna.jurusan || '-';
+					document.getElementById('kelas').textContent = taruna.kelas || '-';
+					document.getElementById('topik-penelitian').textContent = taruna.topik_penelitian || '-';
+					document.getElementById('status-icp').textContent = taruna.status_icp || '-';
+					document.getElementById('status-telaah').textContent = taruna.status_telaah || '-';
+
+					// Tampilkan info telaah
+					const tableBody = document.querySelector('.data-table tbody');
+					tableBody.innerHTML = '';
+
+					if (!telaah || telaah.length === 0) {
+						tableBody.innerHTML = `
+							<tr>
+								<td colspan="4" class="text-center">Belum ada data telaah</td>
+							</tr>
+						`;
+						return;
+					}
+
+					telaah.forEach(item => {
+						const hasFile = item.file_path && item.file_path.trim() !== '';
+						const fileName = hasFile ? item.file_path.split('/').pop() : '';
+						const tanggal = item.tanggal_telaah
+							? new Date(item.tanggal_telaah).toLocaleString('id-ID', {
+								dateStyle: 'medium',
+								timeStyle: 'short'
+							})
+							: '-';
+
+						const row = document.createElement('tr');
+						row.innerHTML = `
+							<td>${item.nama_dosen || '-'}</td>
+							<td><span class="badge badge-${hasFile ? 'success' : 'danger'}">
+								${hasFile ? 'Sudah Ditelaah' : 'Belum Ditelaah'}
+							</span></td>
+							<td>${tanggal}</td>
+							<td>
+								${hasFile
+									? `<a href="http://104.43.89.154:8087/hasiltelaah/download?path=${fileName}" download class="btn btn-outline-primary btn-sm">Download File</a>`
+									: '-'}
+							</td>
+						`;
+						tableBody.appendChild(row);
+					});
+
+				} catch (error) {
+					console.error('Error fetching detail telaah:', error);
+					showAlert('Terjadi kesalahan saat mengambil data telaah', 'danger');
+				}
+			}
+
+
+			// Fungsi notifikasi
+			function showAlert(message, type = "info") {
+				const alert = document.createElement("div");
+				alert.className = `alert alert-${type}`;
+				alert.textContent = message;
+				document.body.prepend(alert);
+				setTimeout(() => alert.remove(), 5000);
+			}
+	
+		</script>
+
+		<style>
+		.badge {
+			padding: 5px 10px;
+			border-radius: 4px;
+			font-weight: normal;
+		}
+		.badge-success {
+			background-color: #28a745;
+			color: white;
+		}
+		.badge-warning {
+			background-color: #ffc107;
+			color: black;
+		}
+		.badge-danger {
+			background-color: #dc3545;
+			color: white;
+		}
+		.badge-secondary {
+			background-color: #6c757d;
+			color: white;
+		}
+		.text-success {
+			color: #28a745 !important;
+			font-weight: bold;
+		}
+		.text-warning {
+			color: #ffc107 !important;
+			font-weight: bold;
+		}
+		.text-danger {
+			color: #dc3545 !important;
+			font-weight: bold;
+		}
+		</style>
+
+	</body>
+</html>

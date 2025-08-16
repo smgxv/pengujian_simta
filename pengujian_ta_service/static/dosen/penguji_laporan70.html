@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- Basic Page Info -->
+		<meta charset="utf-8" />
+		<title>SIMTA - Pengujian Laporan 70%</title>
+
+		<!-- Site favicon -->
+		<link
+			rel="apple-touch-icon"
+			sizes="180x180"
+			href="vendors/images/apple-touch-icon.png"
+		/>
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="32x32"
+			href="vendors/images/logo.png"
+		/>
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="16x16"
+			href="vendors/images/logo.png"
+		/>
+
+		<!-- Mobile Specific Metas -->
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, maximum-scale=1"
+		/>
+
+		<!-- Google Font -->
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+			rel="stylesheet"
+		/>
+		<!-- CSS -->
+		<link rel="stylesheet" type="text/css" href="vendors/styles/core.css" />
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="vendors/styles/icon-font.min.css"
+		/>
+		<link rel="stylesheet" type="text/css" href="vendors/styles/style.css" />
+
+		<style>
+			.alert-wrapper {
+				position: fixed;
+				top: 20px;
+				left: 50%;
+				transform: translateX(-50%);
+				z-index: 9999;
+				width: 80%;
+				max-width: 500px;
+			}
+		
+			.alert {
+				padding: 15px;
+				border-radius: 4px;
+				margin-bottom: 10px;
+				text-align: center;
+			}
+		
+			.alert-success {
+				background-color: #d4edda;
+				border-color: #c3e6cb;
+				color: #155724;
+			}
+		
+			.alert-danger {
+				background-color: #f8d7da;
+				border-color: #f5c2c7;
+				color: #842029;
+			}
+		</style>
+
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script
+			async
+			src="https://www.googletagmanager.com/gtag/js?id=G-GBZ3SGGX85"
+		></script>
+		<script
+			async
+			src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2973766580778258"
+			crossorigin="anonymous"
+		></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() {
+				dataLayer.push(arguments);
+			}
+			gtag("js", new Date());
+
+			gtag("config", "G-GBZ3SGGX85");
+		</script>
+		<!-- Google Tag Manager -->
+		<script>
+			(function (w, d, s, l, i) {
+				w[l] = w[l] || [];
+				w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+				var f = d.getElementsByTagName(s)[0],
+					j = d.createElement(s),
+					dl = l != "dataLayer" ? "&l=" + l : "";
+				j.async = true;
+				j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+				f.parentNode.insertBefore(j, f);
+			})(window, document, "script", "dataLayer", "GTM-NXZMQSS");
+		</script>
+		<!-- End Google Tag Manager -->
+	</head>
+
+	<body>
+		<div class="pre-loader">
+			<div class="pre-loader-box">
+				<div class="loader-logo">
+					<img src="vendors/images/logo_loading.png" alt="" />
+				</div>
+				<div class="loader-progress" id="progress_div">
+					<div class="bar" id="bar1"></div>
+				</div>
+				<div class="percent" id="percent1">0%</div>
+				<div class="loading-text">Loading...</div>
+			</div>
+		</div>
+
+		<div class="header">
+			<div class="header-left">
+				<div class="menu-icon bi bi-list"></div>
+				<div
+					class="search-toggle-icon bi bi-search"
+					data-toggle="header_search"
+				></div>
+			</div>
+
+			<div class="header-right">
+				<div class="dashboard-setting user-notification">
+					<div class="dropdown">
+						<a
+							class="dropdown-toggle no-arrow"
+							href="javascript:;"
+							data-toggle="right-sidebar"
+						>
+							<i class="dw dw-settings2"></i>
+						</a>
+					</div>
+				</div>
+
+				<div class="user-notification">
+					<div class="dropdown">
+						<a
+							class="dropdown-toggle no-arrow"
+							href="#"
+							role="button"
+							data-toggle="dropdown"
+						>
+							<i class="icon-copy dw dw-notification"></i>
+							<span class="badge notification-active"></span>
+						</a>
+						<div class="dropdown-menu dropdown-menu-right">
+							<div class="notification-list mx-h-350 customscroll">
+								<ul id="notif-list">
+									<!-- Notifikasi akan dimuat lewat JavaScript -->
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="user-info-dropdown">
+					<div class="dropdown">
+						<a
+							class="dropdown-toggle"
+							href="#"
+							role="button"
+							data-toggle="dropdown"
+							style="display: flex; align-items: center; padding-top: 15px;"
+						>
+							<span class="user-name" id="username"></span>
+						</a>
+						<div
+							class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list"
+						>
+							<a class="dropdown-item" href="#" onclick="redirectToProfile(); return false;">
+								<i class="dw dw-user1"></i> Profile
+							</a>
+							<a class="dropdown-item" href="#" onclick="logout(); return false;">
+								<i class="dw dw-logout"></i> Log Out
+							</a>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		<div class="right-sidebar">
+			<div class="sidebar-title">
+				<h3 class="weight-600 font-16 text-blue">
+					Layout Settings
+					<span class="btn-block font-weight-400 font-12"
+						>User Interface Settings</span
+					>
+				</h3>
+				<div class="close-sidebar" data-toggle="right-sidebar-close">
+					<i class="icon-copy ion-close-round"></i>
+				</div>
+			</div>
+			<div class="right-sidebar-body customscroll">
+				<div class="right-sidebar-body-content">
+					<h4 class="weight-600 font-18 pb-10">Header Background</h4>
+					<div class="sidebar-btn-group pb-30 mb-10">
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary header-white active"
+							>White</a
+						>
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary header-dark"
+							>Dark</a
+						>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Sidebar Background</h4>
+					<div class="sidebar-btn-group pb-30 mb-10">
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary sidebar-light"
+							>White</a
+						>
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary sidebar-dark active"
+							>Dark</a
+						>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Menu Dropdown Icon</h4>
+					<div class="sidebar-radio-group pb-10 mb-10">
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-1"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-1"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebaricon-1"
+								><i class="fa fa-angle-down"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-2"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-2"
+							/>
+							<label class="custom-control-label" for="sidebaricon-2"
+								><i class="ion-plus-round"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-3"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-3"
+							/>
+							<label class="custom-control-label" for="sidebaricon-3"
+								><i class="fa fa-angle-double-right"></i
+							></label>
+						</div>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Menu List Icon</h4>
+					<div class="sidebar-radio-group pb-30 mb-10">
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-1"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-1"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebariconlist-1"
+								><i class="ion-minus-round"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-2"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-2"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-2"
+								><i class="fa fa-circle-o" aria-hidden="true"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-3"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-3"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-3"
+								><i class="dw dw-check"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-4"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-4"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebariconlist-4"
+								><i class="icon-copy dw dw-next-2"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-5"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-5"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-5"
+								><i class="dw dw-fast-forward-1"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-6"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-6"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-6"
+								><i class="dw dw-next"></i
+							></label>
+						</div>
+					</div>
+
+					<div class="reset-options pt-30 text-center">
+						<button class="btn btn-danger" id="reset-settings">
+							Reset Settings
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="left-side-bar">
+			<div class="brand-logo">
+				<a href="/dosen/dashboard">
+					<img src="vendors/images/logo_dosen_panel.png" alt="" class="dark-logo" />
+				<div class="close-sidebar" data-toggle="left-sidebar-close">
+					<i class="ion-close-round"></i>
+				</div>
+			</div>
+
+			<div class="menu-block customscroll">
+				<div class="sidebar-menu">
+					<ul id="accordion-menu">
+						<li>
+							<a href="/dosen/dashboard" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-house"></span
+								><span class="mtext">Home</span>
+							</a>
+						</li>
+
+						<li class="dropdown">
+							<a href="javascript:;" class="dropdown-toggle">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">ICP</span>
+							</a>
+							<ul class="submenu">
+								<li><a href="/dosen/bimbingan_icp">Bimbingan ICP</a></li>
+								<li><a href="/dosen/pengujian_icp">Pengujian ICP</a></li>
+							</ul>
+						</li>
+
+						<li class="dropdown">
+							<a href="javascript:;" class="dropdown-toggle">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Proposal</span>
+							</a>
+							<ul class="submenu">
+								<li><a href="/dosen/bimbingan_proposal">Bimbingan Proposal</a></li>
+								<li><a href="/dosen/pengujian_proposal">Pengujian Proposal</a></li>
+							</ul>
+						</li>
+
+						<li class="dropdown">
+							<a href="javascript:;" class="dropdown-toggle">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Tugas Akhir 70%</span>
+							</a>
+							<ul class="submenu">
+								<li><a href="/dosen/bimbingan_laporan70">Bimbingan Laporan 70%</a></li>
+								<li><a href="/dosen/pengujian_laporan70">Pengujian Laporan 70%</a></li>
+							</ul>
+						</li>
+
+						<li class="dropdown">
+							<a href="javascript:;" class="dropdown-toggle">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Tugas Akhir 100%</span>
+							</a>
+							<ul class="submenu">
+								<li><a href="/dosen/bimbingan_laporan100">Bimbingan Laporan 100%</a></li>
+								<li><a href="/dosen/pengujian_laporan100">Pengujian Laporan 100%</a></li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="mobile-menu-overlay"></div>
+
+		<div class="main-container">
+
+			<!-- Tambahkan div untuk alert di bawah ini -->
+			<div class="alert-wrapper" id="alertContainer" style="display: none;">
+				<div class="alert" id="alertMessage" role="alert">
+				</div>
+			</div>
+
+			<div class="pd-ltr-20 xs-pd-20-10">
+				<div class="min-height-200px">
+
+					<div class="page-header">
+						<div class="row">
+							<div class="col-md-6 col-sm-12">
+								<div class="title">
+									<h4>Penguji Laporan 70%</h4>
+								</div>
+								<nav aria-label="breadcrumb" role="navigation">
+									<ol class="breadcrumb">
+										<li class="breadcrumb-item">
+											<a href="/dosen/dashboard">Home</a>
+										</li>
+										<li class="breadcrumb-item active" aria-current="page">
+											Penguji Laporan 70%
+										</li>
+									</ol>
+								</nav>
+							</div>
+						</div>
+					</div>
+
+					<!-- Tabel Laporan 70% -->
+					<div class="card-box mb-30">
+						<div class="pd-20">
+							<h4 class="text-blue h4">List Laporan 70%</h4>
+							<p class="mb-30">Berikut adalah daftar final Laporan 70% yang harus ditelaah perbaikan. Silahkan unduh final laporan 70% dan dokumen penilaian lainnya</p>
+						</div>
+						<div class="pb-20">
+							<table class="data-table table stripe hover nowrap">
+								<thead>
+									<tr>
+										<th class="table-plus datatable-nosort">Topik</th>
+										<th class="table-plus datatable-nosort">Nama Taruna</th>
+										<th class="datatable-nosort">Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<!-- Tabel Laporan 70% End -->
+
+					<!-- Form Penilaian Laporan 70% -->
+					<div class="pd-20 card-box mb-30">
+
+						<div class="clearfix">
+							<div class="pull-left">
+								<h4 class="text-blue h4">Penilaian Laporan 70%</h4>
+								<p class="mb-30">Silahkan lakukan pengunggahan dokumen hasil telaah dan penilaian laporan 100%</p>
+							</div>
+						</div>
+
+						<form id="laporan70Form" enctype="multipart/form-data">
+							<div class="form-group">
+								<input type="hidden" name="final_laporan70_id" id="finalLaporan70Id" />
+							</div>
+							<div class="form-group">
+								<label>Nama Taruna</label>
+								<select class="form-control" id="tarunaSelect" name="user_id">
+									<option value="" disabled selected>Pilih Nama Taruna</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label>Topik Penelitian</label>
+								<input class="form-control" type="text" name="topik_penelitian" placeholder="Masukkan Topik Penelitian Anda" required>
+							</div>
+							<div class="form-group">
+								<label>File Hasil Telaah (PDF)</label>
+								<div class="custom-file">
+									<input type="file" class="custom-file-input" id="hasiltelaahFile" name="hasiltelaah_file" accept=".pdf" required>
+									<label class="custom-file-label" for="hasiltelaahFile">Choose file</label>
+								</div>
+								<div id="selectedFileName" class="mt-2 text-info" style="display: none;"></div>
+							</div>
+							<div class="form-group">
+								<label>File Penilaian (Berita Acara dan File Penilaian Lainnya)</label>
+								<div class="custom-file">
+									<!-- multiple dan name[] ditambahkan -->
+									<input type="file" 
+										   class="custom-file-input" 
+										   id="penilaianFile" 
+										   name="penilaian_file[]" 
+										   accept=".pdf,.doc,.docx,.xls,.xlsx" 
+										   multiple 
+										   required>
+									<label class="custom-file-label" for="penilaianFile">Choose files</label>
+								</div>
+								<div id="selectedFileName" class="mt-2 text-info" style="display: none;"></div>
+							</div>
+							<button type="submit" class="btn btn-primary">Submit</button>
+						</form>
+					</div>
+					<!-- Form Laporan 70% End -->
+
+				</div>
+
+			</div>
+
+					
+		</div>
+
+
+		<!-- js -->
+		<script src="vendors/scripts/core.js"></script>
+		<script src="vendors/scripts/script.min.js"></script>
+		<script src="vendors/scripts/process.js"></script>
+		<script src="vendors/scripts/layout-settings.js"></script>
+		<!-- Google Tag Manager (noscript) -->
+		<noscript
+			><iframe
+				src="https://www.googletagmanager.com/ns.html?id=GTM-NXZMQSS"
+				height="0"
+				width="0"
+				style="display: none; visibility: hidden"
+			></iframe
+		></noscript>
+		<!-- End Google Tag Manager (noscript) -->
+
+		</div>
+
+		<script>
+			// JS notifikasi
+			document.addEventListener("DOMContentLoaded", function () {
+				fetch("http://104.43.89.154:8088/notifications?role=Dosen")
+					.then(res => res.json())
+					.then(data => {
+						const ul = document.getElementById("notif-list");
+						ul.innerHTML = ""; // Kosongkan
+
+						if (data.length === 0) {
+							ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
+							return;
+						}
+
+						data.forEach(item => {
+							const li = document.createElement("li");
+							li.innerHTML = `
+								<a href="/dosen/detailinformasidosen?id=${item.ID}">
+									<img src="vendors/images/logo.png" alt="" />
+									<h3>${item.Judul}</h3>
+									<p>${item.Deskripsi.length > 50 ? item.Deskripsi.substring(0, 50) + "..." : item.Deskripsi}</p>
+								</a>`;
+							ul.appendChild(li);
+						});
+
+						document.querySelector(".notification-active").style.display = "inline-block";
+					})
+					.catch(err => {
+						console.error("Gagal mengambil notifikasi:", err);
+					});
+			});
+
+			// Fungsi untuk redirect ke profile
+			function redirectToProfile() {
+				window.location.href = '/dosen/profile';
+			}
+
+			// Fungsi Logout
+			async function logout() {
+				try {
+					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+					
+					const response = await fetch('http://104.43.89.154:8085/logout', {
+						method: 'POST',
+						headers: {
+							'Authorization': token ? `Bearer ${token}` : '',
+							'Content-Type': 'application/json'
+						},
+						credentials: 'include'
+					});
+
+					const data = await response.json();
+					
+					if (response.ok && data.status === 'success') {
+						// Clear localStorage
+						localStorage.clear();
+						
+						// Clear sessionStorage
+						sessionStorage.clear();
+						
+						// Clear all cookies for all possible paths
+						const paths = ['/', '/admin', '/dosen', '/admin/', '/dosen/'];
+						const cookies = document.cookie.split(';');
+						
+						for (let cookie of cookies) {
+							const eqPos = cookie.indexOf('=');
+							const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+							
+							// Hapus cookie untuk setiap path
+							paths.forEach(path => {
+								document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+							});
+						}
+						
+						// Clear cache if browser supports it
+						if (window.caches) {
+							caches.keys().then(names => {
+								names.forEach(name => {
+									caches.delete(name);
+								});
+							});
+						}
+
+						// Clear application cache
+						if (window.applicationCache) {
+							window.applicationCache.abort();
+						}
+
+						// Clear service workers if any
+						if (navigator.serviceWorker) {
+							navigator.serviceWorker.getRegistrations().then(registrations => {
+								registrations.forEach(registration => {
+									registration.unregister();
+								});
+							});
+						}
+						
+						console.log('Logout berhasil');
+						
+						// Force reload halaman login untuk membersihkan cache
+						window.location.href = '/loginusers';
+						window.location.reload(true);
+					} else {
+						throw new Error(data.message || 'Gagal logout');
+					}
+				} catch (error) {
+					console.error('Error during logout:', error);
+					alert('Gagal logout. Silakan coba lagi.');
+				}
+			}
+
+			// Tambahkan pengecekan autentikasi dan mapping dosenID saat halaman dimuat
+			document.addEventListener('DOMContentLoaded', function() {
+				console.log('DOM Content Loaded'); // Debug log
+				
+				// Cek token dan ambil dosenID
+				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+				if (!token) {
+					console.warn('No token found');
+					window.location.replace('/loginusers');
+					return;
+				}
+
+				const userId = localStorage.getItem('userId');
+				console.log('UserID:', userId); // Debug log
+
+				// Ambil data dosen dan set dosenID
+				fetch('http://104.43.89.154:8086/dosen', {
+					headers: {
+						'Authorization': `Bearer ${token}`
+					}
+				})
+				.then(response => response.json())
+				.then(data => {
+					if (data.status === 'success' && Array.isArray(data.data)) {
+						const dosen = data.data.find(d => String(d.user_id) === String(userId));
+						if (dosen) {
+							localStorage.setItem('dosenID', dosen.id);
+							localStorage.setItem('dosenName', dosen.nama_lengkap);
+							console.log('DosenID set:', dosen.id); // Debug log
+							
+							// Update nama dosen di header
+							const usernameElement = document.getElementById('username');
+							if (usernameElement) {
+								usernameElement.textContent = dosen.nama_lengkap;
+							}
+							
+							// Setelah dosenID tersedia, panggil fungsi-fungsi yang membutuhkannya
+							loadLaporan70Data();
+							loadTarunaDropdown();
+						} else {
+							console.warn('Dosen with user_id', userId, 'not found');
+						}
+					}
+				})
+				.catch(error => {
+					console.error('Failed to fetch dosen data:', error);
+				});
+			});
+
+			// Pastikan event listener untuk tombol logout terpasang dengan benar
+			document.addEventListener('DOMContentLoaded', function() {
+				const logoutButton = document.querySelector('a[onclick="logout()"]');
+				if (logoutButton) {
+					logoutButton.addEventListener('click', function(e) {
+						e.preventDefault();
+						logout();
+					});
+				}
+			});
+
+			// Fungsi untuk menampilkan alert
+			function showAlert(message, type) {
+				const alertContainer = document.getElementById('alertContainer');
+				const alertMessage = document.getElementById('alertMessage');
+				
+				alertMessage.className = `alert alert-${type}`;
+				alertMessage.textContent = message;
+				alertContainer.style.display = 'block';
+				
+				// Sembunyikan alert setelah 5 detik
+				setTimeout(() => {
+					alertContainer.style.display = 'none';
+				}, 5000);
+			}
+			
+			// ==== Helper: bangun item menu untuk file pendukung (dosen) ====
+			function buildSupportMenuItemsForDosen(item) {
+			let html = '';
+			const finalId = item?.final_laporan70_id;
+			if (!finalId || finalId <= 0) return html;
+
+			const raw = item.file_pendukung_path; // JSON string: ["path1","path2", ...] atau [{original, stored}, ...]
+			if (!raw) return html;
+
+			try {
+				const parsed = JSON.parse(raw);
+				if (!Array.isArray(parsed) || parsed.length === 0) return html;
+
+				html += `<div class="dropdown-divider"></div>`;
+
+				parsed.forEach((entry, idx) => {
+				let displayName = `File Pendukung ${idx + 1}`;
+				if (typeof entry === 'string') {
+					const parts = entry.split('/');
+					displayName = parts[parts.length - 1] || displayName;
+				} else if (entry && typeof entry === 'object') {
+					// jika suatu saat format object {original, stored}
+					displayName = entry.original || (entry.stored ? (entry.stored.split('/').pop() || displayName) : displayName);
+				}
+
+				html += `
+					<a class="dropdown-item"
+					href="http://104.43.89.154:8087/finallaporan70/dosen/download/${finalId}?type=support&index=${idx}"
+					download>
+					<i class="dw dw-download"></i> ${displayName}
+					</a>`;
+				});
+			} catch (e) {
+				console.warn('Gagal parse file_pendukung_path (dosen):', e);
+			}
+
+			return html;
+			}
+
+			// ==== Fungsi untuk memuat data laporan70 (dosen) ====
+			async function loadLaporan70Data() {
+			try {
+				const dosenId = localStorage.getItem('dosenID');
+				if (!dosenId) {
+				console.error('Dosen ID tidak ditemukan');
+				return;
+				}
+
+				const response = await fetch(`http://104.43.89.154:8087/seminarlaporan70/dosen?dosen_id=${dosenId}`);
+				if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+				const data = await response.json();
+
+				const tbody = document.querySelector('.data-table tbody');
+				tbody.innerHTML = '';
+
+				if (data.status === 'success' && Array.isArray(data.data)) {
+				data.data.forEach(item => {
+					const finalId = item.final_laporan70_id;
+
+					// menu file pendukung
+					const pendukungLinks = buildSupportMenuItemsForDosen(item);
+
+					const row = document.createElement('tr');
+					row.innerHTML = `
+					<td>${item.topik_penelitian || '-'}</td>
+					<td>${item.taruna_nama || '-'}</td>
+					<td>
+						${finalId && finalId > 0 ? `
+						<div class="dropdown">
+							<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
+							href="#" role="button" data-toggle="dropdown">
+							<i class="dw dw-more"></i>
+							</a>
+							<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+							<a class="dropdown-item"
+								href="http://104.43.89.154:8087/finallaporan70/dosen/download/${finalId}?type=laporan70"
+								download>
+								<i class="dw dw-download"></i> Download Final Laporan 70%
+							</a>
+							${pendukungLinks}
+							</div>
+						</div>
+						` : `<span class="text-muted"><i class="dw dw-ban"></i> Tidak tersedia</span>`}
+					</td>
+					`;
+					tbody.appendChild(row);
+				});
+				} else {
+				tbody.innerHTML = `<tr><td colspan="3" class="text-center">Data tidak ditemukan</td></tr>`;
+				}
+			} catch (err) {
+				console.error('Gagal memuat data:', err);
+			}
+			}
+
+			// Fungsi untuk memuat data taruna
+			async function loadTarunaDropdown() {
+				try {
+					const dosenId = localStorage.getItem('dosenID');
+					if (!dosenId) {
+						console.error('Dosen ID tidak ditemukan');
+						return;
+					}
+
+					const response = await fetch(`http://104.43.89.154:8087/seminarlaporan70/taruna/list?dosen_id=${dosenId}`);
+					const data = await response.json();
+
+					const tarunaSelect = document.getElementById('tarunaSelect');
+					const finalLaporan70IdInput = document.getElementById('finalLaporan70Id');
+					const topikInput = document.querySelector('input[name="topik_penelitian"]');
+
+					if (!tarunaSelect || !finalLaporan70IdInput || !topikInput) {
+						console.error('Elemen yang dibutuhkan tidak ditemukan');
+						return;
+					}
+
+					tarunaSelect.innerHTML = '<option value="" disabled selected>Pilih Nama Taruna</option>';
+
+					const laporan70Map = new Map();
+					const topikMap = new Map();
+
+					if (data.status === 'success' && Array.isArray(data.data)) {
+						data.data.forEach(taruna => {
+							const option = document.createElement('option');
+							option.value = taruna.user_id;
+							option.textContent = taruna.nama_lengkap;
+							tarunaSelect.appendChild(option);
+
+							laporan70Map.set(String(taruna.user_id), taruna.final_laporan70_id);
+							topikMap.set(String(taruna.user_id), taruna.topik_penelitian);
+						});
+
+						tarunaSelect.addEventListener('change', function () {
+							const selectedId = this.value;
+
+							const finalLaporan70Id = laporan70Map.get(selectedId) || '';
+							const topik = topikMap.get(selectedId) || '';
+
+							finalLaporan70IdInput.value = finalLaporan70Id;
+							topikInput.value = topik;
+
+							console.log('final_laporan70_id:', finalLaporan70Id);
+						});
+					} else {
+						showAlert('Tidak ada taruna yang sedang diuji', 'warning');
+					}
+				} catch (error) {
+					console.error('Error loading taruna data:', error);
+					showAlert('Gagal memuat data taruna: ' + error.message, 'danger');
+				}
+			}
+
+			// Load data saat halaman dimuat
+			document.addEventListener('DOMContentLoaded', () => {
+				loadLaporan70Data();
+				loadTarunaDropdown();
+			});
+
+			// Update nama file saat file penilaian dipilih
+			document.getElementById('hasiltelaahFile').addEventListener('change', function(e) {
+				const fileName = e.target.files[0] ? e.target.files[0].name : 'Choose file';
+				this.nextElementSibling.textContent = fileName;
+			});
+			
+			// Update label & daftar nama saat file penilaian dipilih (multi-file) — fixed posisi
+			document.getElementById('penilaianFile').addEventListener('change', function (e) {
+			const files = Array.from(e.target.files || []);
+			const labelEl = this.nextElementSibling; // .custom-file-label
+
+			// Cari atau buat container info KHUSUS penilaian di bawah form-group penilaian
+			let infoEl = document.getElementById('penilaianSelectedFileName');
+			if (!infoEl) {
+				infoEl = document.createElement('div');
+				infoEl.id = 'penilaianSelectedFileName';
+				infoEl.className = 'mt-2 text-info';
+				const group = this.closest('.form-group') || this.parentElement; // taruh di grup yang benar
+				group.appendChild(infoEl);
+			}
+
+			if (files.length === 0) {
+				labelEl.textContent = 'Choose file';
+				infoEl.style.display = 'none';
+				infoEl.textContent = '';
+				return;
+			}
+
+			// Ringkas di label, lengkap di infoEl
+			labelEl.textContent = files.length > 1 ? `${files.length} files selected` : files[0].name;
+			infoEl.style.display = 'block';
+			infoEl.textContent = files.map(f => f.name).join(', ');
+			});
+
+			// Handle form submission untuk penilaian laporan70 (multi-file penilaian)
+			document.getElementById('laporan70Form').addEventListener('submit', async function (e) {
+				e.preventDefault();
+
+				// Ambil elemen/values
+				const tarunaSelect = document.getElementById('tarunaSelect');
+				const finalLaporan70Id = document.getElementById('finalLaporan70Id').value;
+				const hasiltelaahInput = document.getElementById('hasiltelaahFile');
+				const penilaianInput = document.getElementById('penilaianFile');
+				const dosenId = localStorage.getItem('dosenID');
+
+				// Tidak ada validasi ukuran/jenis file di sini — serahkan ke backend
+				// Hanya cek wajib terisi (field non-file + ada minimal satu file)
+				if (!tarunaSelect.value || !finalLaporan70Id || !hasiltelaahInput.files[0] || (penilaianInput.files.length === 0) || !dosenId) {
+					showAlert('Semua field harus diisi', 'warning');
+					return;
+				}
+
+				const submitButton = this.querySelector('button[type="submit"]');
+				submitButton.disabled = true;
+				submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+
+				try {
+					const formData = new FormData();
+
+					// Field non-file
+					formData.append('user_id', tarunaSelect.value);
+					formData.append('final_laporan70_id', finalLaporan70Id);
+					formData.append('dosen_id', dosenId);
+
+					// Single file: catatan perbaikan
+					formData.append('hasiltelaah_file', hasiltelaahInput.files[0]);
+
+					// Multi-file: penilaian
+					// Gunakan key 'penilaian_file[]' agar backend menerima array
+					Array.from(penilaianInput.files).forEach((file) => {
+					formData.append('penilaian_file[]', file);
+					});
+
+					// Debug (opsional)
+					console.log('Sending data:');
+					for (let pair of formData.entries()) {
+					console.log(pair[0] + ':', pair[1]);
+					}
+
+					const response = await fetch('http://104.43.89.154:8087/penilaian/laporan70', {
+					method: 'POST',
+					body: formData
+					});
+
+					const contentType = response.headers.get('content-type');
+					if (!contentType || !contentType.includes('application/json')) {
+					throw new Error('Response dari server bukan JSON');
+					}
+
+					const data = await response.json();
+
+					if (response.ok && data.status === 'success') {
+					showAlert('Penilaian laporan 70% berhasil disimpan', 'success');
+
+					// Reset form & label
+					this.reset();
+					document.querySelectorAll('.custom-file-label').forEach(label => {
+						label.textContent = 'Choose file';
+					});
+
+					// Sembunyikan daftar nama file jika ada
+					const infoEl = document.getElementById('selectedFileName');
+					if (infoEl) { infoEl.style.display = 'none'; infoEl.textContent = ''; }
+
+					// Reload data
+					loadLaporan70Data();
+					} else {
+					throw new Error(data.message || 'Terjadi kesalahan saat menyimpan penilaian');
+					}
+				} catch (error) {
+					console.error('Error:', error);
+					showAlert(error.message || 'Terjadi kesalahan pada server', 'danger');
+				} finally {
+					submitButton.disabled = false;
+					submitButton.innerHTML = 'Submit';
+				}
+			});
+
+		</script>
+
+		<style>
+		.badge {
+			padding: 5px 10px;
+			border-radius: 4px;
+			font-weight: normal;
+		}
+		.badge-warning {
+			background-color: #ffc107;
+			color: #000;
+		}
+		.badge-success {
+			background-color: #28a745;
+			color: #fff;
+		}
+		.badge-danger {
+			background-color: #dc3545;
+			color: #fff;
+		}
+		.badge-secondary {
+			background-color: #bdbdbd;
+			color: #fff;
+		}
+		</style>
+
+	</body>
+</html>

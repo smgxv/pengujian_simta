@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Basic Page Info -->
+    <meta charset="utf-8" />
+    <title>Edit Profile - Dosen</title>
+
+    <!-- Site favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="vendors/images/apple-touch-icon.png"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="vendors/images/logo.png"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="vendors/images/logo.png"/>
+
+    <!-- Mobile Specific Metas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="vendors/styles/core.css" />
+    <link rel="stylesheet" type="text/css" href="vendors/styles/icon-font.min.css"/>
+    <link rel="stylesheet" type="text/css" href="vendors/styles/style.css" />
+
+    <style>
+        /* Pastikan input punya padding kanan agar icon tidak overlap */
+        .password-input {
+            padding-right: 40px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            z-index: 10;
+            color: #999;
+        }
+
+        .toggle-password:hover {
+            color: #333;
+        }
+
+    </style>
+    
+</head>
+
+<body>
+    <div class="pre-loader">
+        <div class="pre-loader-box">
+            <div class="loader-logo">
+                <img src="vendors/images/logo_loading.png" alt="" />
+            </div>
+            <div class="loader-progress" id="progress_div">
+                <div class="bar" id="bar1"></div>
+            </div>
+            <div class="percent" id="percent1">0%</div>
+            <div class="loading-text">Loading...</div>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="header-left">
+            <div class="menu-icon bi bi-list"></div>
+            <div
+                class="search-toggle-icon bi bi-search"
+                data-toggle="header_search"
+            ></div>
+        </div>
+
+        <div class="header-right">
+            <div class="dashboard-setting user-notification">
+                <div class="dropdown">
+                    <a
+                        class="dropdown-toggle no-arrow"
+                        href="javascript:;"
+                        data-toggle="right-sidebar"
+                    >
+                        <i class="dw dw-settings2"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="user-notification">
+                <div class="dropdown">
+                    <a
+                        class="dropdown-toggle no-arrow"
+                        href="#"
+                        role="button"
+                        data-toggle="dropdown"
+                    >
+                        <i class="icon-copy dw dw-notification"></i>
+                        <span class="badge notification-active"></span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <div class="notification-list mx-h-350 customscroll">
+                            <ul id="notif-list">
+                                <!-- Notifikasi akan dimuat lewat JavaScript -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-info-dropdown">
+                <div class="dropdown">
+                    <a
+                        class="dropdown-toggle"
+                        href="#"
+                        role="button"
+                        data-toggle="dropdown"
+                        style="display: flex; align-items: center; padding-top: 15px;"
+                    >
+                        <span class="user-name" id="username"></span>
+                    </a>
+                    <div
+                        class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list"
+                    >
+                        <a class="dropdown-item" href="#" onclick="redirectToProfile(); return false;">
+                            <i class="dw dw-user1"></i> Profile
+                        </a>
+                        <a class="dropdown-item" href="#" onclick="logout(); return false;">
+                            <i class="dw dw-logout"></i> Log Out
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="right-sidebar">
+        <div class="sidebar-title">
+            <h3 class="weight-600 font-16 text-blue">
+                Layout Settings
+                <span class="btn-block font-weight-400 font-12"
+                    >User Interface Settings</span
+                >
+            </h3>
+            <div class="close-sidebar" data-toggle="right-sidebar-close">
+                <i class="icon-copy ion-close-round"></i>
+            </div>
+        </div>
+        <div class="right-sidebar-body customscroll">
+            <div class="right-sidebar-body-content">
+                <h4 class="weight-600 font-18 pb-10">Header Background</h4>
+                <div class="sidebar-btn-group pb-30 mb-10">
+                    <a
+                        href="javascript:void(0);"
+                        class="btn btn-outline-primary header-white active"
+                        >White</a
+                    >
+                    <a
+                        href="javascript:void(0);"
+                        class="btn btn-outline-primary header-dark"
+                        >Dark</a
+                    >
+                </div>
+
+                <h4 class="weight-600 font-18 pb-10">Sidebar Background</h4>
+                <div class="sidebar-btn-group pb-30 mb-10">
+                    <a
+                        href="javascript:void(0);"
+                        class="btn btn-outline-primary sidebar-light"
+                        >White</a
+                    >
+                    <a
+                        href="javascript:void(0);"
+                        class="btn btn-outline-primary sidebar-dark active"
+                        >Dark</a
+                    >
+                </div>
+
+                <h4 class="weight-600 font-18 pb-10">Menu Dropdown Icon</h4>
+                <div class="sidebar-radio-group pb-10 mb-10">
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input
+                            type="radio"
+                            id="sidebaricon-1"
+                            name="menu-dropdown-icon"
+                            class="custom-control-input"
+                            value="icon-style-1"
+                            checked=""
+                        />
+                        <label class="custom-control-label" for="sidebaricon-1"
+                            ><i class="fa fa-angle-down"></i
+                        ></label>
+                    </div>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input
+                            type="radio"
+                            id="sidebaricon-2"
+                            name="menu-dropdown-icon"
+                            class="custom-control-input"
+                            value="icon-style-2"
+                        />
+                        <label class="custom-control-label" for="sidebaricon-2"
+                            ><i class="ion-plus-round"></i
+                        ></label>
+                    </div>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input
+                            type="radio"
+                            id="sidebaricon-3"
+                            name="menu-dropdown-icon"
+                            class="custom-control-input"
+                            value="icon-style-3"
+                        />
+                        <label class="custom-control-label" for="sidebaricon-3"
+                            ><i class="fa fa-angle-double-right"></i
+                        ></label>
+                    </div>
+                </div>
+
+                <h4 class="weight-600 font-18 pb-10">Menu List Icon</h4>
+                <div class="sidebar-radio-group pb-30 mb-10">
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input
+                            type="radio"
+                            id="sidebariconlist-1"
+                            name="menu-list-icon"
+                            class="custom-control-input"
+                            value="icon-list-style-1"
+                            checked=""
+                        />
+                        <label class="custom-control-label" for="sidebariconlist-1"
+                            ><i class="ion-minus-round"></i
+                        ></label>
+                    </div>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input
+                            type="radio"
+                            id="sidebariconlist-2"
+                            name="menu-list-icon"
+                            class="custom-control-input"
+                            value="icon-list-style-2"
+                        />
+                        <label class="custom-control-label" for="sidebariconlist-2"
+                            ><i class="fa fa-circle-o" aria-hidden="true"></i
+                        ></label>
+                    </div>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input
+                            type="radio"
+                            id="sidebariconlist-3"
+                            name="menu-list-icon"
+                            class="custom-control-input"
+                            value="icon-list-style-3"
+                        />
+                        <label class="custom-control-label" for="sidebariconlist-3"
+                            ><i class="dw dw-check"></i
+                        ></label>
+                    </div>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input
+                            type="radio"
+                            id="sidebariconlist-4"
+                            name="menu-list-icon"
+                            class="custom-control-input"
+                            value="icon-list-style-4"
+                            checked=""
+                        />
+                        <label class="custom-control-label" for="sidebariconlist-4"
+                            ><i class="icon-copy dw dw-next-2"></i
+                        ></label>
+                    </div>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input
+                            type="radio"
+                            id="sidebariconlist-5"
+                            name="menu-list-icon"
+                            class="custom-control-input"
+                            value="icon-list-style-5"
+                        />
+                        <label class="custom-control-label" for="sidebariconlist-5"
+                            ><i class="dw dw-fast-forward-1"></i
+                        ></label>
+                    </div>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input
+                            type="radio"
+                            id="sidebariconlist-6"
+                            name="menu-list-icon"
+                            class="custom-control-input"
+                            value="icon-list-style-6"
+                        />
+                        <label class="custom-control-label" for="sidebariconlist-6"
+                            ><i class="dw dw-next"></i
+                        ></label>
+                    </div>
+                </div>
+
+                <div class="reset-options pt-30 text-center">
+                    <button class="btn btn-danger" id="reset-settings">
+                        Reset Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="left-side-bar">
+        <div class="brand-logo">
+            <a href="/dosen/dashboard">
+                <img src="vendors/images/logo_dosen_panel.png" alt="" class="dark-logo" />
+            <div class="close-sidebar" data-toggle="left-sidebar-close">
+                <i class="ion-close-round"></i>
+            </div>
+        </div>
+
+        <div class="menu-block customscroll">
+            <div class="sidebar-menu">
+                <ul id="accordion-menu">
+                    <li>
+                        <a href="/dosen/dashboard" class="dropdown-toggle no-arrow">
+                            <span class="micon bi bi-house"></span
+                            ><span class="mtext">Home</span>
+                        </a>
+                    </li>
+
+                    <li class="dropdown">
+                        <a href="javascript:;" class="dropdown-toggle">
+                            <span class="micon bi bi-file-earmark-text"></span
+                            ><span class="mtext">ICP</span>
+                        </a>
+                        <ul class="submenu">
+                            <li><a href="/dosen/bimbingan_icp">Bimbingan ICP</a></li>
+                            <li><a href="/dosen/pengujian_icp">Pengujian ICP</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="dropdown">
+                        <a href="javascript:;" class="dropdown-toggle">
+                            <span class="micon bi bi-file-earmark-text"></span
+                            ><span class="mtext">Proposal</span>
+                        </a>
+                        <ul class="submenu">
+                            <li><a href="/dosen/bimbingan_proposal">Bimbingan Proposal</a></li>
+                            <li><a href="/dosen/pengujian_proposal">Pengujian Proposal</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="dropdown">
+                        <a href="javascript:;" class="dropdown-toggle">
+                            <span class="micon bi bi-file-earmark-text"></span
+                            ><span class="mtext">Tugas Akhir 70%</span>
+                        </a>
+                        <ul class="submenu">
+                            <li><a href="/dosen/bimbingan_laporan70">Bimbingan Laporan 70%</a></li>
+                            <li><a href="/dosen/pengujian_laporan70">Pengujian Laporan 70%</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="dropdown">
+                        <a href="javascript:;" class="dropdown-toggle">
+                            <span class="micon bi bi-file-earmark-text"></span
+                            ><span class="mtext">Tugas Akhir 100%</span>
+                        </a>
+                        <ul class="submenu">
+                            <li><a href="/dosen/bimbingan_laporan100">Bimbingan Laporan 100%</a></li>
+                            <li><a href="/dosen/pengujian_laporan100">Pengujian Laporan 100%</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mobile-menu-overlay"></div>
+
+    <div class="mobile-menu-overlay"></div>
+
+    <div class="main-container">
+        <div class="pd-ltr-20 xs-pd-20-10">
+            <div class="min-height-200px">
+                <div class="page-header">
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <div class="title">
+                                <h4>Edit Profile</h4>
+                            </div>
+                            <nav aria-label="breadcrumb" role="navigation">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="/dosen/dashboard">Home</a></li>
+                                    <li class="breadcrumb-item"><a href="/dosen/profile">Profile</a></li>
+                                    <li class="breadcrumb-item active" aria-current="page">Edit Profile</li>
+                                </ol>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Default Basic Forms Start -->
+                <div class="pd-20 card-box mb-30">
+                    <div class="clearfix">
+                        <div class="pull-left">
+                            <h4 class="text-blue h4">Edit Profile Information</h4>
+                            <p class="mb-30">Update your profile details below</p>
+                        </div>
+                    </div>
+                    <form id="editProfileForm">
+                        <div class="form-group row">
+                            <label class="col-sm-12 col-md-2 col-form-label">Nama Lengkap</label>
+                            <div class="col-sm-12 col-md-10">
+                                <input class="form-control" type="text" id="nama_lengkap" name="nama_lengkap" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row">
+                            <label class="col-sm-12 col-md-2 col-form-label">Email</label>
+                            <div class="col-sm-12 col-md-10">
+                                <input class="form-control" type="email" id="email" name="email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row">
+                            <label class="col-sm-12 col-md-2 col-form-label">Username</label>
+                            <div class="col-sm-12 col-md-10">
+                                <input class="form-control" type="text" id="username" name="username" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row">
+                            <label class="col-sm-12 col-md-2 col-form-label">Jurusan</label>
+                            <div class="col-sm-12 col-md-10">
+                                <select class="custom-select col-12" name="jurusan" id="jurusan" required>
+                                    <option value="" disabled selected>Pilih Jurusan</option>
+                                    <option value="Keamanan Siber">Keamanan Siber</option>
+                                    <option value="Kriptografi">Kriptografi</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row">
+                            <label class="col-sm-12 col-md-2 col-form-label">Password Baru</label>
+                            <div class="col-sm-12 col-md-10 position-relative">
+                                <input class="form-control password-input" type="password" id="password" name="password" placeholder="Kosongkan jika tidak ingin mengubah password">
+                                <span toggle="#password" class="toggle-password">
+                                    <i class="fa fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row">
+                            <label class="col-sm-12 col-md-2 col-form-label">Konfirmasi Password</label>
+                            <div class="col-sm-12 col-md-10 position-relative">
+                                <input class="form-control password-input" type="password" id="confirm_password" name="confirm_password" placeholder="Ulangi password baru">
+                                <span toggle="#confirm_password" class="toggle-password">
+                                    <i class="fa fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row">
+                            <div class="col-sm-12 col-md-10 offset-md-2">
+                                <button type="submit" class="btn btn-primary">Update Profile</button>
+                                <a href="/dosen/profile" class="btn btn-secondary">Cancel</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <!-- Default Basic Forms End -->
+            </div>
+        </div>
+    </div>
+
+    <!-- js -->
+    <script src="vendors/scripts/core.js"></script>
+    <script src="vendors/scripts/script.min.js"></script>
+    <script src="vendors/scripts/process.js"></script>
+    <script src="vendors/scripts/layout-settings.js"></script>
+
+    <script>
+    document.querySelectorAll('.toggle-password').forEach(function(toggle) {
+        toggle.addEventListener('click', function () {
+            const input = document.querySelector(this.getAttribute('toggle'));
+            const icon = this.querySelector('i');
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+            }
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let userId = urlParams.get('id');
+        if (!userId) {
+            userId = localStorage.getItem('userId') || sessionStorage.getItem('userId');
+        }
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (!token || !userId) {
+            window.location.replace('/loginusers');
+            return;
+        }
+    
+        // Fetch data user yang akan diedit
+        fetch(`http://104.43.89.154:8086/dosen/edituser?id=${userId}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Origin': 'http://104.43.89.154:8085'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Gagal mengambil data user');
+            }
+            return response.json();
+        })
+        .then(user => {
+            console.log('Data user:', user);
+            if (!user) {
+                throw new Error('Data user tidak ditemukan');
+            }
+            document.getElementById('nama_lengkap').value = user.nama_lengkap || '';
+            document.getElementById('email').value = user.email || '';
+            document.getElementById('username').value = user.username || '';
+            document.getElementById('jurusan').value = user.jurusan || '';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Gagal mengambil data user: ' + error.message);
+        });
+    
+        // Handle form submission
+        document.getElementById('editProfileForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Validasi form
+            const namaLengkap = document.getElementById('nama_lengkap').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const jurusan = document.getElementById('jurusan').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+
+            if (!namaLengkap || !email || !username || !jurusan) {
+                alert('Semua field harus diisi!');
+                return;
+            }
+
+            // Validasi email
+            if (!email.includes('@')) {
+                alert('Format email tidak valid!');
+                return;
+            }
+
+            // Validasi password jika diisi
+            if (password || confirmPassword) {
+                if (password !== confirmPassword) {
+                    alert('Password dan konfirmasi password tidak sama!');
+                    return;
+                }
+                if (password.length < 8) {
+                    alert('Password minimal 8 karakter!');
+                    return;
+                }
+            }
+
+            const userData = {
+                id: parseInt(userId),
+                nama_lengkap: namaLengkap,
+                email: email,
+                username: username,
+                jurusan: jurusan,
+                role: 'dosen'
+            };
+
+            // Tambahkan password jika diisi
+            if (password) {
+                userData.password = password;
+            }
+
+            console.log('Sending data:', userData);
+
+            fetch('http://104.43.89.154:8086/dosen/edituser', {
+                method: 'PUT',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(userData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 409) {
+                        throw new Error('Email sudah digunakan oleh user lain');
+                    }
+                    return response.text().then(text => {
+                        throw new Error(text || 'Gagal mengupdate profile');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                alert('Profile berhasil diupdate');
+                window.location.href = '/dosen/profile';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(error.message || 'Terjadi kesalahan saat mengupdate profile');
+            });
+        });
+    });
+    </script>
+</body>
+</html>

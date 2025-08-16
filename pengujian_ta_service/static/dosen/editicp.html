@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Basic Page Info -->
+    <meta charset="utf-8" />
+    <title>SIMTA - Review ICP</title>
+
+    <!-- Site favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="vendors/images/apple-touch-icon.png"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="vendors/images/logo.png"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="vendors/images/logo.png"/>
+
+    <!-- Mobile Specific Metas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="vendors/styles/core.css" />
+    <link rel="stylesheet" type="text/css" href="vendors/styles/icon-font.min.css"/>
+    <link rel="stylesheet" type="text/css" href="vendors/styles/style.css" />
+</head>
+
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="menu-icon bi bi-list"></div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="pd-ltr-20 xs-pd-20-10">
+            <div class="min-height-200px">
+                <div class="page-header">
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <div class="title">
+                                <h4>Edit ICP</h4>
+                            </div>
+                            <nav aria-label="breadcrumb" role="navigation">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="/dosen/dashboard">Home</a></li>
+                                    <li class="breadcrumb-item"><a href="/dosen/icp">ICP</a></li>
+                                    <li class="breadcrumb-item active" aria-current="page">Edit ICP</li>
+                                </ol>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pd-20 card-box mb-30">
+                    <div class="clearfix">
+                        <div class="pull-left">
+                            <h4 class="text-blue h4">Edit ICP</h4>
+                            <p class="mb-30">Update informasi ICP Anda</p>
+                        </div>
+                    </div>
+                    <form id="editICPForm">
+                        <div class="form-group">
+                            <label>Dosen Pembimbing</label>
+                            <select class="form-control" id="dosenSelect" name="dosen_id" required>
+                                <option value="" disabled selected>Pilih Dosen Pembimbing</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Topik Penelitian</label>
+                            <input class="form-control" type="text" id="topikPenelitian" name="topik_penelitian" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Keterangan</label>
+                            <textarea class="form-control" id="keterangan" name="keterangan" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>File ICP (PDF)</label>
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input" id="icpFile" name="file" accept=".pdf">
+                                <label class="custom-file-label" for="icpFile">Choose file</label>
+                            </div>
+                            <small class="form-text text-muted">Biarkan kosong jika tidak ingin mengubah file</small>
+                            <div id="selectedFileName" class="mt-2 text-info" style="display: none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Update ICP</button>
+                            <a href="/dosen/icp" class="btn btn-secondary">Batal</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- js -->
+    <script src="vendors/scripts/core.js"></script>
+    <script src="vendors/scripts/script.min.js"></script>
+    <script src="vendors/scripts/process.js"></script>
+    <script src="vendors/scripts/layout-settings.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const icpId = urlParams.get('id');
+            const userId = localStorage.getItem('userId');
+            const token = localStorage.getItem('token'); // Ambil token dari localStorage
+
+            // Load dosen list
+            try {
+                const dosenResponse = await fetch('http://104.43.89.154:8086/dosen', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!dosenResponse.ok) {
+                    throw new Error('Failed to fetch dosen list');
+                }
+                
+                const response = await dosenResponse.json();
+                console.log('Dosen Response:', response); // Debugging
+                
+                const dosenSelect = document.getElementById('dosenSelect');
+                // Reset dropdown
+                dosenSelect.innerHTML = '<option value="" disabled selected>Pilih Dosen Pembimbing</option>';
+                
+                // Sesuaikan dengan format response yang benar
+                if (response.status === 'success' && Array.isArray(response.data)) {
+                    response.data.forEach(dosen => {
+                        const option = document.createElement('option');
+                        option.value = dosen.id;
+                        option.textContent = `${dosen.nama_lengkap} - ${dosen.jurusan}`;
+                        dosenSelect.appendChild(option);
+                    });
+                } else {
+                    console.error('Dosen data is empty or not in correct format');
+                }
+
+                // Load ICP data setelah dosen list dimuat
+                try {
+                    const icpResponse = await fetch(`http://104.43.89.154:8087/icp/${icpId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (!icpResponse.ok) {
+                        throw new Error('Failed to fetch ICP data');
+                    }
+
+                    const result = await icpResponse.json();
+                    console.log('ICP Data:', result); // Debugging
+                    
+                    if (result.status === 'success' && result.data) {
+                        const icp = result.data;
+                        // Set nilai dropdown dosen
+                        if (icp.dosen_id) {
+                            dosenSelect.value = String(icp.dosen_id);
+                        }
+                        document.getElementById('topikPenelitian').value = icp.topik_penelitian;
+                        document.getElementById('keterangan').value = icp.keterangan;
+                    }
+                } catch (error) {
+                    console.error('Error loading ICP:', error);
+                    alert('Gagal memuat data ICP');
+                }
+            } catch (error) {
+                console.error('Error loading dosen list:', error);
+                alert('Gagal memuat daftar dosen');
+            }
+
+            // Handle file selection
+            document.querySelector('.custom-file-input').addEventListener('change', function(e) {
+                const fileName = e.target.files[0] ? e.target.files[0].name : 'Choose file';
+                document.querySelector('.custom-file-label').textContent = fileName;
+                
+                const selectedFileDiv = document.getElementById('selectedFileName');
+                if (e.target.files[0]) {
+                    selectedFileDiv.textContent = 'File terpilih: ' + fileName;
+                    selectedFileDiv.style.display = 'block';
+                } else {
+                    selectedFileDiv.style.display = 'none';
+                }
+            });
+
+            // Handle form submission
+            document.getElementById('editICPForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                formData.append('id', icpId);
+                formData.append('user_id', userId);
+                
+                try {
+                    const response = await fetch('http://104.43.89.154:8087/icp/edit', {
+                        method: 'PUT',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        alert('ICP berhasil diupdate');
+                        window.location.href = '/dosen/icp';
+                    } else {
+                        throw new Error(result.message || 'Gagal mengupdate ICP');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert(error.message || 'Terjadi kesalahan pada server');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

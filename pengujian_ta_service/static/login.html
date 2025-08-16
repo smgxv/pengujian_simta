@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login | Secure SIMTA</title>
+  <link rel="icon" type="image/png" href="style/images/logo.png"/>
+
+  <!-- Bootstrap (opsional) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+
+  <!-- Inline CSS -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: url('style/images/background.png') no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #f5f5f5;
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 420px;
+      background-color: rgba(0, 0, 0, 0.6);
+      border-radius: 20px;
+      padding: 40px 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      position: relative;
+      backdrop-filter: blur(8px);
+    }
+
+    .form.login header {
+      font-size: 32px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 30px;
+      color: #ffffff;
+    }
+
+    .form-control {
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      height: 45px;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .form-control::placeholder {
+      color: #ccc;
+    }
+
+    .form-control:focus {
+      background-color: rgba(255, 255, 255, 0.15);
+      border-color: #00bcd4;
+      box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.4);
+    }
+
+    button[type="submit"] {
+      background: linear-gradient(to right, #00bcd4, #2196f3);
+      border: none;
+      color: #fff;
+      font-weight: 600;
+      font-size: 16px;
+      height: 45px;
+      border-radius: 12px;
+      margin-top: 10px;
+      transition: 0.3s ease;
+      width: 100%;
+    }
+
+    button[type="submit"]:hover {
+      background: linear-gradient(to right, #2196f3, #00bcd4);
+    }
+
+    #error {
+      font-size: 14px;
+      color: #ff6b6b;
+      margin-top: 10px;
+    }
+
+    .home-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background-color: transparent;
+      color: #ffffff;
+      border: 1px solid #ffffff88;
+      padding: 6px 12px;
+      font-size: 13px;
+      border-radius: 8px;
+      transition: 0.3s ease;
+    }
+
+    .home-btn:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-color: #fff;
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+  <section class="wrapper">
+    <!-- Login Form -->
+    <div class="form login">
+      <header>Login</header>
+      <form onsubmit="event.preventDefault(); login();">
+        <div class="mb-3">
+          <input type="text" class="form-control" placeholder="Email address" id="email" required />
+        </div>
+        <div class="mb-3">
+          <input type="password" class="form-control" placeholder="Password" id="password" required />
+        </div>
+        <button type="submit">Login</button>
+        <div id="error" class="error"></div>
+      </form>
+    </div>
+
+    <!-- Tombol Home -->
+    <button class="home-btn" onclick="window.location.href='/dashboard';">Home</button>
+  </section>
+
+  <!-- Script login -->
+  <script>
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const errorElement = document.getElementById('error');
+
+      try {
+        const response = await fetch('http://104.43.89.154:8085/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password })
+        });
+
+        let data;
+        const contentType = response.headers.get("Content-Type");
+
+        if (contentType && contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          throw new Error(text || 'Login gagal');
+        }
+
+        if (!response.ok || (data && data.error)) {
+          throw new Error((data && data.error) || 'Login gagal');
+        }
+
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', data.role);
+        localStorage.setItem('userId', data.id);
+        document.cookie = `token=${data.token}; path=/`;
+
+        const userRole = data.role.toLowerCase();
+        if (userRole === 'admin') {
+          window.location.replace('/admin/dashboard');
+        } else if (userRole === 'taruna') {
+          window.location.replace('/taruna/dashboard');
+        } else if (userRole === 'dosen') {
+          window.location.replace('/dosen/dashboard');
+        } else {
+          throw new Error('Role tidak valid');
+        }
+
+      } catch (error) {
+        errorElement.textContent = error.message || 'Terjadi kesalahan saat login';
+      }
+    }
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+      sessionStorage.removeItem('isRedirecting');
+    });
+  </script>
+</body>
+</html>

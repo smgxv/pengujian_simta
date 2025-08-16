@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Konfirmasi Hapus User</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .delete-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .header-icon {
+            width: 80px;
+            height: 80px;
+            background: #fff3f3;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .header-icon i {
+            font-size: 2.5rem;
+            color: #dc3545;
+        }
+
+        .confirmation-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .user-details {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+
+        .user-details li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .user-details li:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border: none;
+        }
+
+        .btn-danger:hover {
+            background-color: #bb2d3b;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border: none;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5c636a;
+            transform: translateY(-2px);
+        }
+
+        .alert {
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="delete-container">
+
+        {{with .user}}
+        <div class="text-center">
+            <div class="header-icon">
+                <i class="fas fa-user-times"></i>
+            </div>
+            <h2 class="mb-4">Konfirmasi Hapus User</h2>
+            <p class="text-muted">Apakah Anda yakin ingin menghapus user berikut? Tindakan ini tidak dapat dibatalkan.</p>
+        </div>
+
+        <div class="confirmation-box">
+            <ul class="user-details">
+                <li>
+                    <span class="detail-label">Nama Lengkap</span>
+                    <span class="detail-value">{{.NamaLengkap}}</span>
+                </li>
+                <li>
+                    <span class="detail-label">Email</span>
+                    <span class="detail-value">{{.Email}}</span>
+                </li>
+                <li>
+                    <span class="detail-label">Username</span>
+                    <span class="detail-value">{{.Username}}</span>
+                </li>
+                <li>
+                    <span class="detail-label">Role</span>
+                    <span class="detail-value">{{.Role}}</span>
+                </li>
+            </ul>
+        </div>
+
+        <form id="deleteForm" onsubmit="handleDelete(event)">
+            <input type="hidden" name="user_id" value="{{.ID}}">
+            <div class="btn-group w-100">
+                <a href="/admin/listuser" class="btn btn-secondary flex-grow-1">
+                    <i class="fas fa-times me-2"></i>Batal
+                </a>
+                <button type="submit" class="btn btn-danger flex-grow-1">
+                    <i class="fas fa-trash-alt me-2"></i>Hapus User
+                </button>
+            </div>
+        </form>
+        {{end}}
+    </div>
+
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    
+        <script>
+        function handleDelete(event) {
+            event.preventDefault();
+            
+            const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+            const userId = document.querySelector('input[name="user_id"]').value;
+        
+            if (confirm("Apakah Anda yakin ingin menghapus user ini?")) {
+                fetch(`http://104.43.89.154:8086/users/delete?id=${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status) {
+                        alert("User berhasil dihapus");
+                        window.location.href = "/admin/listuser";
+                    } else {
+                        alert(data.message || "Gagal menghapus user");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("Terjadi kesalahan saat menghapus user");
+                });
+            }
+        }
+        </script>
+</body>
+</html>

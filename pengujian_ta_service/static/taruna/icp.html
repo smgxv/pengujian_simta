@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- Basic Page Info -->
+		<meta charset="utf-8" />
+		<title>SIMTA - Idea Concept Project</title>
+
+		<!-- Site favicon -->
+		<link
+			rel="apple-touch-icon"
+			sizes="180x180"
+			href="vendors/images/apple-touch-icon.png"
+		/>
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="32x32"
+			href="vendors/images/logo.png"
+		/>
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="16x16"
+			href="vendors/images/logo.png"
+		/>
+
+		<!-- Mobile Specific Metas -->
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, maximum-scale=1"
+		/>
+
+		<!-- Google Font -->
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+			rel="stylesheet"
+		/>
+		<!-- CSS -->
+		<link rel="stylesheet" type="text/css" href="vendors/styles/core.css" />
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="vendors/styles/icon-font.min.css"
+		/>
+		<link rel="stylesheet" type="text/css" href="vendors/styles/style.css" />
+
+		<style>
+			.alert-wrapper {
+				position: fixed;
+				top: 20px;
+				left: 50%;
+				transform: translateX(-50%);
+				z-index: 9999;
+				width: 80%;
+				max-width: 500px;
+			}
+		
+			.alert {
+				padding: 15px;
+				border-radius: 4px;
+				margin-bottom: 10px;
+				text-align: center;
+			}
+		
+			.alert-success {
+				background-color: #d4edda;
+				border-color: #c3e6cb;
+				color: #155724;
+			}
+		
+			.alert-danger {
+				background-color: #f8d7da;
+				border-color: #f5c2c7;
+				color: #842029;
+			}
+		</style>
+
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script
+			async
+			src="https://www.googletagmanager.com/gtag/js?id=G-GBZ3SGGX85"
+		></script>
+		<script
+			async
+			src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2973766580778258"
+			crossorigin="anonymous"
+		></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() {
+				dataLayer.push(arguments);
+			}
+			gtag("js", new Date());
+
+			gtag("config", "G-GBZ3SGGX85");
+		</script>
+		<!-- Google Tag Manager -->
+		<script>
+			(function (w, d, s, l, i) {
+				w[l] = w[l] || [];
+				w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+				var f = d.getElementsByTagName(s)[0],
+					j = d.createElement(s),
+					dl = l != "dataLayer" ? "&l=" + l : "";
+				j.async = true;
+				j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+				f.parentNode.insertBefore(j, f);
+			})(window, document, "script", "dataLayer", "GTM-NXZMQSS");
+		</script>
+		<!-- End Google Tag Manager -->
+	</head>
+
+	<body>
+		<div class="pre-loader">
+			<div class="pre-loader-box">
+				<div class="loader-logo">
+					<img src="vendors/images/logo_loading.png" alt="" />
+				</div>
+				<div class="loader-progress" id="progress_div">
+					<div class="bar" id="bar1"></div>
+				</div>
+				<div class="percent" id="percent1">0%</div>
+				<div class="loading-text">Loading...</div>
+			</div>
+		</div>
+
+		<div class="header">
+			<div class="header-left">
+				<div class="menu-icon bi bi-list"></div>
+				<div
+					class="search-toggle-icon bi bi-search"
+					data-toggle="header_search"
+				></div>
+				<div class="header-search">
+					<form>
+						<div class="form-group mb-0">
+							<i class="dw dw-search2 search-icon"></i>
+							<input
+								type="text"
+								class="form-control search-input"
+								placeholder="Search Here"
+							/>
+							<div class="dropdown">
+								<a
+									class="dropdown-toggle no-arrow"
+									href="#"
+									role="button"
+									data-toggle="dropdown"
+								>
+									<i class="ion-arrow-down-c"></i>
+								</a>
+								<div class="dropdown-menu dropdown-menu-right">
+									<div class="form-group row">
+										<label class="col-sm-12 col-md-2 col-form-label"
+											>From</label
+										>
+										<div class="col-sm-12 col-md-10">
+											<input
+												class="form-control form-control-sm form-control-line"
+												type="text"
+											/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-12 col-md-2 col-form-label">To</label>
+										<div class="col-sm-12 col-md-10">
+											<input
+												class="form-control form-control-sm form-control-line"
+												type="text"
+											/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-12 col-md-2 col-form-label"
+											>Subject</label
+										>
+										<div class="col-sm-12 col-md-10">
+											<input
+												class="form-control form-control-sm form-control-line"
+												type="text"
+											/>
+										</div>
+									</div>
+									<div class="text-right">
+										<button class="btn btn-primary">Search</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+
+			<div class="header-right">
+				<div class="dashboard-setting user-notification">
+					<div class="dropdown">
+						<a
+							class="dropdown-toggle no-arrow"
+							href="javascript:;"
+							data-toggle="right-sidebar"
+						>
+							<i class="dw dw-settings2"></i>
+						</a>
+					</div>
+				</div>
+
+				<div class="user-notification">
+					<div class="dropdown">
+						<a
+							class="dropdown-toggle no-arrow"
+							href="#"
+							role="button"
+							data-toggle="dropdown"
+						>
+							<i class="icon-copy dw dw-notification"></i>
+							<span class="badge notification-active"></span>
+						</a>
+						<div class="dropdown-menu dropdown-menu-right">
+							<div class="notification-list mx-h-350 customscroll">
+								<ul id="notif-list">
+									<!-- Notifikasi akan dimuat lewat JavaScript -->
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="user-info-dropdown">
+					<div class="dropdown">
+						<a
+							class="dropdown-toggle"
+							href="#"
+							role="button"
+							data-toggle="dropdown"
+						>
+							<span class="user-icon">
+								<img src="vendors/images/photo1.jpg" alt="" />
+							</span>
+							<span class="user-name" id="username"></span>
+						</a>
+						<div
+							class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list"
+						>
+							<a class="dropdown-item" href="#" onclick="redirectToProfile(); return false;">
+								<i class="dw dw-user1"></i> Profile
+							</a>
+							<a class="dropdown-item" href="#" onclick="logout(); return false;">
+								<i class="dw dw-logout"></i> Log Out
+							</a>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		<div class="right-sidebar">
+			<div class="sidebar-title">
+				<h3 class="weight-600 font-16 text-blue">
+					Layout Settings
+					<span class="btn-block font-weight-400 font-12"
+						>User Interface Settings</span
+					>
+				</h3>
+				<div class="close-sidebar" data-toggle="right-sidebar-close">
+					<i class="icon-copy ion-close-round"></i>
+				</div>
+			</div>
+			<div class="right-sidebar-body customscroll">
+				<div class="right-sidebar-body-content">
+					<h4 class="weight-600 font-18 pb-10">Header Background</h4>
+					<div class="sidebar-btn-group pb-30 mb-10">
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary header-white active"
+							>White</a
+						>
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary header-dark"
+							>Dark</a
+						>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Sidebar Background</h4>
+					<div class="sidebar-btn-group pb-30 mb-10">
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary sidebar-light"
+							>White</a
+						>
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary sidebar-dark active"
+							>Dark</a
+						>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Menu Dropdown Icon</h4>
+					<div class="sidebar-radio-group pb-10 mb-10">
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-1"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-1"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebaricon-1"
+								><i class="fa fa-angle-down"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-2"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-2"
+							/>
+							<label class="custom-control-label" for="sidebaricon-2"
+								><i class="ion-plus-round"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-3"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-3"
+							/>
+							<label class="custom-control-label" for="sidebaricon-3"
+								><i class="fa fa-angle-double-right"></i
+							></label>
+						</div>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Menu List Icon</h4>
+					<div class="sidebar-radio-group pb-30 mb-10">
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-1"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-1"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebariconlist-1"
+								><i class="ion-minus-round"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-2"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-2"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-2"
+								><i class="fa fa-circle-o" aria-hidden="true"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-3"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-3"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-3"
+								><i class="dw dw-check"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-4"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-4"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebariconlist-4"
+								><i class="icon-copy dw dw-next-2"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-5"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-5"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-5"
+								><i class="dw dw-fast-forward-1"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-6"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-6"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-6"
+								><i class="dw dw-next"></i
+							></label>
+						</div>
+					</div>
+
+					<div class="reset-options pt-30 text-center">
+						<button class="btn btn-danger" id="reset-settings">
+							Reset Settings
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="left-side-bar">
+			<div class="brand-logo">
+				<a href="/taruna/dashboard">
+					<img src="vendors/images/logo_taruna_panel.png" alt="" class="dark-logo" />
+				<div class="close-sidebar" data-toggle="left-sidebar-close">
+					<i class="ion-close-round"></i>
+				</div>
+			</div>
+
+			<div class="menu-block customscroll">
+				<div class="sidebar-menu">
+					<ul id="accordion-menu">
+						<li>
+							<a href="/taruna/dashboard" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-house"></span
+								><span class="mtext">Home</span>
+							</a>
+						</li>
+
+						<li>
+							<a href="/taruna/icp" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Idea Concept Project</span>
+							</a>
+						</li>
+						
+						<li>
+							<a href="/taruna/proposal" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Proposal</span>
+							</a>
+						</li>
+
+						<li>
+							<a href="/taruna/ta70" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Tugas Akhir 70%</span>
+							</a>
+						</li>
+
+						<li>
+							<a href="/taruna/ta100" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Tugas Akhir 100%</span>
+							</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="mobile-menu-overlay"></div>
+
+		<div class="main-container">
+
+			<!-- Tambahkan div untuk alert di bawah ini -->
+			<div class="alert-wrapper" id="alertContainer" style="display: none;">
+				<div class="alert" id="alertMessage" role="alert">
+				</div>
+			</div>
+
+			<div class="pd-ltr-20 xs-pd-20-10">
+				<div class="min-height-200px">
+
+					<div class="page-header">
+						<div class="row">
+							<div class="col-md-6 col-sm-12">
+								<div class="title">
+									<h4>Idea Concept Project</h4>
+								</div>
+								<nav aria-label="breadcrumb" role="navigation">
+									<ol class="breadcrumb">
+										<li class="breadcrumb-item">
+											<a href="/taruna/dashboard">Home</a>
+										</li>
+										<li class="breadcrumb-item active" aria-current="page">
+											ICP
+										</li>
+									</ol>
+								</nav>
+							</div>
+						</div>
+					</div>
+
+					<!-- Default Basic Forms Start -->
+					<!-- Daftar ICP -->
+					<div class="pd-20 card-box mb-30">
+
+						<div class="clearfix">
+							<div class="pull-left">
+								<h4 class="text-blue h4">Daftar Idea Concept Project</h4>
+								<p class="mb-30">Kamu memiliki ide yang bagus? Segera buat dan daftarkan ICP anda !!</p>
+							</div>
+						</div>
+
+						<form id="icpForm" enctype="multipart/form-data">
+							<div class="form-group">
+								<label>Dosen Pembimbing</label>
+								<select class="form-control" id="dosenSelect" name="dosen_id">
+									<option value="" disabled selected>Pilih Dosen Pembimbing</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label>Topik Penelitian</label>
+								<input class="form-control" type="text" name="topik_penelitian" placeholder="Masukkan Topik Penelitian Anda" required>
+							</div>
+							<div class="form-group">
+								<label>Keterangan</label>
+								<textarea class="form-control" name="keterangan" required></textarea>
+							</div>
+							<div class="form-group">
+								<label>File ICP (PDF)</label>
+								<div class="custom-file">
+									<input type="file" class="custom-file-input" id="icpFile" name="file" accept=".pdf" required>
+									<label class="custom-file-label" for="icpFile">Choose file</label>
+								</div>
+								<div id="selectedFileName" class="mt-2 text-info" style="display: none;"></div>
+							</div>
+							<button type="submit" class="btn btn-primary">Tambah ICP</button>
+						</form>
+
+
+					</div>
+					<!-- Simple Datatable End -->
+
+					<!-- Simple Datatable start -->
+					 <!-- Tabel ICP -->
+					<div class="card-box mb-30">
+						<div class="pd-20">
+							<h4 class="text-blue h4">List ICP</h4>
+						</div>
+						<div class="pb-20">
+							<table class="data-table table stripe hover nowrap">
+								<thead>
+									<tr>
+										<th class="table-plus datatable-nosort">Topik</th>
+										<th class="table-plus datatable-nosort">Dosen Pembimbing</th>
+										<th class="table-plus datatable-nosort">Status</th>
+										<th class="datatable-nosort">Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<!-- Simple Datatable End -->
+
+					<!-- Simple Datatable start -->
+					 <!-- Tabel Hasil Review Dosen -->
+					<div class="card-box mb-30">
+						<div class="pd-20">
+							<h4 class="text-blue h4">Tabel Hasil Review Dosen</h4>
+						</div>
+						<div class="pb-20">
+							<table class="data-table table stripe hover nowrap">
+								<thead>
+									<tr>
+										<th class="table-plus datatable-nosort">Topik</th>
+										<th class="table-plus datatable-nosort">Dosen Pembimbing</th>
+										<th class="table-plus datatable-nosort">Review ke-</th>
+										<th class="table-plus datatable-nosort">Keterangan</th>
+										<th class="datatable-nosort">Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<!-- Simple Datatable End -->
+
+					<!-- Default Basic Forms Start -->
+					<!-- Final ICP -->
+					<div class="pd-20 card-box mb-30">
+
+						<div class="clearfix">
+							<div class="pull-left">
+								<h4 class="text-blue h4">Final Idea Concept Project</h4>
+								<p class="mb-30">Sudah mendapat persetujuan dari dosen pembimbing? Segera upload ICP anda !!</p>
+							</div>
+						</div>
+
+						<form id="finalIcpForm" enctype="multipart/form-data">
+							<div class="form-group">
+								<label>Jurusan</label>
+								<select class="custom-select" name="jurusan" id="finalJurusan" required onchange="updateFinalKelas()">
+									<option value="" disabled selected>Pilih Jurusan</option>
+									<option value="Keamanan Siber">Keamanan Siber</option>
+									<option value="Kriptografi">Kriptografi</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label>Kelas</label>
+								<select class="custom-select" name="kelas" id="finalKelas" required>
+									<option value="" disabled selected>Pilih Kelas</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label>Topik Penelitian</label>
+								<input class="form-control" type="text" name="topik_penelitian" placeholder="Masukkan Topik Penelitian Anda" required>
+							</div>
+							<div class="form-group">
+								<label>Keterangan</label>
+								<textarea class="form-control" name="keterangan" required></textarea>
+							</div>
+							<div class="form-group">
+								<label>Final File ICP (PDF)</label>
+								<div class="custom-file">
+									<input type="file" class="custom-file-input" id="finalIcpFile" name="file" accept=".pdf" required>
+									<label class="custom-file-label" for="finalIcpFile">Choose file</label>
+								</div>
+								<div id="finalSelectedFileName" class="mt-2 text-info" style="display: none;"></div>
+							</div>
+							<div class="form-group">
+								<label>File Pendukung ICP (Doc, PDF, Excell)</label>
+								<div class="custom-file">
+									<input type="file" 
+										   class="custom-file-input" 
+										   id="supportFiles" 
+										   name="support_files[]" 
+										   accept=".pdf,.doc,.docx,.xls,.xlsx" 
+										   multiple 
+										   required>
+									<label class="custom-file-label" for="supportFiles">Pilih satu atau lebih file</label>
+								</div>
+								<div id="supportSelectedFileName" class="mt-2 text-info" style="display: none;"></div>
+							</div>
+							<button type="submit" class="btn btn-primary">Upload Final ICP</button>
+						</form>
+
+					</div>
+					<!-- Simple Datatable End -->
+
+					<!-- Tabel Final ICP -->
+					<div class="pd-20 card-box mb-30">
+						<div class="clearfix">
+							<div class="pull-left">
+								<h4 class="text-blue h4">Daftar Final ICP</h4>
+							</div>
+						</div>
+						<div class="pb-20">
+							<table class="table stripe hover nowrap" id="finalIcpTable">
+								<thead>
+									<tr>
+										<th>Topik Penelitian</th>
+										<th>Jurusan</th>
+										<th>Kelas</th>
+										<th>Status</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+								<tbody>
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<!-- Tabel Final ICP End -->
+
+					<!-- Tabel Hasil Telaah Dosen -->
+					<div class="pd-20 card-box mb-30">
+						<div class="clearfix">
+							<div class="pull-left">
+								<h4 class="text-blue h4">Hasil Telaah Dosen</h4>
+							</div>
+						</div>
+						<div class="pb-20">
+							<table class="table stripe hover nowrap" id="hasilTelaahTable">
+								<thead>
+									<tr>
+										<th>Nama Dosen</th>
+										<th>Topik Penelitian</th>
+										<th>Tanggal Telaah</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+								<tbody>
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<!-- Tabel Hasil Telaah Dosen End -->
+
+					<!-- Form Revisi ICP -->
+					<div class="pd-20 card-box mb-30">
+
+						<div class="clearfix">
+							<div class="pull-left">
+								<h4 class="text-blue h4">Revisi ICP</h4>
+								<p class="mb-30">Sudah memperbaiki ICP sesuai dengan hasil telaah dosen? Segera upload Revisi ICP anda !!</p>
+							</div>
+						</div>
+
+						<form id="revisiICPForm" enctype="multipart/form-data">
+							<input type="hidden" name="jurusan" id="hiddenJurusanRevisi">
+							<input type="hidden" name="kelas" id="hiddenKelasRevisi">
+							<div class="form-group">
+								<label>Topik Penelitian</label>
+								<input class="form-control" type="text" name="topik_penelitian" placeholder="Masukkan Topik Penelitian Anda" required>
+							</div>
+							<div class="form-group">
+								<label>Keterangan</label>
+								<textarea class="form-control" name="keterangan" required></textarea>
+							</div>
+							<div class="form-group">
+								<label>Revisi File ICP (PDF)</label>
+								<div class="custom-file">
+									<input type="file" class="custom-file-input" id="revisiICPFile" name="file" accept=".pdf" required>
+									<label class="custom-file-label" for="revisiICPFile">Choose file</label>
+								</div>
+								<div id="revisiSelectedFileName" class="mt-2 text-info" style="display: none;"></div>
+							</div>
+							<button type="submit" class="btn btn-primary">Upload ICP Proposal</button>
+						</form>
+
+					</div>
+					<!-- Form Revisi ICP End -->
+
+					<!-- Tabel Revisi ICP -->
+					<div class="pd-20 card-box mb-30">
+						<div class="clearfix">
+							<div class="pull-left">
+								<h4 class="text-blue h4">Daftar Revisi ICP</h4>
+							</div>
+						</div>
+						<div class="pb-20">
+							<table class="table stripe hover nowrap" id="revisiICPTable">
+								<thead>
+									<tr>
+										<th>Topik Penelitian</th>
+										<th>Jurusan</th>
+										<th>Kelas</th>
+										<th>Status</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+								<tbody>
+
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<!-- Tabel Revisi ICP End -->
+				</div>
+
+			</div>
+
+					
+		</div>
+
+
+		<!-- js -->
+		<script src="vendors/scripts/core.js"></script>
+		<script src="vendors/scripts/script.min.js"></script>
+		<script src="vendors/scripts/process.js"></script>
+		<script src="vendors/scripts/layout-settings.js"></script>
+		<!-- Google Tag Manager (noscript) -->
+		<noscript
+			><iframe
+				src="https://www.googletagmanager.com/ns.html?id=GTM-NXZMQSS"
+				height="0"
+				width="0"
+				style="display: none; visibility: hidden"
+			></iframe
+		></noscript>
+		<!-- End Google Tag Manager (noscript) -->
+
+		<!-- Add this modal before the closing body tag -->
+		<div class="modal fade" id="uploadRevisionModal" tabindex="-1" role="dialog" aria-labelledby="uploadRevisionModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="uploadRevisionModalLabel">Upload Revisi ICP</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<form id="revisionForm" enctype="multipart/form-data">
+							<input type="hidden" id="revisionDosenId" name="dosen_id">
+							<input type="hidden" id="revisionTopikPenelitian" name="topik_penelitian">
+							
+							<div class="form-group">
+								<label>Keterangan Revisi</label>
+								<textarea class="form-control" name="keterangan" required></textarea>
+							</div>
+							<div class="form-group">
+								<label>File Revisi ICP (PDF)</label>
+								<input type="file" class="form-control" name="file" accept=".pdf" required>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+						<button type="button" class="btn btn-primary" onclick="submitRevision()">Upload Revisi</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			// JS notifikasi
+			document.addEventListener("DOMContentLoaded", function () {
+				fetch("http://104.43.89.154:8088/notifications?role=Taruna")
+					.then(res => res.json())
+					.then(data => {
+						const ul = document.getElementById("notif-list");
+						ul.innerHTML = ""; // Kosongkan
+
+						if (data.length === 0) {
+							ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
+							return;
+						}
+
+						data.forEach(item => {
+							const li = document.createElement("li");
+							li.innerHTML = `
+								<a href="/taruna/detailinformasitaruna?id=${item.ID}">
+									<img src="vendors/images/logo.png" alt="" />
+									<h3>${item.Judul}</h3>
+									<p>${item.Deskripsi.length > 50 ? item.Deskripsi.substring(0, 50) + "..." : item.Deskripsi}</p>
+								</a>`;
+							ul.appendChild(li);
+						});
+
+						document.querySelector(".notification-active").style.display = "inline-block";
+					})
+					.catch(err => {
+						console.error("Gagal mengambil notifikasi:", err);
+					});
+			});
+
+			// Fungsi untuk memuat data ICP
+			async function loadICPData() {
+				const userId = localStorage.getItem('userId');
+				try {
+					const response = await fetch(`http://104.43.89.154:8087/icp?user_id=${userId}`);
+					const data = await response.json();
+					
+					if (data.status === 'success') {
+						const tbody = document.querySelector('.data-table tbody');
+						tbody.innerHTML = '';
+						
+						data.data.forEach(icp => {
+							const statusClass = {
+								'pending': 'badge badge-warning',
+								'approved': 'badge badge-success',
+								'rejected': 'badge badge-danger'
+							}[icp.status] || 'badge badge-secondary';
+
+							tbody.innerHTML += `
+								<tr>
+									<td>${icp.topik_penelitian}</td>
+									<td>${icp.dosen_nama}</td>
+									<td><span class="${statusClass}">${icp.status}</span></td>
+									<td>
+										<div class="dropdown">
+											<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
+											href="#" role="button" data-toggle="dropdown">
+												<i class="dw dw-more"></i>
+											</a>
+											<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+												<a class="dropdown-item" href="http://104.43.89.154:8087/icp/download?filename=${icp.file_path.replace('uploads/icp/', '')}" download>
+													<i class="dw dw-download"></i> Download
+												</a>
+											</div>
+										</div>
+									</td>
+								</tr>
+							`;
+						});
+					}
+				} catch (error) {
+					console.error('Error:', error);
+				}
+			}
+
+			// Fungsi untuk memuat data ICP hasil review dosen
+			async function loadICPReviewData() {
+				const userId = localStorage.getItem('userId');
+				if (!userId) {
+					console.error('User ID not found in localStorage');
+					return;
+				}
+				
+				try {
+					console.log('Fetching review data for user:', userId);
+					const response = await fetch(`http://104.43.89.154:8087/reviewicp/dosen/list?taruna_id=${userId}`);
+					const data = await response.json();
+					
+					if (data.status === 'success') {
+						// Find the table that follows the heading "Tabel Hasil Review Dosen"
+						const tables = document.querySelectorAll('.card-box table');
+						let reviewTable = null;
+						
+						for (const table of tables) {
+							const heading = table.closest('.card-box').querySelector('h4.text-blue');
+							if (heading && heading.textContent.includes('Tabel Hasil Review Dosen')) {
+								reviewTable = table.querySelector('tbody');
+								break;
+							}
+						}
+						
+						if (!reviewTable) {
+							console.error('Review table not found');
+							return;
+						}
+						
+						reviewTable.innerHTML = '';
+						
+						if (data.data && data.data.length > 0) {
+							data.data.forEach(review => {
+								reviewTable.innerHTML += `
+									<tr>
+										<td>${review.topik_penelitian || '-'}</td>
+										<td>${review.dosen_nama || '-'}</td>
+										<td>${review.cycle_number || 1}</td>
+										<td>${review.keterangan || '-'}</td>
+										<td>
+											<div class="dropdown">
+												<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
+												   href="#" role="button" data-toggle="dropdown">
+													<i class="dw dw-more"></i>
+												</a>
+												<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+													<a class="dropdown-item" href="http://104.43.89.154:8087/download/reviewicp/dosen?path=${review.file_path}" download>
+														<i class="dw dw-download"></i> Download Review
+													</a>
+													<a class="dropdown-item" href="#" onclick="openUploadRevisionModal(${review.dosen_id}, '${review.topik_penelitian}')">
+														<i class="dw dw-upload"></i> Upload Revisi
+													</a>
+												</div>
+											</div>
+										</td>
+									</tr>
+								`;
+							});
+						} else {
+							reviewTable.innerHTML = `
+								<tr>
+									<td colspan="5" class="text-center">Tidak ada data review</td>
+								</tr>
+							`;
+						}
+					} else {
+						console.error('Failed to load review data:', data.message);
+						showAlert('Gagal memuat data review: ' + (data.message || 'Unknown error'), 'danger');
+					}
+				} catch (error) {
+					console.error('Error loading review data:', error);
+					showAlert('Gagal memuat data review: ' + error.message, 'danger');
+				}
+			}
+
+			// Fungsi Logout
+			async function logout() {
+				try {
+					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+					
+					const response = await fetch('http://104.43.89.154:8085/logout', {
+						method: 'POST',
+						headers: {
+							'Authorization': token ? `Bearer ${token}` : '',
+							'Content-Type': 'application/json'
+						},
+						credentials: 'include'
+					});
+
+					const data = await response.json();
+					
+					if (response.ok && data.status === 'success') {
+						// Clear localStorage
+						localStorage.clear();
+						
+						// Clear sessionStorage
+						sessionStorage.clear();
+						
+						// Clear all cookies for all possible paths
+						const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
+						const cookies = document.cookie.split(';');
+						
+						for (let cookie of cookies) {
+							const eqPos = cookie.indexOf('=');
+							const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+							
+							// Hapus cookie untuk setiap path
+							paths.forEach(path => {
+								document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+							});
+						}
+						
+						// Clear cache if browser supports it
+						if (window.caches) {
+							caches.keys().then(names => {
+								names.forEach(name => {
+									caches.delete(name);
+								});
+							});
+						}
+
+						// Clear application cache
+						if (window.applicationCache) {
+							window.applicationCache.abort();
+						}
+
+						// Clear service workers if any
+						if (navigator.serviceWorker) {
+							navigator.serviceWorker.getRegistrations().then(registrations => {
+								registrations.forEach(registration => {
+									registration.unregister();
+								});
+							});
+						}
+						
+						console.log('Logout berhasil');
+						
+						// Force reload halaman login untuk membersihkan cache
+						window.location.href = '/loginusers';
+						window.location.reload(true);
+					} else {
+						throw new Error(data.message || 'Gagal logout');
+					}
+				} catch (error) {
+					console.error('Error during logout:', error);
+					alert('Gagal logout. Silakan coba lagi.');
+				}
+			}
+
+			// dropdown untuk menampilkan dosen yang terdaftar
+			document.addEventListener('DOMContentLoaded', function() {
+				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+				
+				console.log('Fetching dosen data...');
+				
+				fetch('http://104.43.89.154:8086/dosen', {
+					headers: {
+						'Authorization': `Bearer ${token}`
+					}
+				})
+				.then(response => response.json())
+				.then(data => {
+					const dosenSelect = document.getElementById('dosenSelect');
+					
+					if (data.status === 'success' && Array.isArray(data.data)) {
+						data.data.forEach(dosen => {
+							const option = document.createElement('option');
+							option.value = dosen.id;
+							option.textContent = `${dosen.nama_lengkap} - ${dosen.jurusan}`;
+							dosenSelect.appendChild(option);
+						});
+					}
+				})
+				.catch(error => {
+					console.error('Error:', error);
+				});
+			});
+
+			// Tambahkan pengecekan autentikasi saat halaman dimuat
+			document.addEventListener('DOMContentLoaded', function() {
+				// Cek token
+				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+				if (!token) {
+					window.location.replace('/loginusers');
+					return;
+				}
+
+				// Ambil ID user dari token
+				const userId = localStorage.getItem('userId');
+
+				// Ambil data user dari API
+				fetch(`http://104.43.89.154:8086/users?id=${userId}`, {
+					headers: {
+						'Authorization': `Bearer ${token}`
+					}
+				})
+				.then(response => {
+					if (!response.ok) {
+						throw new Error('Gagal mengambil data user');
+					}
+					return response.json();
+				})
+				.then(user => {
+					// Update username di header
+					const usernameElement = document.getElementById('username');
+					if (usernameElement) {
+						usernameElement.textContent = user.username || user.nama_lengkap || 'User';
+					}
+				})
+				.catch(error => {
+					console.error('Error:', error);
+					const usernameElement = document.getElementById('username');
+					if (usernameElement) {
+						usernameElement.textContent = 'User';
+					}
+				});
+
+				// Validasi token dengan server
+				fetch('http://104.43.89.154:8085/taruna/dashboard', { // Ubah ke endpoint taruna
+					headers: {
+						'Authorization': `Bearer ${token}`
+					}
+				}).catch(() => {
+					window.location.replace('/loginusers');
+				});
+			});
+
+			// Pastikan event listener untuk tombol logout terpasang dengan benar
+			document.addEventListener('DOMContentLoaded', function() {
+				const logoutButton = document.querySelector('a[onclick="logout()"]');
+				if (logoutButton) {
+					logoutButton.addEventListener('click', function(e) {
+						e.preventDefault();
+						logout();
+					});
+				}
+			});
+		
+			// Update nama file saat file dipilih
+			document.querySelector('.custom-file-input').addEventListener('change', function(e) {
+				var fileName = e.target.files[0] ? e.target.files[0].name : 'Choose file';
+				var label = document.querySelector('.custom-file-label');
+				label.textContent = fileName;
+				
+				var selectedFileDiv = document.getElementById('selectedFileName');
+				if (e.target.files[0]) {
+					selectedFileDiv.textContent = 'File terpilih: ' + fileName;
+					selectedFileDiv.style.display = 'block';
+				} else {
+					selectedFileDiv.style.display = 'none';
+				}
+			});
+
+			// Panggil loadICPData dan loadICPReviewData saat halaman dimuat
+			document.addEventListener('DOMContentLoaded', () => {
+				loadICPData();
+				loadICPReviewData();
+			});
+
+			// Handle form submission untuk mengunggah ICP
+			document.getElementById('icpForm').addEventListener('submit', async function(e) {
+				e.preventDefault();
+				
+				const submitButton = this.querySelector('button[type="submit"]');
+				const formData = new FormData(this);
+				formData.append('user_id', localStorage.getItem('userId'));
+				
+				// Set loading state
+				submitButton.disabled = true;
+				submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+				
+				try {
+					const response = await fetch('http://104.43.89.154:8087/upload/icp', {
+						method: 'POST',
+						body: formData
+					});
+					
+					let data;
+					try {
+						data = await response.json();
+					} catch (error) {
+						// Jika response bukan JSON, ambil text responsenya
+						const textResponse = await response.text();
+						showAlert(textResponse || 'Terjadi kesalahan pada server', 'danger');
+						return;
+					}
+
+					showAlert(data.message, data.status === 'success' ? 'success' : 'danger');
+					
+					if (data.status === 'success') {
+						this.reset();
+						document.querySelector('.custom-file-label').textContent = 'Choose file';
+						document.getElementById('selectedFileName').style.display = 'none';
+						loadICPData();
+					}
+				} catch (error) {
+					showAlert('Terjadi kesalahan pada server. Mohon coba lagi.', 'danger');
+				} finally {
+					// Reset button state
+					submitButton.disabled = false;
+					submitButton.innerHTML = 'Tambah ICP';
+				}
+			});
+
+			// Update nama file saat file dipilih
+			document.querySelector('input[name="file"]').addEventListener('change', function(e) {
+				const file = e.target.files[0];
+				const fileName = file ? file.name : 'Choose file';
+				const label = document.querySelector('.custom-file-label');
+				label.textContent = fileName;
+				
+				const selectedFileDiv = document.getElementById('selectedFileName');
+				if (file) {
+					selectedFileDiv.textContent = 'File terpilih: ' + fileName;
+					selectedFileDiv.style.display = 'block';
+				} else {
+					selectedFileDiv.style.display = 'none';
+				}
+			});
+
+			// Add function to open upload modal untuk mengunggah revisi ICP
+			function openUploadRevisionModal(dosenId, topikPenelitian) {
+				console.log('Opening modal with:', { dosenId, topikPenelitian });
+				document.getElementById('revisionDosenId').value = dosenId;
+				document.getElementById('revisionTopikPenelitian').value = topikPenelitian;
+				$('#uploadRevisionModal').modal('show');
+			}
+
+			// Add function to submit revision untuk mengunggah revisi ICP
+			async function submitRevision() {
+				const form = document.getElementById('revisionForm');
+				const formData = new FormData(form);
+				
+				try {
+					const userId = localStorage.getItem('userId');
+					if (!userId) {
+						showAlert('User ID tidak ditemukan. Silakan login ulang.', 'danger');
+						return;
+					}
+
+					// Tambahkan user_id sebagai taruna_id
+					formData.append('taruna_id', userId);
+					
+					const response = await fetch('http://104.43.89.154:8087/upload/revisiicp/taruna', {
+						method: 'POST',
+						body: formData
+					});
+					
+					const data = await response.json();
+					
+					if (data.status === 'success') {
+						showAlert('Revisi ICP berhasil diunggah', 'success');
+						$('#uploadRevisionModal').modal('hide');
+						form.reset();
+						await loadICPData();
+						await loadICPReviewData();
+					} else {
+						showAlert(data.message || 'Gagal mengunggah revisi', 'danger');
+					}
+				} catch (error) {
+					console.error('Error:', error);
+					showAlert('Terjadi kesalahan: ' + error.message, 'danger');
+				}
+			}
+
+			// Fungsi untuk menampilkan alert
+			function showAlert(message, type) {
+				const alertContainer = document.getElementById('alertContainer');
+				const alertMessage = document.getElementById('alertMessage');
+				
+				// Pastikan container dan message element ada
+				if (!alertContainer || !alertMessage) {
+					console.error('Alert elements not found');
+					return;
+				}
+
+				// Set class dan pesan
+				alertMessage.className = `alert alert-${type}`;
+				alertMessage.textContent = message;
+				
+				// Tampilkan alert
+				alertContainer.style.display = 'block';
+				
+				// Scroll ke atas agar alert terlihat
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+				
+				// Sembunyikan alert setelah 5 detik
+				setTimeout(() => {
+					alertContainer.style.display = 'none';
+				}, 5000);
+			}
+
+			// Pastikan container alert ada di bagian atas halaman
+			document.addEventListener('DOMContentLoaded', function() {
+				// Cek apakah container alert sudah ada
+				let alertContainer = document.getElementById('alertContainer');
+				if (!alertContainer) {
+					// Jika belum ada, buat container baru
+					alertContainer = document.createElement('div');
+					alertContainer.id = 'alertContainer';
+					alertContainer.className = 'alert-wrapper';
+					alertContainer.style.display = 'none';
+					
+					const alertMessage = document.createElement('div');
+					alertMessage.id = 'alertMessage';
+					alertMessage.className = 'alert';
+					alertMessage.setAttribute('role', 'alert');
+					
+					alertContainer.appendChild(alertMessage);
+					
+					// Tambahkan ke awal body
+					document.body.insertBefore(alertContainer, document.body.firstChild);
+				}
+			});
+
+			// Fungsi untuk mengisi jurusan dan kelas dari taruna
+			async function isiJurusanDanKelasDariTarunaRevisiICP() {
+				const userId = localStorage.getItem('userId');
+				const token = localStorage.getItem('token');
+				if (!userId || !token) return;
+
+				try {
+					const res = await fetch(`http://104.43.89.154:8086/taruna?user_id=${userId}`, {
+					headers: {
+						'Authorization': `Bearer ${token}`
+					}
+					});
+					const json = await res.json();
+					if (json.status === 'success' && Array.isArray(json.data)) {
+					const taruna = json.data.find(t => t.user_id === parseInt(userId));
+					if (taruna) {
+						document.getElementById('hiddenJurusanRevisi').value = taruna.jurusan || '';
+						document.getElementById('hiddenKelasRevisi').value = taruna.kelas || '';
+					}
+					}
+				} catch (err) {
+					console.error('Gagal ambil data taruna:', err);
+				}
+			}
+
+			// Panggil isiJurusanDanKelasDariTaruna saat halaman dimuat
+			document.addEventListener('DOMContentLoaded', () => {
+				// isiJurusanDanKelasDariTarunaFinalProposal();
+				isiJurusanDanKelasDariTarunaRevisiICP();
+			});
+
+			// ====== UPDATE LABEL FINAL ICP ======
+			document.getElementById('finalIcpFile').addEventListener('change', function (e) {
+				const file = e.target.files[0];
+				const label = this.nextElementSibling;
+				const infoDiv = document.getElementById('finalSelectedFileName');
+
+				if (!file) {
+					label.textContent = 'Choose file';
+					infoDiv.style.display = 'none';
+					return;
+				}
+
+				label.textContent = file.name;
+				infoDiv.textContent = 'File terpilih: ' + file.name;
+				infoDiv.style.display = 'block';
+			});
+
+			// ====== UPDATE LABEL FILE PENDUKUNG ======
+			const supportInput = document.getElementById('supportFiles');
+			if (supportInput) {
+				supportInput.addEventListener('change', function (e) {
+					const files = Array.from(e.target.files || []);
+					const label = this.nextElementSibling;
+					const infoDiv = document.getElementById('supportSelectedFileName');
+
+					if (files.length === 0) {
+						label.textContent = 'Pilih file pendukung';
+						infoDiv.style.display = 'none';
+						return;
+					}
+
+					label.textContent = `${files.length} file dipilih`;
+					infoDiv.innerHTML = 'File terpilih:<br>- ' + files.map(f => f.name).join('<br>- ');
+					infoDiv.style.display = 'block';
+				});
+			}
+
+			// ====== SUBMIT FORM FINAL ICP ======
+			const fpForm = document.getElementById('finalIcpForm'); // <- disamakan dengan HTML
+			if (fpForm) {
+			fpForm.addEventListener('submit', async function (e) {
+				e.preventDefault();
+
+				const submitButton = this.querySelector('button[type="submit"]');
+				submitButton.disabled = true;
+				submitButton.innerHTML =
+				'<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+
+				// referensi elemen input file (untuk reset label nanti)
+				const finalInput   = document.getElementById('finalIcpFile'); // <- disamakan
+				const supportInput = document.getElementById('supportFiles');
+
+				try {
+				// (opsional) isi jurusan & kelas dari backend
+				if (typeof isiJurusanDanKelasDariTarunaFinalProposal === 'function') {
+					await isiJurusanDanKelasDariTarunaFinalProposal();
+				}
+
+				const formData = new FormData(this);
+				const userId = localStorage.getItem('userId');
+				const token  = localStorage.getItem('token');
+				if (!userId || !token) throw new Error('User ID atau token tidak ditemukan');
+
+				// Ambil data taruna (untuk nama_lengkap)
+				const tarunaResponse = await fetch(`http://104.43.89.154:8086/taruna?user_id=${userId}`, {
+					headers: { 'Authorization': `Bearer ${token}` }
+				});
+				if (!tarunaResponse.ok) throw new Error('Gagal mengambil data taruna');
+
+				const tarunaData = await tarunaResponse.json();
+				const taruna = tarunaData.data?.find(t => t.user_id === parseInt(userId, 10));
+				if (!taruna || !taruna.nama_lengkap) throw new Error('Data taruna tidak lengkap atau tidak ditemukan');
+
+				formData.append('user_id', userId);
+				formData.append('nama_lengkap', taruna.nama_lengkap);
+
+				// ikutkan jurusan & kelas jika ada hidden field
+				const jurusan = document.getElementById('hiddenJurusan')?.value;
+				const kelas   = document.getElementById('hiddenKelas')?.value;
+				if (jurusan) formData.set('jurusan', jurusan);
+				if (kelas)   formData.set('kelas', kelas);
+
+				const response = await fetch('http://104.43.89.154:8087/finalicp/upload', {
+					method: 'POST',
+					body: formData
+				});
+
+				let data;
+				try { data = await response.json(); }
+				catch {
+					const rawText = await response.text();
+					showAlert(rawText || 'Terjadi kesalahan pada server', 'danger');
+					return;
+				}
+
+				showAlert(data.message, data.status === 'success' ? 'success' : 'danger');
+
+				if (data.status === 'success') {
+					this.reset();
+
+					if (finalInput) {
+					const lbl = finalInput.nextElementSibling;
+					if (lbl) lbl.textContent = 'Choose file';
+					const info = document.getElementById('finalSelectedFileName');
+					if (info) info.style.display = 'none';
+					}
+
+					if (supportInput) {
+					const lbl = supportInput.nextElementSibling;
+					if (lbl) lbl.textContent = 'Pilih satu atau lebih file';
+					const info = document.getElementById('supportSelectedFileName');
+					if (info) info.style.display = 'none';
+					}
+
+					if (typeof loadFinalProposalData === 'function') loadFinalProposalData();
+				}
+				} catch (error) {
+				console.error('Error saat upload Final Proposal:', error);
+				let msg = error.message || 'Terjadi kesalahan saat mengunggah Final Proposal';
+				if (msg.toLowerCase().includes('token')) {
+					msg = 'User ID atau token tidak ditemukan. Silakan login kembali.';
+				} else if (msg.toLowerCase().includes('taruna')) {
+					msg = 'Data taruna tidak lengkap atau tidak ditemukan. Silakan hubungi administrator.';
+				}
+				showAlert(msg, 'danger');
+				} finally {
+				submitButton.disabled = false;
+				submitButton.innerHTML = 'Upload Final Proposal';
+				}
+			});
+			}
+
+			// Definisi kelas per jurusan
+			const kelasPerJurusan = {
+				'Keamanan Siber': [
+					'IV Rekayasa Keamanan Siber Echo',
+					'IV Rekayasa Keamanan Siber Trace',
+					'IV Rekayasa Keamanan Siber Route'
+				],
+				'Kriptografi': [
+					'IV Rekayasa Perangkat Lunak Kripto',
+					'IV Rekayasa Perangkat Keras Kriptografi',
+					'IV Rekayasa Sistem Kriptografi'
+				]
+			};
+
+			// Fungsi untuk mengupdate dropdown kelas berdasarkan jurusan yang dipilih
+			function updateFinalKelas() {
+				const jurusanSelect = document.getElementById('finalJurusan');
+				const kelasSelect = document.getElementById('finalKelas');
+				const selectedJurusan = jurusanSelect.value;
+				
+				// Reset kelas dropdown
+				kelasSelect.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>';
+				
+				if (selectedJurusan && kelasPerJurusan[selectedJurusan]) {
+					kelasPerJurusan[selectedJurusan].forEach(kelas => {
+						const option = document.createElement('option');
+						option.value = kelas;
+						option.textContent = kelas;
+						kelasSelect.appendChild(option);
+					});
+					kelasSelect.disabled = false;
+				} else {
+					kelasSelect.disabled = true;
+				}
+			}
+
+			// Pastikan dropdown kelas ter-update saat halaman siap
+			document.addEventListener('DOMContentLoaded', () => {
+			updateFinalKelas();       // <- inisialisasi awal (opsional, bagus)     // sudah ada di kode kamu
+			});
+
+			// Update fungsi loadFinalICPData
+			async function loadFinalICPData() {
+				const userId = localStorage.getItem('userId');
+				if (!userId) {
+					console.error('User ID not found in localStorage');
+					showAlert('User ID tidak ditemukan. Silakan login ulang.', 'danger');
+					return;
+				}
+
+				try {
+					console.log('Fetching Final ICP data for user:', userId);
+					const response = await fetch(`http://104.43.89.154:8087/finalicp/list?user_id=${userId}`);
+
+					if (!response.ok) {
+						throw new Error(`HTTP error! status: ${response.status}`);
+					}
+
+					const data = await response.json();
+					console.log('Received Final ICP data:', data);
+
+					if (data.status === 'success') {
+						const tbody = document.querySelector('#finalIcpTable tbody');
+						if (!tbody) {
+							console.error('Table body element not found');
+							return;
+						}
+
+						tbody.innerHTML = '';
+
+						if (data.data && data.data.length > 0) {
+							data.data.forEach(finalIcp => {
+								const statusClass = {
+									'pending': 'badge badge-warning',
+									'approved': 'badge badge-success',
+									'rejected': 'badge badge-danger',
+									'on review': 'badge badge-info'
+								}[finalIcp.status] || 'badge badge-secondary';
+
+								// Parsing file pendukung dari JSON string
+								let pendukungLinks = '';
+								if (finalIcp.file_pendukung_path) {
+									try {
+										const supportFiles = JSON.parse(finalIcp.file_pendukung_path);
+										supportFiles.forEach((path, idx) => {
+											const fileName = path.split('/').pop(); // Ambil nama file asli
+											pendukungLinks += `
+												<a class="dropdown-item" 
+												href="http://104.43.89.154:8087/finalicp/download/${finalIcp.final_icp_id}?type=support&index=${idx}" 
+												download>
+													<i class="dw dw-download"></i> ${fileName}
+												</a>
+											`;
+										});
+									} catch (e) {
+										console.error('Gagal parse file_pendukung_path:', e);
+									}
+								}
+
+								tbody.innerHTML += `
+									<tr>
+										<td>${finalIcp.topik_penelitian || '-'}</td>
+										<td>${finalIcp.jurusan || '-'}</td>
+										<td>${finalIcp.kelas || '-'}</td>
+										<td><span class="${statusClass}">${finalIcp.status || 'pending'}</span></td>
+										<td>
+											<div class="dropdown">
+												<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
+												href="#" role="button" data-toggle="dropdown">
+													<i class="dw dw-more"></i>
+												</a>
+												<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+													<a class="dropdown-item" 
+													href="http://104.43.89.154:8087/finalicp/download/${finalIcp.final_icp_id}?type=final" 
+													download>
+														<i class="dw dw-download"></i> Final ICP
+													</a>
+													${pendukungLinks}
+												</div>
+											</div>
+										</td>
+									</tr>
+								`;
+							});
+						} else {
+							tbody.innerHTML = `
+								<tr>
+									<td colspan="5" class="text-center">Belum ada Final ICP yang diupload</td>
+								</tr>
+							`;
+						}
+					} else {
+						console.error('Failed to load Final ICP data:', data.message);
+						showAlert('Gagal memuat data Final ICP: ' + (data.message || 'Unknown error'), 'danger');
+					}
+				} catch (error) {
+					console.error('Error loading Final ICP data:', error);
+					showAlert('Terjadi kesalahan saat memuat data Final ICP: ' + error.message, 'danger');
+				}
+			}
+
+			// Load Final ICP data saat halaman dimuat
+			document.addEventListener('DOMContentLoaded', () => {
+				loadFinalICPData();
+			});
+
+			// Add this function to get user data
+			async function getUserData() {
+				const userId = localStorage.getItem('userId');
+				const token = localStorage.getItem('token');
+				
+				if (!userId || !token) {
+					console.error('User ID or token not found');
+					return;
+				}
+
+				try {
+					const response = await fetch(`http://104.43.89.154:8086/taruna?user_id=${userId}`, {
+						headers: {
+							'Authorization': `Bearer ${token}`
+						}
+					});
+					
+					if (!response.ok) {
+						throw new Error('Failed to fetch taruna data');
+					}
+					
+					const data = await response.json();
+					
+					if (data && data.status === 'success' && data.data) {
+						// Set jurusan if available
+						const jurusanSelect = document.getElementById('finalJurusan');
+						if (data.data.jurusan) {
+							jurusanSelect.value = data.data.jurusan;
+							// Trigger kelas update
+							updateFinalKelas();
+						}
+					}
+				} catch (error) {
+					console.error('Error fetching taruna data:', error);
+					showAlert('Gagal memuat data taruna: ' + error.message, 'danger');
+				}
+			}
+
+			// Call getUserData when page loads
+			document.addEventListener('DOMContentLoaded', () => {
+				getUserData();
+				loadICPData();
+				loadICPReviewData();
+				loadFinalICPData();
+			});
+
+			// Fungsi untuk memuat data hasil telaah ICP
+			async function loadHasilTelaahData() {
+				const userId = localStorage.getItem('userId');
+				if (!userId) {
+					console.error('User ID not found in localStorage');
+					return;
+				}
+
+				try {
+					const response = await fetch(`http://104.43.89.154:8087/hasiltelaah/taruna?user_id=${userId}`);
+					const data = await response.json();
+
+					const tableBody = document.querySelector('#hasilTelaahTable tbody');
+					if (!tableBody) {
+						console.error('Tabel Hasil Telaah tidak ditemukan');
+						return;
+					}
+
+					tableBody.innerHTML = '';
+
+					if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
+						data.data.forEach(item => {
+							const formattedDate = new Date(item.tanggal_telaah).toLocaleString('id-ID', {
+								dateStyle: 'medium',
+								timeStyle: 'short'
+							});
+
+							const fileName = item.file_path ? item.file_path.split('/').pop() : '';
+
+							tableBody.innerHTML += `
+								<tr>
+									<td>${item.nama_dosen || '-'}</td>
+									<td>${item.topik_penelitian || '-'}</td>
+									<td>${formattedDate}</td>
+									<td>
+										<div class="dropdown">
+											<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
+												href="#" role="button" data-toggle="dropdown">
+												<i class="dw dw-more"></i>
+											</a>
+											<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+												${fileName.startsWith('HASIL_TELAAH_ICP_') ? `
+													<a class="dropdown-item" href="http://104.43.89.154:8087/hasiltelaah/download?path=${fileName}" download>
+														<i class="dw dw-download"></i> Unduh Hasil Telaah
+													</a>
+												` : `
+													<span class="dropdown-item text-muted">
+														<i class="dw dw-ban"></i> Tidak tersedia
+													</span>
+												`}
+											</div>
+										</div>
+									</td>
+								</tr>
+							`;
+						});
+					} else {
+						tableBody.innerHTML = `
+							<tr>
+								<td colspan="4" class="text-center">Belum ada hasil telaah</td>
+							</tr>
+						`;
+					}
+				} catch (error) {
+					console.error('Gagal memuat hasil telaah:', error);
+					const tableBody = document.querySelector('#hasilTelaahTable tbody');
+					if (tableBody) {
+						tableBody.innerHTML = `
+							<tr>
+								<td colspan="4" class="text-center text-danger">Gagal memuat data</td>
+							</tr>
+						`;
+					}
+				}
+			}
+
+			// Panggil fungsi saat halaman dimuat
+			document.addEventListener('DOMContentLoaded', function() {
+				loadHasilTelaahData();
+			});
+
+			// Update nama file saat file dipilih untuk Revisi ICP
+			document.getElementById('revisiICPFile').addEventListener('change', function(e) {
+				var fileName = e.target.files[0] ? e.target.files[0].name : 'Choose file';
+				var label = this.nextElementSibling;
+				label.textContent = fileName;
+				
+				var selectedFileDiv = document.getElementById('revisiICPFile');
+				if (e.target.files[0]) {
+					selectedFileDiv.textContent = 'File terpilih: ' + fileName;
+					selectedFileDiv.style.display = 'block';
+				} else {
+					selectedFileDiv.style.display = 'none';
+				}
+			});
+
+			// Handle form submission untuk Revisi ICP
+			document.getElementById('revisiICPForm').addEventListener('submit', async function(e) {
+				e.preventDefault();
+
+				const submitButton = this.querySelector('button[type="submit"]');
+				submitButton.disabled = true;
+				submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+
+				try {
+					await isiJurusanDanKelasDariTarunaRevisiICP();
+
+					const formData = new FormData(this);
+					const userId = localStorage.getItem('userId');
+					const token = localStorage.getItem('token');
+
+					if (!userId || !token) {
+						throw new Error('User ID atau token tidak ditemukan');
+					}
+
+					const tarunaResponse = await fetch(`http://104.43.89.154:8086/taruna?user_id=${userId}`, {
+						headers: {
+							'Authorization': `Bearer ${token}`
+						}
+					});
+
+					if (!tarunaResponse.ok) {
+						throw new Error('Gagal mengambil data taruna');
+					}
+
+					const tarunaData = await tarunaResponse.json();
+					const taruna = tarunaData.data?.find(t => t.user_id === parseInt(userId));
+
+					if (!taruna || !taruna.nama_lengkap) {
+						throw new Error('Data taruna tidak lengkap atau tidak ditemukan');
+					}
+
+					formData.append('user_id', userId);
+					formData.append('nama_lengkap', taruna.nama_lengkap);
+					formData.append('jurusan', document.getElementById('hiddenJurusanRevisi').value);
+					formData.append('kelas', document.getElementById('hiddenKelasRevisi').value);
+
+					const response = await fetch('http://104.43.89.154:8087/revisiicp/upload', {
+						method: 'POST',
+						body: formData
+					});
+
+					let data;
+					try {
+						data = await response.json();
+					} catch (err) {
+						const rawText = await response.text();
+						showAlert(rawText || 'Terjadi kesalahan pada server', 'danger');
+						return;
+					}
+
+					showAlert(data.message, data.status === 'success' ? 'success' : 'danger');
+
+					if (data.status === 'success') {
+						this.reset();
+						document.querySelector('#revisiICPFile').nextElementSibling.textContent = 'Choose file';
+						document.getElementById('revisiSelectedFileName').style.display = 'none';
+						loadRevisiICPData();
+					}
+
+				} catch (error) {
+					console.error('Error saat upload Revisi ICP:', error);
+					let errorMessage = 'Terjadi kesalahan saat mengunggah Revisi ICP';
+
+					if (error.message.includes('token')) {
+						errorMessage = 'User ID atau token tidak ditemukan. Silakan login kembali.';
+					} else if (error.message.includes('data taruna')) {
+						errorMessage = 'Data taruna tidak lengkap atau tidak ditemukan. Silakan hubungi administrator.';
+					}
+
+					showAlert(errorMessage, 'danger');
+				} finally {
+					submitButton.disabled = false;
+					submitButton.innerHTML = 'Upload Revisi ICP';
+				}
+			});
+
+			// Helper kecil biar aman dari HTML injection
+			function escapeHtml(str) {
+			return (str || '').toString().replace(/[&<>"']/g, m => ({
+				'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+			}[m]));
+			}
+
+			// Panggil endpoint download (sama seperti yang sudah kamu punya)
+			async function downloadRevisiICP(id) {
+			try {
+				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+				if (!token) {
+				alert('Token tidak ditemukan. Silakan login ulang.');
+				return;
+				}
+
+				const resp = await fetch(`http://104.43.89.154:8087/revisiicp/download/${id}`, {
+				method: 'GET',
+				headers: { 'Authorization': `Bearer ${token}` }
+				});
+
+				if (!resp.ok) {
+				const msg = await resp.text().catch(() => '');
+				throw new Error(msg || `Gagal mengunduh (HTTP ${resp.status})`);
+				}
+
+				const cd = resp.headers.get('Content-Disposition') || '';
+				let filename = null;
+				const fnStar = cd.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
+				if (fnStar) filename = decodeURIComponent(fnStar[1]);
+				else {
+				const fn = cd.match(/filename\s*=\s*("?)([^"]+)\1/i);
+				if (fn) filename = fn[2];
+				}
+				filename = filename || `revisi_icp_${id}.pdf`;
+
+				const blob = await resp.blob();
+				const url = URL.createObjectURL(blob);
+
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = filename;
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				URL.revokeObjectURL(url);
+			} catch (err) {
+				console.error(err);
+				alert(`Unduh gagal: ${err.message}`);
+			}
+			}
+
+			async function loadRevisiICPData() {
+			const userId = localStorage.getItem('userId');
+			if (!userId) {
+				console.error('User ID not found in localStorage');
+				showAlert('User ID tidak ditemukan. Silakan login ulang.', 'danger');
+				return;
+			}
+
+			try {
+				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+				console.log('Fetching Revisi ICP data for user:', userId);
+
+				const response = await fetch(`http://104.43.89.154:8087/revisiicp/list?user_id=${encodeURIComponent(userId)}`, {
+				headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+				});
+				if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+				const data = await response.json();
+				console.log('Received Revisi ICP data:', data);
+
+				if (data.status === 'success') {
+				const tbody = document.querySelector('#revisiICPTable tbody');
+				if (!tbody) {
+					console.error('Table body element not found');
+					return;
+				}
+
+				tbody.innerHTML = '';
+
+				if (Array.isArray(data.data) && data.data.length > 0) {
+					data.data.forEach(revisiICP => {
+					const statusClass = ({
+						'pending': 'badge badge-warning',
+						'approved': 'badge badge-success',
+						'rejected': 'badge badge-danger',
+						'on review': 'badge badge-info'
+					}[revisiICP.status] || 'badge badge-secondary');
+
+					// pastikan ada id; dukung {id} atau {revisi_icp_id}
+					const revId = revisiICP.revisi_icp_id || revisiICP.id || null;
+
+					// Jika id ada → tombol download via API; kalau tidak, fallback ke file_path (kalau memang ada endpoint public)
+					const downloadHtml = revId
+						? `<a class="dropdown-item" href="#" data-download-id="${revId}">
+							<i class="dw dw-download"></i> Download
+						</a>`
+						: (revisiICP.file_path
+							? `<a class="dropdown-item" href="http://104.43.89.154:8087/download?path=${encodeURIComponent(revisiICP.file_path)}" download>
+								<i class="dw dw-download"></i> Download (fallback)
+							</a>`
+							: `<span class="dropdown-item text-muted disabled">Tidak ada file</span>`);
+
+					tbody.insertAdjacentHTML('beforeend', `
+						<tr>
+						<td>${escapeHtml(revisiICP.topik_penelitian) || '-'}</td>
+						<td>${escapeHtml(revisiICP.jurusan) || '-'}</td>
+						<td>${escapeHtml(revisiICP.kelas) || '-'}</td>
+						<td><span class="${statusClass}">${revisiICP.status || 'pending'}</span></td>
+						<td>
+							<div class="dropdown">
+							<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
+								href="#" role="button" data-toggle="dropdown">
+								<i class="dw dw-more"></i>
+							</a>
+							<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+								${downloadHtml}
+							</div>
+							</div>
+						</td>
+						</tr>
+					`);
+					});
+
+					// Delegasi event klik download, agar tidak menempel event per-row
+					if (!tbody.dataset.boundDownload) {
+					tbody.addEventListener('click', (e) => {
+						const a = e.target.closest('a[data-download-id]');
+						if (!a) return;
+						e.preventDefault();
+						const id = a.getAttribute('data-download-id');
+						downloadRevisiICP(id);
+					});
+					tbody.dataset.boundDownload = '1';
+					}
+				} else {
+					tbody.innerHTML = `
+					<tr>
+						<td colspan="5" class="text-center">Belum ada Revisi ICP yang diupload</td>
+					</tr>
+					`;
+				}
+				} else {
+				console.error('Failed to load Revisi ICP data:', data.message);
+				showAlert('Gagal memuat data Revisi ICP: ' + (data.message || 'Unknown error'), 'danger');
+				}
+			} catch (error) {
+				console.error('Error loading Revisi ICP data:', error);
+				showAlert('Terjadi kesalahan saat memuat data Revisi ICP: ' + error.message, 'danger');
+			}
+			}
+
+			// Load Revisi ICP data saat halaman dimuat
+			document.addEventListener('DOMContentLoaded', () => {
+				loadRevisiICPData();
+			});
+
+		</script>
+
+		<style>
+		.badge {
+			padding: 5px 10px;
+			border-radius: 4px;
+			font-weight: normal;
+		}
+		.badge-warning {
+			background-color: #ffc107;
+			color: #000;
+		}
+		.badge-success {
+			background-color: #28a745;
+			color: #fff;
+		}
+		.badge-danger {
+			background-color: #dc3545;
+			color: #fff;
+		}
+		</style>
+
+	</body>
+</html>

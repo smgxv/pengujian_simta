@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- Basic Page Info -->
+		<meta charset="utf-8" />
+		<title>SIMTA - Dosen Panel</title>
+
+		<!-- Site favicon -->
+		<link
+			rel="apple-touch-icon"
+			sizes="180x180"
+			href="vendors/images/apple-touch-icon.png"
+		/>
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="32x32"
+			href="vendors/images/logo.png"
+		/>
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="16x16"
+			href="vendors/images/logo.png"
+		/>
+
+		<!-- Mobile Specific Metas -->
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, maximum-scale=1"
+		/>
+
+		<!-- Google Font -->
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+			rel="stylesheet"
+		/>
+		<!-- CSS -->
+		<link rel="stylesheet" type="text/css" href="vendors/styles/core.css" />
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="vendors/styles/icon-font.min.css"
+		/>
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="src/plugins/datatables/css/dataTables.bootstrap4.min.css"
+		/>
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="src/plugins/datatables/css/responsive.bootstrap4.min.css"
+		/>
+		<link rel="stylesheet" type="text/css" href="vendors/styles/style.css" />
+
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script
+			async
+			src="https://www.googletagmanager.com/gtag/js?id=G-GBZ3SGGX85"
+		></script>
+		<script
+			async
+			src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2973766580778258"
+			crossorigin="anonymous"
+		></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() {
+				dataLayer.push(arguments);
+			}
+			gtag("js", new Date());
+
+			gtag("config", "G-GBZ3SGGX85");
+		</script>
+		<!-- Google Tag Manager -->
+		<script>
+			(function (w, d, s, l, i) {
+				w[l] = w[l] || [];
+				w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+				var f = d.getElementsByTagName(s)[0],
+					j = d.createElement(s),
+					dl = l != "dataLayer" ? "&l=" + l : "";
+				j.async = true;
+				j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+				f.parentNode.insertBefore(j, f);
+			})(window, document, "script", "dataLayer", "GTM-NXZMQSS");
+		</script>
+		<!-- End Google Tag Manager -->
+	</head>
+
+	<body>
+
+		<div class="pre-loader">
+			<div class="pre-loader-box">
+				<div class="loader-logo">
+					<img src="vendors/images/logo_loading.png" alt="" />
+				</div>
+				<div class="loader-progress" id="progress_div">
+					<div class="bar" id="bar1"></div>
+				</div>
+				<div class="percent" id="percent1">0%</div>
+				<div class="loading-text">Loading...</div>
+			</div>
+		</div>
+
+		<div class="header">
+			<div class="header-left">
+				<div class="menu-icon bi bi-list"></div>
+				<div
+					class="search-toggle-icon bi bi-search"
+					data-toggle="header_search"
+				></div>
+			</div>
+
+			<div class="header-right">
+				<div class="dashboard-setting user-notification">
+					<div class="dropdown">
+						<a
+							class="dropdown-toggle no-arrow"
+							href="javascript:;"
+							data-toggle="right-sidebar"
+						>
+							<i class="dw dw-settings2"></i>
+						</a>
+					</div>
+				</div>
+
+				<div class="user-notification">
+					<div class="dropdown">
+						<a
+							class="dropdown-toggle no-arrow"
+							href="#"
+							role="button"
+							data-toggle="dropdown"
+						>
+							<i class="icon-copy dw dw-notification"></i>
+							<span class="badge notification-active"></span>
+						</a>
+						<div class="dropdown-menu dropdown-menu-right">
+							<div class="notification-list mx-h-350 customscroll">
+								<ul id="notif-list">
+									<!-- Notifikasi akan dimuat lewat JavaScript -->
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="user-info-dropdown">
+					<div class="dropdown">
+						<a
+							class="dropdown-toggle"
+							href="#"
+							role="button"
+							data-toggle="dropdown"
+							style="display: flex; align-items: center; padding-top: 15px;"
+						>
+							<span class="user-name" id="username"></span>
+						</a>
+						<div
+							class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list"
+						>
+							<a class="dropdown-item" href="#" onclick="redirectToProfile(); return false;">
+								<i class="dw dw-user1"></i> Profile
+							</a>
+							<a class="dropdown-item" href="#" onclick="logout(); return false;">
+								<i class="dw dw-logout"></i> Log Out
+							</a>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		<div class="right-sidebar">
+			<div class="sidebar-title">
+				<h3 class="weight-600 font-16 text-blue">
+					Layout Settings
+					<span class="btn-block font-weight-400 font-12"
+						>User Interface Settings</span
+					>
+				</h3>
+				<div class="close-sidebar" data-toggle="right-sidebar-close">
+					<i class="icon-copy ion-close-round"></i>
+				</div>
+			</div>
+			<div class="right-sidebar-body customscroll">
+				<div class="right-sidebar-body-content">
+					<h4 class="weight-600 font-18 pb-10">Header Background</h4>
+					<div class="sidebar-btn-group pb-30 mb-10">
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary header-white active"
+							>White</a
+						>
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary header-dark"
+							>Dark</a
+						>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Sidebar Background</h4>
+					<div class="sidebar-btn-group pb-30 mb-10">
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary sidebar-light"
+							>White</a
+						>
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary sidebar-dark active"
+							>Dark</a
+						>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Menu Dropdown Icon</h4>
+					<div class="sidebar-radio-group pb-10 mb-10">
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-1"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-1"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebaricon-1"
+								><i class="fa fa-angle-down"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-2"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-2"
+							/>
+							<label class="custom-control-label" for="sidebaricon-2"
+								><i class="ion-plus-round"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-3"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-3"
+							/>
+							<label class="custom-control-label" for="sidebaricon-3"
+								><i class="fa fa-angle-double-right"></i
+							></label>
+						</div>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Menu List Icon</h4>
+					<div class="sidebar-radio-group pb-30 mb-10">
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-1"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-1"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebariconlist-1"
+								><i class="ion-minus-round"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-2"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-2"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-2"
+								><i class="fa fa-circle-o" aria-hidden="true"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-3"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-3"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-3"
+								><i class="dw dw-check"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-4"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-4"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebariconlist-4"
+								><i class="icon-copy dw dw-next-2"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-5"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-5"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-5"
+								><i class="dw dw-fast-forward-1"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-6"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-6"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-6"
+								><i class="dw dw-next"></i
+							></label>
+						</div>
+					</div>
+
+					<div class="reset-options pt-30 text-center">
+						<button class="btn btn-danger" id="reset-settings">
+							Reset Settings
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="left-side-bar">
+			<div class="brand-logo">
+				<a href="/dosen/dashboard">
+					<img src="vendors/images/logo_dosen_panel.png" alt="" class="dark-logo" />
+				<div class="close-sidebar" data-toggle="left-sidebar-close">
+					<i class="ion-close-round"></i>
+				</div>
+			</div>
+
+			<div class="menu-block customscroll">
+				<div class="sidebar-menu">
+					<ul id="accordion-menu">
+						<li>
+							<a href="/dosen/dashboard" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-house"></span
+								><span class="mtext">Home</span>
+							</a>
+						</li>
+
+						<li class="dropdown">
+							<a href="javascript:;" class="dropdown-toggle">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">ICP</span>
+							</a>
+							<ul class="submenu">
+								<li><a href="/dosen/bimbingan_icp">Bimbingan ICP</a></li>
+								<li><a href="/dosen/pengujian_icp">Pengujian ICP</a></li>
+							</ul>
+						</li>
+
+						<li class="dropdown">
+							<a href="javascript:;" class="dropdown-toggle">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Proposal</span>
+							</a>
+							<ul class="submenu">
+								<li><a href="/dosen/bimbingan_proposal">Bimbingan Proposal</a></li>
+								<li><a href="/dosen/pengujian_proposal">Pengujian Proposal</a></li>
+							</ul>
+						</li>
+
+						<li class="dropdown">
+							<a href="javascript:;" class="dropdown-toggle">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Tugas Akhir 70%</span>
+							</a>
+							<ul class="submenu">
+								<li><a href="/dosen/bimbingan_laporan70">Bimbingan Laporan 70%</a></li>
+								<li><a href="/dosen/pengujian_laporan70">Pengujian Laporan 70%</a></li>
+							</ul>
+						</li>
+
+						<li class="dropdown">
+							<a href="javascript:;" class="dropdown-toggle">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Tugas Akhir 100%</span>
+							</a>
+							<ul class="submenu">
+								<li><a href="/dosen/bimbingan_laporan100">Bimbingan Laporan 100%</a></li>
+								<li><a href="/dosen/pengujian_laporan100">Pengujian Laporan 100%</a></li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="mobile-menu-overlay"></div>
+
+		<div class="main-container">
+			<div class="xs-pd-20-10 pd-ltr-20">
+				<div class="card-box pd-20 height-100-p mb-30">
+					<div class="row align-items-center">
+						<div class="col-md-4">
+							<img src="vendors/images/banner-img.png" alt="" />
+						</div>
+						<div class="col-md-8">
+							<h4 class="font-20 weight-500 mb-10 text-capitalize">
+								Welcome back <span class="weight-600 font-30 text-blue" id="nama-dosen-header">Taruna!</span>
+							</h4>
+							<p class="font-18 max-width-600">
+								Selamat datang kembali! Di bawah ini adalah rangkuman lengkap mengenai pengujian yang harus Anda Lakukan. Silakan tinjau setiap bagian untuk memastikan semuanya berjalan sesuai rencana. Jangan lupa untuk mengunggah dokumen hasil seminar agar taruna dapat melanjutkan pengerjaan tugas akhir.
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+				  <div class="col-md-4">
+					<div class="card shadow-sm p-3 mb-4">
+					  <h6 class="text-muted">Nama</h6>
+					  <p class="mb-0 fw-bold" id="nama-dosen">-</p>
+					</div>
+				  </div>
+				  <div class="col-md-4">
+					<div class="card shadow-sm p-3 mb-4">
+					  <h6 class="text-muted">Jurusan</h6>
+					  <p class="mb-0 fw-bold" id="jurusan">-</p>
+					</div>
+				  </div>
+				</div>
+
+				<div class="row">
+					<!-- ICP Review Card -->
+					<div class="col-lg-6 col-md-12 mb-20">
+						<div class="card-box height-100-p pd-20">
+							<div class="d-flex justify-content-between align-items-center mb-20">
+								<h4 class="mb-0">ICP yang Ditelaah</h4>
+								<a href="/dosen/pengujian_icp" class="btn btn-primary btn-sm">Lihat Semua</a>
+							</div>
+							<div class="table-responsive">
+								<table class="table table-hover">
+									<thead>
+										<tr>
+											<th>Nama Mahasiswa</th>
+											<th>Topik ICP</th>
+											<th>Status</th>
+										</tr>
+									</thead>
+									<tbody id="icp-list">
+										<!-- Data will be populated dynamically -->
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<!-- Mahasiswa Bimbingan Card -->
+					<div class="col-lg-6 col-md-12 mb-20">
+						<div class="card-box height-100-p pd-20">
+							<div class="d-flex justify-content-between align-items-center mb-20">
+								<h4 class="mb-0">Mahasiswa Bimbingan</h4>
+								<a href="/dosen/bimbingan_proposal" class="btn btn-primary btn-sm">Lihat Semua</a>
+							</div>
+							<div class="table-responsive">
+								<table class="table table-hover">
+									<thead>
+										<tr>
+											<th>Nama Mahasiswa</th>
+											<th>Jurusan</th>
+										</tr>
+									</thead>
+									<tbody id="bimbingan-list">
+										<!-- Data will be populated dynamically -->
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<!-- Mahasiswa yang Diuji Card -->
+					<div class="col-lg-6 col-md-12 mb-20">
+						<div class="card-box height-100-p pd-20">
+							<div class="d-flex justify-content-between align-items-center mb-20">
+								<h4 class="mb-0">Pengujian Proposal</h4>
+								<a href="/dosen/pengujian_proposal" class="btn btn-primary btn-sm">Lihat Semua</a>
+							</div>
+							<div class="table-responsive">
+								<table class="table table-hover">
+									<thead>
+										<tr>
+											<th>Nama Mahasiswa</th>
+											<th>Topik</th>
+											<th>Penguji Ke</th>
+											<th>Status</th>
+										</tr>
+									</thead>
+									<tbody id="pengujian-list">
+										<!-- Data will be populated dynamically -->
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<!-- Laporan 70% Card -->
+					<div class="col-lg-6 col-md-12 mb-20">
+						<div class="card-box height-100-p pd-20">
+							<div class="d-flex justify-content-between align-items-center mb-20">
+								<h4 class="mb-0">Pengujian Laporan 70%</h4>
+								<a href="/dosen/pengujian_laporan70" class="btn btn-primary btn-sm">Lihat Semua</a>
+							</div>
+							<div class="table-responsive">
+								<table class="table table-hover">
+									<thead>
+										<tr>
+											<th>Nama Mahasiswa</th>
+											<th>Topik</th>
+											<th>Penguji Ke</th>
+											<th>Status</th>
+										</tr>
+									</thead>
+									<tbody id="ta70-list">
+										<!-- Data will be populated dynamically -->
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<!-- Laporan 100% Card -->
+					<div class="col-lg-6 col-md-12 mb-20">
+						<div class="card-box height-100-p pd-20">
+							<div class="d-flex justify-content-between align-items-center mb-20">
+								<h4 class="mb-0">Pengujian Laporan 100%</h4>
+								<a href="/dosen/pengujian_laporan100" class="btn btn-primary btn-sm">Lihat Semua</a>
+							</div>
+							<div class="table-responsive">
+								<table class="table table-hover">
+									<thead>
+										<tr>
+											<th>Nama Mahasiswa</th>
+											<th>Topik</th>
+											<th>Penguji Ke</th>
+											<th>Status</th>
+										</tr>
+									</thead>
+									<tbody id="ta100-list">
+										<!-- Data will be populated dynamically -->
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+		<!-- js -->
+		<script src="vendors/scripts/core.js"></script>
+		<script src="vendors/scripts/script.min.js"></script>
+		<script src="vendors/scripts/process.js"></script>
+		<script src="vendors/scripts/layout-settings.js"></script>
+		<script src="src/plugins/apexcharts/apexcharts.min.js"></script>
+		<script src="src/plugins/datatables/js/jquery.dataTables.min.js"></script>
+		<script src="src/plugins/datatables/js/dataTables.bootstrap4.min.js"></script>
+		<script src="src/plugins/datatables/js/dataTables.responsive.min.js"></script>
+		<script src="src/plugins/datatables/js/responsive.bootstrap4.min.js"></script>
+		<script src="vendors/scripts/dashboard3.js"></script>
+		<!-- Google Tag Manager (noscript) -->
+		<noscript
+			><iframe
+				src="https://www.googletagmanager.com/ns.html?id=GTM-NXZMQSS"
+				height="0"
+				width="0"
+				style="display: none; visibility: hidden"
+			></iframe
+		></noscript>
+		<!-- End Google Tag Manager (noscript) -->
+
+
+		<script>
+		// JS notifikasi
+		document.addEventListener("DOMContentLoaded", function () {
+			fetch("http://104.43.89.154:8088/notifications?role=Dosen")
+				.then(res => res.json())
+				.then(data => {
+					const ul = document.getElementById("notif-list");
+					ul.innerHTML = ""; // Kosongkan
+
+					if (data.length === 0) {
+						ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
+						return;
+					}
+
+					data.forEach(item => {
+						const li = document.createElement("li");
+						li.innerHTML = `
+							<a href="/dosen/detailinformasidosen?id=${item.ID}">
+								<img src="vendors/images/logo.png" alt="" />
+								<h3>${item.Judul}</h3>
+								<p>${item.Deskripsi.length > 50 ? item.Deskripsi.substring(0, 50) + "..." : item.Deskripsi}</p>
+							</a>`;
+						ul.appendChild(li);
+					});
+
+					document.querySelector(".notification-active").style.display = "inline-block";
+				})
+				.catch(err => {
+					console.error("Gagal mengambil notifikasi:", err);
+				});
+		});
+
+		function redirectToProfile() {
+			window.location.href = '/dosen/profile';
+		}
+
+		// Fungsi untuk logout
+		async function logout() {
+			try {
+				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+				
+				const response = await fetch('http://104.43.89.154:8085/logout', {
+					method: 'POST',
+					headers: {
+						'Authorization': token ? `Bearer ${token}` : '',
+						'Content-Type': 'application/json'
+					},
+					credentials: 'include'
+				});
+
+				const data = await response.json();
+				
+				if (response.ok && data.status === 'success') {
+					// Clear localStorage
+					localStorage.clear();
+					
+					// Clear sessionStorage
+					sessionStorage.clear();
+					
+					// Clear all cookies for all possible paths
+					const paths = ['/', '/admin', '/dosen', '/admin/', '/dosen/'];
+					const cookies = document.cookie.split(';');
+					
+					for (let cookie of cookies) {
+						const eqPos = cookie.indexOf('=');
+						const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+						
+						// Hapus cookie untuk setiap path
+						paths.forEach(path => {
+							document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+						});
+					}
+					
+					// Clear cache if browser supports it
+					if (window.caches) {
+						caches.keys().then(names => {
+							names.forEach(name => {
+								caches.delete(name);
+							});
+						});
+					}
+
+					// Clear application cache
+					if (window.applicationCache) {
+						window.applicationCache.abort();
+					}
+
+					// Clear service workers if any
+					if (navigator.serviceWorker) {
+						navigator.serviceWorker.getRegistrations().then(registrations => {
+							registrations.forEach(registration => {
+								registration.unregister();
+							});
+						});
+					}
+					
+					console.log('Logout berhasil');
+					
+					// Force reload halaman login untuk membersihkan cache
+					window.location.href = '/loginusers';
+					window.location.reload(true);
+				} else {
+					throw new Error(data.message || 'Gagal logout');
+				}
+			} catch (error) {
+				console.error('Error during logout:', error);
+				alert('Gagal logout. Silakan coba lagi.');
+			}
+		}
+
+		// JS untuk data user
+		document.addEventListener('DOMContentLoaded', function () {
+			const token = localStorage.getItem('token');
+			const userId = localStorage.getItem('userId');
+
+			if (!token || !userId) {
+				window.location.replace('/loginusers');
+				return;
+			}
+
+			// Fetch data dashboard utama (nama, jurusan, icp)
+			fetch(`http://104.43.89.154:8086/dosen/dashboard?userId=${userId}`, {
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			})
+			.then(response => {
+				if (!response.ok) throw new Error('Gagal mengambil data dosen');
+				return response.json();
+			})
+			.then(data => {
+				document.getElementById('nama-dosen-header').textContent = data.nama_lengkap || 'Dosen';
+				document.getElementById('nama-dosen').textContent = data.nama_lengkap || '-';
+				document.getElementById('jurusan').textContent = data.jurusan || '-';
+
+				const usernameElement = document.getElementById('username');
+				if (usernameElement) {
+					usernameElement.textContent = data.nama_lengkap || 'User';
+				}
+
+				// Tampilkan ICP Ditelaah
+				const icpListElement = document.getElementById('icp-list');
+				icpListElement.innerHTML = '';
+
+				if (Array.isArray(data.icp_ditelaah) && data.icp_ditelaah.length > 0) {
+					data.icp_ditelaah.forEach(icp => {
+						const row = document.createElement('tr');
+
+						const namaCell = document.createElement('td');
+						namaCell.textContent = icp.nama_taruna || '-';
+
+						const topikCell = document.createElement('td');
+						topikCell.textContent = icp.topik_penelitian || '-';
+
+						const statusCell = document.createElement('td');
+						statusCell.textContent = icp.status || '-';
+						if (icp.status === "Sudah Ditelaah") {
+							statusCell.classList.add("text-success", "fw-bold");
+						} else {
+							statusCell.classList.add("text-danger", "fw-bold");
+						}
+
+						row.appendChild(namaCell);
+						row.appendChild(topikCell);
+						row.appendChild(statusCell);
+						icpListElement.appendChild(row);
+					});
+				} else {
+					const row = document.createElement('tr');
+					const cell = document.createElement('td');
+					cell.colSpan = 3;
+					cell.textContent = 'Tidak ada data ICP yang ditelaah';
+					cell.classList.add('text-center');
+					row.appendChild(cell);
+					icpListElement.appendChild(row);
+				}
+			})
+			.catch(err => {
+				console.error('Gagal memuat data dosen:', err);
+				document.getElementById('nama-dosen').textContent = '-';
+				document.getElementById('jurusan').textContent = '-';
+			});
+
+			// Fetch Mahasiswa Bimbingan
+			const bimbinganListElement = document.getElementById('bimbingan-list');
+			bimbinganListElement.innerHTML = '';
+
+			fetch(`http://104.43.89.154:8086/dosen/dashboard/bimbingan?userId=${userId}`, {
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			})
+			.then(response => {
+				if (!response.ok) throw new Error('Gagal mengambil data bimbingan');
+				return response.json();
+			})
+			.then(data => {
+				if (Array.isArray(data) && data.length > 0) {
+					data.forEach(item => {
+						const row = document.createElement('tr');
+
+						const namaCell = document.createElement('td');
+						namaCell.textContent = item.nama_taruna || '-';
+
+						const jurusanCell = document.createElement('td');
+						jurusanCell.textContent = item.jurusan || '-';
+
+						row.appendChild(namaCell);
+						row.appendChild(jurusanCell);
+						bimbinganListElement.appendChild(row);
+					});
+				} else {
+					const row = document.createElement('tr');
+					const cell = document.createElement('td');
+					cell.colSpan = 2;
+					cell.textContent = 'Tidak ada mahasiswa bimbingan';
+					cell.classList.add('text-center');
+					row.appendChild(cell);
+					bimbinganListElement.appendChild(row);
+				}
+			})
+			.catch(err => {
+				console.error('Gagal memuat data bimbingan:', err);
+				const row = document.createElement('tr');
+				const cell = document.createElement('td');
+				cell.colSpan = 4;
+				cell.textContent = 'Gagal memuat data';
+				cell.classList.add('text-center', 'text-danger');
+				row.appendChild(cell);
+				bimbinganListElement.appendChild(row);
+			});
+
+			const pengujianListElement = document.getElementById('pengujian-list');
+			pengujianListElement.innerHTML = '';
+
+			fetch(`http://104.43.89.154:8086/dosen/dashboard/pengujianproposal?userId=${userId}`, {
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			})
+			.then(response => {
+				if (!response.ok) throw new Error('Gagal mengambil data pengujian proposal');
+				return response.json();
+			})
+			.then(data => {
+				if (Array.isArray(data) && data.length > 0) {
+					data.forEach(item => {
+						const row = document.createElement('tr');
+
+						const namaCell = document.createElement('td');
+						namaCell.textContent = item.nama_taruna || '-';
+
+						const topikCell = document.createElement('td');
+						topikCell.textContent = item.topik || '-';
+
+						const pengujiKeCell = document.createElement('td');
+						pengujiKeCell.textContent = item.penguji_ke || '-';
+
+						const statusCell = document.createElement('td');
+						statusCell.textContent = item.status_pengumpulan || '-';
+						if (item.status_pengumpulan === 'sudah') {
+							statusCell.classList.add('text-success', 'fw-bold');
+						} else {
+							statusCell.classList.add('text-danger', 'fw-bold');
+						}
+
+						row.appendChild(namaCell);
+						row.appendChild(topikCell);
+						row.appendChild(pengujiKeCell);
+						row.appendChild(statusCell);
+
+						pengujianListElement.appendChild(row);
+					});
+				} else {
+					const row = document.createElement('tr');
+					const cell = document.createElement('td');
+					cell.colSpan = 4;
+					cell.textContent = 'Tidak ada data pengujian proposal';
+					cell.classList.add('text-center');
+					row.appendChild(cell);
+					pengujianListElement.appendChild(row);
+				}
+			})
+			.catch(err => {
+				console.error('Gagal memuat data pengujian proposal:', err);
+				const row = document.createElement('tr');
+				const cell = document.createElement('td');
+				cell.colSpan = 4;
+				cell.textContent = 'Gagal memuat data';
+				cell.classList.add('text-center', 'text-danger');
+				row.appendChild(cell);
+				pengujianListElement.appendChild(row);
+			});
+
+			// Fetch Pengujian Laporan 70%
+			const ta70ListElement = document.getElementById('ta70-list');
+			ta70ListElement.innerHTML = '';
+
+			fetch(`http://104.43.89.154:8086/dosen/dashboard/pengujianlaporan70?userId=${userId}`, {
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			})
+			.then(response => {
+				if (!response.ok) throw new Error('Gagal mengambil data pengujian laporan 70%');
+				return response.json();
+			})
+			.then(data => {
+				if (Array.isArray(data) && data.length > 0) {
+					data.forEach(item => {
+						const row = document.createElement('tr');
+
+						const namaCell = document.createElement('td');
+						namaCell.textContent = item.nama_taruna || '-';
+
+						const topikCell = document.createElement('td');
+						topikCell.textContent = item.topik || '-';
+
+						const pengujiKeCell = document.createElement('td');
+						pengujiKeCell.textContent = item.penguji_ke || '-';
+
+						const statusCell = document.createElement('td');
+						statusCell.textContent = item.status_pengumpulan || '-';
+
+						if (item.status_pengumpulan === 'sudah') {
+							statusCell.classList.add('text-success', 'fw-bold');
+						} else {
+							statusCell.classList.add('text-danger', 'fw-bold');
+						}
+
+						row.appendChild(namaCell);
+						row.appendChild(topikCell);
+						row.appendChild(pengujiKeCell);
+						row.appendChild(statusCell);
+						ta70ListElement.appendChild(row);
+					});
+				} else {
+					const row = document.createElement('tr');
+					const cell = document.createElement('td');
+					cell.colSpan = 4;
+					cell.textContent = 'Tidak ada data pengujian laporan 70%';
+					cell.classList.add('text-center');
+					row.appendChild(cell);
+					ta70ListElement.appendChild(row);
+				}
+			})
+			.catch(err => {
+				console.error('Gagal memuat data pengujian laporan 70%:', err);
+				const row = document.createElement('tr');
+				const cell = document.createElement('td');
+				cell.colSpan = 4;
+				cell.textContent = 'Gagal memuat data';
+				cell.classList.add('text-center', 'text-danger');
+				row.appendChild(cell);
+				ta70ListElement.appendChild(row);
+			});
+
+
+			// Fetch Review Laporan 100%
+			const ta100ListElement = document.getElementById('ta100-list');
+			ta100ListElement.innerHTML = '';
+
+			fetch(`http://104.43.89.154:8086/dosen/dashboard/pengujianlaporan100?userId=${userId}`, {
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			})
+			.then(response => {
+				if (!response.ok) throw new Error('Gagal mengambil data laporan 100%');
+				return response.json();
+			})
+			.then(data => {
+				if (Array.isArray(data) && data.length > 0) {
+					data.forEach(item => {
+						const row = document.createElement('tr');
+
+						const namaCell = document.createElement('td');
+						namaCell.textContent = item.nama_taruna || '-';
+
+						const topikCell = document.createElement('td');
+						topikCell.textContent = item.topik || '-';
+
+						const pengujiKeCell = document.createElement('td');
+						pengujiKeCell.textContent = item.penguji_ke || '-';
+
+						const statusCell = document.createElement('td');
+						statusCell.textContent = item.status || '-';
+
+						if (item.status === 'sudah') {
+							statusCell.classList.add('text-success', 'fw-bold');
+						} else {
+							statusCell.classList.add('text-danger', 'fw-bold');
+						}
+
+						row.appendChild(namaCell);
+						row.appendChild(topikCell);
+						row.appendChild(pengujiKeCell);
+						row.appendChild(statusCell);
+						ta100ListElement.appendChild(row);
+					});
+				} else {
+					const row = document.createElement('tr');
+					const cell = document.createElement('td');
+					cell.colSpan = 4;
+					cell.textContent = 'Tidak ada data laporan 100%';
+					cell.classList.add('text-center');
+					row.appendChild(cell);
+					ta100ListElement.appendChild(row);
+				}
+			})
+			.catch(err => {
+				console.error('Gagal memuat data laporan 100%:', err);
+				const row = document.createElement('tr');
+				const cell = document.createElement('td');
+				cell.colSpan = 4;
+				cell.textContent = 'Gagal memuat data';
+				cell.classList.add('text-center', 'text-danger');
+				row.appendChild(cell);
+				ta100ListElement.appendChild(row);
+			});
+
+		});
+
+		// Event listener untuk tombol logout
+		document.addEventListener('DOMContentLoaded', function() {
+			const logoutButton = document.querySelector('a[onclick="logout()"]');
+			if (logoutButton) {
+				logoutButton.addEventListener('click', function(e) {
+					e.preventDefault();
+					logout();
+				});
+			}
+		});
+
+		</script>
+
+	</body>
+</html>

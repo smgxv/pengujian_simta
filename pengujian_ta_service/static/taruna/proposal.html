@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- Basic Page Info -->
+		<meta charset="utf-8" />
+		<title>SIMTA - Proposal</title>
+
+		<!-- Site favicon -->
+		<link
+			rel="apple-touch-icon"
+			sizes="180x180"
+			href="vendors/images/apple-touch-icon.png"
+		/>
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="32x32"
+			href="vendors/images/logo.png"
+		/>
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="16x16"
+			href="vendors/images/logo.png"
+		/>
+
+		<!-- Mobile Specific Metas -->
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, maximum-scale=1"
+		/>
+
+		<!-- Google Font -->
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+			rel="stylesheet"
+		/>
+		<!-- CSS -->
+		<link rel="stylesheet" type="text/css" href="vendors/styles/core.css" />
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="vendors/styles/icon-font.min.css"
+		/>
+		<link rel="stylesheet" type="text/css" href="vendors/styles/style.css" />
+
+		<style>
+			.alert-wrapper {
+				position: fixed;
+				top: 20px;
+				left: 50%;
+				transform: translateX(-50%);
+				z-index: 9999;
+				width: 80%;
+				max-width: 500px;
+			}
+		
+			.alert {
+				padding: 15px;
+				border-radius: 4px;
+				margin-bottom: 10px;
+				text-align: center;
+			}
+		
+			.alert-success {
+				background-color: #d4edda;
+				border-color: #c3e6cb;
+				color: #155724;
+			}
+		
+			.alert-danger {
+				background-color: #f8d7da;
+				border-color: #f5c2c7;
+				color: #842029;
+			}
+		</style>
+
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script
+			async
+			src="https://www.googletagmanager.com/gtag/js?id=G-GBZ3SGGX85"
+		></script>
+		<script
+			async
+			src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2973766580778258"
+			crossorigin="anonymous"
+		></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() {
+				dataLayer.push(arguments);
+			}
+			gtag("js", new Date());
+
+			gtag("config", "G-GBZ3SGGX85");
+		</script>
+		<!-- Google Tag Manager -->
+		<script>
+			(function (w, d, s, l, i) {
+				w[l] = w[l] || [];
+				w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+				var f = d.getElementsByTagName(s)[0],
+					j = d.createElement(s),
+					dl = l != "dataLayer" ? "&l=" + l : "";
+				j.async = true;
+				j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+				f.parentNode.insertBefore(j, f);
+			})(window, document, "script", "dataLayer", "GTM-NXZMQSS");
+		</script>
+		<!-- End Google Tag Manager -->
+	</head>
+
+	<body>
+		<div class="pre-loader">
+			<div class="pre-loader-box">
+				<div class="loader-logo">
+					<img src="vendors/images/logo_loading.png" alt="" />
+				</div>
+				<div class="loader-progress" id="progress_div">
+					<div class="bar" id="bar1"></div>
+				</div>
+				<div class="percent" id="percent1">0%</div>
+				<div class="loading-text">Loading...</div>
+			</div>
+		</div>
+
+		<div class="header">
+			<div class="header-left">
+				<div class="menu-icon bi bi-list"></div>
+				<div
+					class="search-toggle-icon bi bi-search"
+					data-toggle="header_search"
+				></div>
+				<div class="header-search">
+					<form>
+						<div class="form-group mb-0">
+							<i class="dw dw-search2 search-icon"></i>
+							<input
+								type="text"
+								class="form-control search-input"
+								placeholder="Search Here"
+							/>
+							<div class="dropdown">
+								<a
+									class="dropdown-toggle no-arrow"
+									href="#"
+									role="button"
+									data-toggle="dropdown"
+								>
+									<i class="ion-arrow-down-c"></i>
+								</a>
+								<div class="dropdown-menu dropdown-menu-right">
+									<div class="form-group row">
+										<label class="col-sm-12 col-md-2 col-form-label"
+											>From</label
+										>
+										<div class="col-sm-12 col-md-10">
+											<input
+												class="form-control form-control-sm form-control-line"
+												type="text"
+											/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-12 col-md-2 col-form-label">To</label>
+										<div class="col-sm-12 col-md-10">
+											<input
+												class="form-control form-control-sm form-control-line"
+												type="text"
+											/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-12 col-md-2 col-form-label"
+											>Subject</label
+										>
+										<div class="col-sm-12 col-md-10">
+											<input
+												class="form-control form-control-sm form-control-line"
+												type="text"
+											/>
+										</div>
+									</div>
+									<div class="text-right">
+										<button class="btn btn-primary">Search</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+
+			<div class="header-right">
+				<div class="dashboard-setting user-notification">
+					<div class="dropdown">
+						<a
+							class="dropdown-toggle no-arrow"
+							href="javascript:;"
+							data-toggle="right-sidebar"
+						>
+							<i class="dw dw-settings2"></i>
+						</a>
+					</div>
+				</div>
+
+				<div class="user-notification">
+					<div class="dropdown">
+						<a
+							class="dropdown-toggle no-arrow"
+							href="#"
+							role="button"
+							data-toggle="dropdown"
+						>
+							<i class="icon-copy dw dw-notification"></i>
+							<span class="badge notification-active"></span>
+						</a>
+						<div class="dropdown-menu dropdown-menu-right">
+							<div class="notification-list mx-h-350 customscroll">
+								<ul id="notif-list">
+									<!-- Notifikasi akan dimuat lewat JavaScript -->
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="user-info-dropdown">
+					<div class="dropdown">
+						<a
+							class="dropdown-toggle"
+							href="#"
+							role="button"
+							data-toggle="dropdown"
+						>
+							<span class="user-icon">
+								<img src="vendors/images/photo1.jpg" alt="" />
+							</span>
+							<span class="user-name" id="username"></span>
+						</a>
+						<div
+							class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list"
+						>
+							<a class="dropdown-item" href="#" onclick="redirectToProfile(); return false;">
+								<i class="dw dw-user1"></i> Profile
+							</a>
+							<a class="dropdown-item" href="#" onclick="logout(); return false;">
+								<i class="dw dw-logout"></i> Log Out
+							</a>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		<div class="right-sidebar">
+			<div class="sidebar-title">
+				<h3 class="weight-600 font-16 text-blue">
+					Layout Settings
+					<span class="btn-block font-weight-400 font-12"
+						>User Interface Settings</span
+					>
+				</h3>
+				<div class="close-sidebar" data-toggle="right-sidebar-close">
+					<i class="icon-copy ion-close-round"></i>
+				</div>
+			</div>
+			<div class="right-sidebar-body customscroll">
+				<div class="right-sidebar-body-content">
+					<h4 class="weight-600 font-18 pb-10">Header Background</h4>
+					<div class="sidebar-btn-group pb-30 mb-10">
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary header-white active"
+							>White</a
+						>
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary header-dark"
+							>Dark</a
+						>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Sidebar Background</h4>
+					<div class="sidebar-btn-group pb-30 mb-10">
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary sidebar-light"
+							>White</a
+						>
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary sidebar-dark active"
+							>Dark</a
+						>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Menu Dropdown Icon</h4>
+					<div class="sidebar-radio-group pb-10 mb-10">
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-1"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-1"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebaricon-1"
+								><i class="fa fa-angle-down"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-2"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-2"
+							/>
+							<label class="custom-control-label" for="sidebaricon-2"
+								><i class="ion-plus-round"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-3"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-3"
+							/>
+							<label class="custom-control-label" for="sidebaricon-3"
+								><i class="fa fa-angle-double-right"></i
+							></label>
+						</div>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Menu List Icon</h4>
+					<div class="sidebar-radio-group pb-30 mb-10">
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-1"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-1"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebariconlist-1"
+								><i class="ion-minus-round"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-2"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-2"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-2"
+								><i class="fa fa-circle-o" aria-hidden="true"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-3"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-3"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-3"
+								><i class="dw dw-check"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-4"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-4"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebariconlist-4"
+								><i class="icon-copy dw dw-next-2"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-5"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-5"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-5"
+								><i class="dw dw-fast-forward-1"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-6"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-6"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-6"
+								><i class="dw dw-next"></i
+							></label>
+						</div>
+					</div>
+
+					<div class="reset-options pt-30 text-center">
+						<button class="btn btn-danger" id="reset-settings">
+							Reset Settings
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="left-side-bar">
+			<div class="brand-logo">
+				<a href="/taruna/dashboard">
+					<img src="vendors/images/logo_taruna_panel.png" alt="" class="dark-logo" />
+				<div class="close-sidebar" data-toggle="left-sidebar-close">
+					<i class="ion-close-round"></i>
+				</div>
+			</div>
+
+			<div class="menu-block customscroll">
+				<div class="sidebar-menu">
+					<ul id="accordion-menu">
+						<li>
+							<a href="/taruna/dashboard" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-house"></span
+								><span class="mtext">Home</span>
+							</a>
+						</li>
+
+						<li>
+							<a href="/taruna/icp" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Idea Concept Project</span>
+							</a>
+						</li>
+						
+						<li>
+							<a href="/taruna/proposal" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Proposal</span>
+							</a>
+						</li>
+
+						<li>
+							<a href="/taruna/ta70" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Tugas Akhir 70%</span>
+							</a>
+						</li>
+
+						<li>
+							<a href="/taruna/ta100" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Tugas Akhir 100%</span>
+							</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="mobile-menu-overlay"></div>
+
+		<div class="main-container">
+
+			<!-- Tambahkan div untuk alert di bawah ini -->
+			<div class="alert-wrapper" id="alertContainer" style="display: none;">
+				<div class="alert" id="alertMessage" role="alert">
+				</div>
+			</div>
+
+			<div class="pd-ltr-20 xs-pd-20-10">
+				<div class="min-height-200px">
+
+					<div class="page-header">
+						<div class="row">
+							<div class="col-md-6 col-sm-12">
+								<div class="title">
+									<h4>Proposal</h4>
+								</div>
+								<nav aria-label="breadcrumb" role="navigation">
+									<ol class="breadcrumb">
+										<li class="breadcrumb-item">
+											<a href="/taruna/dashboard">Home</a>
+										</li>
+										<li class="breadcrumb-item active" aria-current="page">
+											Proposal
+										</li>
+									</ol>
+								</nav>
+							</div>
+						</div>
+					</div>
+
+					<!-- Form Proposal -->
+					<div class="pd-20 card-box mb-30">
+
+						<div class="clearfix">
+							<div class="pull-left">
+								<h4 class="text-blue h4">Proposal</h4>
+								<p class="mb-30">Segera buat dan daftarkan Proposal anda !!</p>
+							</div>
+						</div>
+
+						<form id="proposalForm" enctype="multipart/form-data">
+							<div class="form-group">
+								<label>Dosen Pembimbing</label>
+								<div id="dosbingInfo">
+									<p class="text-muted">Memuat data dosbing...</p>
+								</div>
+								<input type="hidden" id="dosenIdInput" name="dosen_id" />
+							</div>
+							<div class="form-group">
+								<label>Topik Penelitian</label>
+								<input class="form-control" type="text" name="topik_penelitian" placeholder="Masukkan Topik Penelitian Anda" required>
+							</div>
+							<div class="form-group">
+								<label>Keterangan</label>
+								<textarea class="form-control" name="keterangan" required></textarea>
+							</div>
+							<div class="form-group">
+								<label>File Proposal (PDF)</label>
+								<div class="custom-file">
+									<input type="file" class="custom-file-input" id="proposalFile" name="file" accept=".pdf" required>
+									<label class="custom-file-label" for="proposalFile">Choose file</label>
+								</div>
+								<div id="selectedFileName" class="mt-2 text-info" style="display: none;"></div>
+							</div>
+							<button type="submit" class="btn btn-primary">Tambah Proposal</button>
+						</form>
+					</div>
+					<!-- Form Proposal End -->
+
+
+					<!-- Tabel Proposal -->
+					<div class="card-box mb-30">
+						<div class="pd-20">
+							<h4 class="text-blue h4">List Proposal</h4>
+						</div>
+						<div class="pb-20">
+							<table class="data-table table stripe hover nowrap">
+								<thead>
+									<tr>
+										<th class="table-plus datatable-nosort">Topik</th>
+										<th class="table-plus datatable-nosort">Dosen Pembimbing</th>
+										<th class="table-plus datatable-nosort">Status</th>
+										<th class="datatable-nosort">Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<!-- Tabel Proposal End -->
+
+					
+					<!-- Tabel Hasil Review Dosen -->
+					<div class="card-box mb-30">
+						<div class="pd-20">
+							<h4 class="text-blue h4">Tabel Hasil Review Dosen</h4>
+						</div>
+						<div class="pb-20">
+							<table class="data-table table stripe hover nowrap">
+								<thead>
+									<tr>
+										<th class="table-plus datatable-nosort">Topik</th>
+										<th class="table-plus datatable-nosort">Dosen Pembimbing</th>
+										<th class="table-plus datatable-nosort">Review ke-</th>
+										<th class="table-plus datatable-nosort">Keterangan</th>
+										<th class="datatable-nosort">Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<!-- Tabel Hasil Review Dosen End -->
+
+					<!-- Form Final Proposal -->
+					<div class="pd-20 card-box mb-30">
+
+						<div class="clearfix">
+							<div class="pull-left">
+								<h4 class="text-blue h4">Final Proposal</h4>
+								<p class="mb-30">Sudah mendapat persetujuan dari dosen pembimbing? Segera upload Proposal anda !!</p>
+							</div>
+						</div>
+
+						<form id="finalProposalForm" enctype="multipart/form-data">
+							<input type="hidden" name="jurusan" id="hiddenJurusan">
+							<input type="hidden" name="kelas" id="hiddenKelas">
+							<div class="form-group">
+								<label>Topik Penelitian</label>
+								<input class="form-control" type="text" name="topik_penelitian" placeholder="Masukkan Topik Penelitian Anda" required>
+							</div>
+							<div class="form-group">
+								<label>Keterangan</label>
+								<textarea class="form-control" name="keterangan" required></textarea>
+							</div>
+							<div class="form-group">
+								<label>Form Bimbingan (PDF)</label>
+								<div class="custom-file">
+									<input type="file" class="custom-file-input" id="formBimbinganFile" name="form_bimbingan_file" accept=".pdf" required>
+									<label class="custom-file-label" for="formBimbinganFile">Choose file</label>
+								</div>
+								<div id="formBimbinganSelectedFileName" class="mt-2 text-info" style="display: none;"></div>
+							</div>
+							<div class="form-group">
+								<label>Final File Proposal (PDF)</label>
+								<div class="custom-file">
+									<input type="file" class="custom-file-input" id="finalProposalFile" name="final_proposal_file" accept=".pdf" required>
+									<label class="custom-file-label" for="finalProposalFile">Choose file</label>
+								</div>
+								<div id="finalSelectedFileName" class="mt-2 text-info" style="display: none;"></div>
+							</div>
+							<div class="form-group">
+								<label>File Pendukung Proposal (Document, PDF, Excell)</label>
+								<div class="custom-file">
+									<input type="file" 
+										   class="custom-file-input" 
+										   id="supportFiles" 
+										   name="support_files[]" 
+										   accept=".pdf,.doc,.docx,.xls,.xlsx" 
+										   multiple 
+										   required>
+									<label class="custom-file-label" for="supportFiles">Pilih satu atau lebih file</label>
+								</div>
+								<div id="supportSelectedFileName" class="mt-2 text-info" style="display: none;"></div>
+							</div>
+							<button type="submit" class="btn btn-primary">Upload Final Proposal</button>
+						</form>
+
+					</div>
+					<!-- Form Final Proposal End -->
+
+					<!-- Tabel Final Proposal -->
+					<div class="pd-20 card-box mb-30">
+						<div class="clearfix">
+							<div class="pull-left">
+								<h4 class="text-blue h4">Daftar Final Proposal</h4>
+							</div>
+						</div>
+						<div class="pb-20">
+							<table class="table stripe hover nowrap" id="finalProposalTable">
+								<thead>
+									<tr>
+										<th>Topik Penelitian</th>
+										<th>Jurusan</th>
+										<th>Kelas</th>
+										<th>Status</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+								<tbody>
+
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<!-- Tabel Final Proposal End -->
+
+					<!-- Tabel Catatan Perbaikan Dosen -->
+					<div class="pd-20 card-box mb-30">
+						<div class="clearfix">
+							<div class="pull-left">
+								<h4 class="text-blue h4">Catatan Perbaikan</h4>
+							</div>
+						</div>
+						<div class="pb-20">
+							<table class="table stripe hover nowrap" id="catatanPerbaikanTable">
+								<thead>
+									<tr>
+										<th>Nama Dosen</th>
+										<th>Topik Penelitian</th>
+										<th>Tanggal DIterima</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<!-- Tabel Catatan Perbaikan Dosen End -->
+
+					<!-- Form Revisi Proposal -->
+					<div class="pd-20 card-box mb-30">
+
+						<div class="clearfix">
+							<div class="pull-left">
+								<h4 class="text-blue h4">Revisi Proposal</h4>
+								<p class="mb-30">Sudah memperbaiki proposal sesuai dengan catatan perbaikan dosen? Segera upload Revisi Proposal anda !!</p>
+							</div>
+						</div>
+
+						<form id="revisiProposalForm" enctype="multipart/form-data">
+							<input type="hidden" name="jurusan" id="hiddenJurusanRevisi">
+							<input type="hidden" name="kelas" id="hiddenKelasRevisi">
+							<div class="form-group">
+								<label>Topik Penelitian</label>
+								<input class="form-control" type="text" name="topik_penelitian" placeholder="Masukkan Topik Penelitian Anda" required>
+							</div>
+							<div class="form-group">
+								<label>Keterangan</label>
+								<textarea class="form-control" name="keterangan" required></textarea>
+							</div>
+							<div class="form-group">
+								<label>Revisi File Proposal (PDF)</label>
+								<div class="custom-file">
+									<input type="file" class="custom-file-input" id="revisiProposalFile" name="file" accept=".pdf" required>
+									<label class="custom-file-label" for="revisiProposalFile">Choose file</label>
+								</div>
+								<div id="revisiSelectedFileName" class="mt-2 text-info" style="display: none;"></div>
+							</div>
+							<button type="submit" class="btn btn-primary">Upload Revisi Proposal</button>
+						</form>
+
+					</div>
+					<!-- Form Revisi Proposal End -->
+
+					<!-- Tabel Revisi Proposal -->
+					<div class="pd-20 card-box mb-30">
+						<div class="clearfix">
+							<div class="pull-left">
+								<h4 class="text-blue h4">Daftar Revisi Proposal</h4>
+							</div>
+						</div>
+						<div class="pb-20">
+							<table class="table stripe hover nowrap" id="revisiProposalTable">
+								<thead>
+									<tr>
+										<th>Topik Penelitian</th>
+										<th>Jurusan</th>
+										<th>Kelas</th>
+										<th>Status</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+								<tbody>
+
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<!-- Tabel Revisi Proposal End -->
+
+				</div>
+
+			</div>
+
+					
+		</div>
+
+
+		<!-- js -->
+		<script src="vendors/scripts/core.js"></script>
+		<script src="vendors/scripts/script.min.js"></script>
+		<script src="vendors/scripts/process.js"></script>
+		<script src="vendors/scripts/layout-settings.js"></script>
+		<!-- Google Tag Manager (noscript) -->
+		<noscript
+			><iframe
+				src="https://www.googletagmanager.com/ns.html?id=GTM-NXZMQSS"
+				height="0"
+				width="0"
+				style="display: none; visibility: hidden"
+			></iframe
+		></noscript>
+		<!-- End Google Tag Manager (noscript) -->
+
+		<!-- Add this modal before the closing body tag -->
+		<div class="modal fade" id="uploadRevisionModal" tabindex="-1" role="dialog" aria-labelledby="uploadRevisionModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="uploadRevisionModalLabel">Upload Revisi Proposal</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<form id="revisionForm" enctype="multipart/form-data">
+							<input type="hidden" id="revisionDosenId" name="dosen_id">
+							<input type="hidden" id="revisionTopikPenelitian" name="topik_penelitian">
+							
+							<div class="form-group">
+								<label>Keterangan Revisi</label>
+								<textarea class="form-control" name="keterangan" required></textarea>
+							</div>
+							<div class="form-group">
+								<label>File Revisi Proposal (PDF)</label>
+								<input type="file" class="form-control" name="file" accept=".pdf" required>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+						<button type="button" class="btn btn-primary" onclick="submitRevision()">Upload Revisi Proposal</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			// JS notifikasi
+			document.addEventListener("DOMContentLoaded", function () {
+				fetch("http://104.43.89.154:8088/notifications?role=Taruna")
+					.then(res => res.json())
+					.then(data => {
+						const ul = document.getElementById("notif-list");
+						ul.innerHTML = ""; // Kosongkan
+
+						if (data.length === 0) {
+							ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
+							return;
+						}
+
+						data.forEach(item => {
+							const li = document.createElement("li");
+							li.innerHTML = `
+								<a href="/taruna/detailinformasitaruna?id=${item.ID}">
+									<img src="vendors/images/logo.png" alt="" />
+									<h3>${item.Judul}</h3>
+									<p>${item.Deskripsi.length > 50 ? item.Deskripsi.substring(0, 50) + "..." : item.Deskripsi}</p>
+								</a>`;
+							ul.appendChild(li);
+						});
+
+						document.querySelector(".notification-active").style.display = "inline-block";
+					})
+					.catch(err => {
+						console.error("Gagal mengambil notifikasi:", err);
+					});
+			});
+
+			// Fungsi untuk memuat data Proposal
+			async function loadProposalData() {
+				const userId = localStorage.getItem('userId');
+				try {
+					const response = await fetch(`http://104.43.89.154:8087/proposal?user_id=${userId}`);
+					const data = await response.json();
+					
+					if (data.status === 'success') {
+						const tbody = document.querySelector('.data-table tbody');
+						tbody.innerHTML = '';
+						
+						data.data.forEach(proposal => {
+							const statusClass = {
+								'pending': 'badge badge-warning',
+								'approved': 'badge badge-success',
+								'rejected': 'badge badge-danger'
+							}[proposal.status] || 'badge badge-secondary';
+
+							tbody.innerHTML += `
+								<tr>
+									<td>${proposal.topik_penelitian}</td>
+									<td>${proposal.dosen_nama}</td>
+									<td><span class="${statusClass}">${proposal.status}</span></td>
+									<td>
+										<div class="dropdown">
+											<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
+											href="#" role="button" data-toggle="dropdown">
+												<i class="dw dw-more"></i>
+											</a>
+											<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+												<a class="dropdown-item" href="/taruna/editproposal?id=${proposal.id}"><i class="dw dw-edit2"></i> Edit</a>
+												<a class="dropdown-item" href=""><i class="dw dw-delete-3"></i> Delete</a>
+												<a class="dropdown-item" href="http://104.43.89.154:8087/download/proposal?path=${proposal.file_path}" download>
+													<i class="dw dw-download"></i> Download
+												</a>
+											</div>
+										</div>
+									</td>
+								</tr>
+							`;
+						});
+					}
+				} catch (error) {
+					console.error('Error:', error);
+				}
+			}
+
+			// Fungsi untuk memuat data Proposal hasil review dosen
+			async function loadProposalReviewData() {
+				const userId = localStorage.getItem('userId');
+				if (!userId) {
+					console.error('User ID not found in localStorage');
+					return;
+				}
+				
+				try {
+					console.log('Fetching review data for user:', userId);
+					const response = await fetch(`http://104.43.89.154:8087/reviewproposal/dosen/list?taruna_id=${userId}`);
+					const data = await response.json();
+					
+					if (data.status === 'success') {
+						// Find the table that follows the heading "Tabel Hasil Review Dosen"
+						const tables = document.querySelectorAll('.card-box table');
+						let reviewTable = null;
+						
+						for (const table of tables) {
+							const heading = table.closest('.card-box').querySelector('h4.text-blue');
+							if (heading && heading.textContent.includes('Tabel Hasil Review Dosen')) {
+								reviewTable = table.querySelector('tbody');
+								break;
+							}
+						}
+						
+						if (!reviewTable) {
+							console.error('Review table not found');
+							return;
+						}
+						
+						reviewTable.innerHTML = '';
+						
+						if (data.data && data.data.length > 0) {
+							data.data.forEach(review => {
+								reviewTable.innerHTML += `
+									<tr>
+										<td>${review.topik_penelitian || '-'}</td>
+										<td>${review.dosen_nama || '-'}</td>
+										<td>${review.cycle_number || 1}</td>
+										<td>${review.keterangan || '-'}</td>
+										<td>
+											<div class="dropdown">
+												<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
+												   href="#" role="button" data-toggle="dropdown">
+													<i class="dw dw-more"></i>
+												</a>
+												<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+													<a class="dropdown-item" href="http://104.43.89.154:8087/download/reviewproposal/dosen?path=${review.file_path}" download>
+														<i class="dw dw-download"></i> Download Review
+													</a>
+													<a class="dropdown-item" href="#" onclick="openUploadRevisionModal(${review.dosen_id}, '${review.topik_penelitian}')">
+														<i class="dw dw-upload"></i> Upload Revisi
+													</a>
+												</div>
+											</div>
+										</td>
+									</tr>
+								`;
+							});
+						} else {
+							reviewTable.innerHTML = `
+								<tr>
+									<td colspan="5" class="text-center">Tidak ada data review</td>
+								</tr>
+							`;
+						}
+					} else {
+						console.error('Failed to load review data:', data.message);
+						showAlert('Gagal memuat data review: ' + (data.message || 'Unknown error'), 'danger');
+					}
+				} catch (error) {
+					console.error('Error loading review data:', error);
+					showAlert('Gagal memuat data review: ' + error.message, 'danger');
+				}
+			}
+
+			// Fungsi Logout
+			async function logout() {
+				try {
+					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+					
+					const response = await fetch('http://104.43.89.154:8085/logout', {
+						method: 'POST',
+						headers: {
+							'Authorization': token ? `Bearer ${token}` : '',
+							'Content-Type': 'application/json'
+						},
+						credentials: 'include'
+					});
+
+					const data = await response.json();
+					
+					if (response.ok && data.status === 'success') {
+						// Clear localStorage
+						localStorage.clear();
+						
+						// Clear sessionStorage
+						sessionStorage.clear();
+						
+						// Clear all cookies for all possible paths
+						const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
+						const cookies = document.cookie.split(';');
+						
+						for (let cookie of cookies) {
+							const eqPos = cookie.indexOf('=');
+							const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+							
+							// Hapus cookie untuk setiap path
+							paths.forEach(path => {
+								document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+							});
+						}
+						
+						// Clear cache if browser supports it
+						if (window.caches) {
+							caches.keys().then(names => {
+								names.forEach(name => {
+									caches.delete(name);
+								});
+							});
+						}
+
+						// Clear application cache
+						if (window.applicationCache) {
+							window.applicationCache.abort();
+						}
+
+						// Clear service workers if any
+						if (navigator.serviceWorker) {
+							navigator.serviceWorker.getRegistrations().then(registrations => {
+								registrations.forEach(registration => {
+									registration.unregister();
+								});
+							});
+						}
+						
+						console.log('Logout berhasil');
+						
+						// Force reload halaman login untuk membersihkan cache
+						window.location.href = '/loginusers';
+						window.location.reload(true);
+					} else {
+						throw new Error(data.message || 'Gagal logout');
+					}
+				} catch (error) {
+					console.error('Error during logout:', error);
+					alert('Gagal logout. Silakan coba lagi.');
+				}
+			}
+
+			// Tambahkan pengecekan autentikasi saat halaman dimuat
+			document.addEventListener('DOMContentLoaded', function() {
+				// Cek token
+				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+				if (!token) {
+					window.location.replace('/loginusers');
+					return;
+				}
+
+				// Ambil ID user dari token
+				const userId = localStorage.getItem('userId');
+
+				// Ambil data user dari API
+				fetch(`http://104.43.89.154:8086/users?id=${userId}`, {
+					headers: {
+						'Authorization': `Bearer ${token}`
+					}
+				})
+				.then(response => {
+					if (!response.ok) {
+						throw new Error('Gagal mengambil data user');
+					}
+					return response.json();
+				})
+				.then(user => {
+					// Update username di header
+					const usernameElement = document.getElementById('username');
+					if (usernameElement) {
+						usernameElement.textContent = user.username || user.nama_lengkap || 'User';
+					}
+				})
+				.catch(error => {
+					console.error('Error:', error);
+					const usernameElement = document.getElementById('username');
+					if (usernameElement) {
+						usernameElement.textContent = 'User';
+					}
+				});
+
+				// Validasi token dengan server
+				fetch('http://104.43.89.154:8085/taruna/dashboard', { // Ubah ke endpoint taruna
+					headers: {
+						'Authorization': `Bearer ${token}`
+					}
+				}).catch(() => {
+					window.location.replace('/loginusers');
+				});
+			});
+
+			// Pastikan event listener untuk tombol logout terpasang dengan benar
+			document.addEventListener('DOMContentLoaded', function() {
+				const logoutButton = document.querySelector('a[onclick="logout()"]');
+				if (logoutButton) {
+					logoutButton.addEventListener('click', function(e) {
+						e.preventDefault();
+						logout();
+					});
+				}
+			});
+		
+			// Update nama file saat file dipilih untuk Proposal
+			document.getElementById('proposalFile').addEventListener('change', function(e) {
+				var fileName = e.target.files[0] ? e.target.files[0].name : 'Choose file';
+				var label = this.nextElementSibling;
+				label.textContent = fileName;
+				
+				var selectedFileDiv = document.getElementById('selectedFileName');
+				if (e.target.files[0]) {
+					selectedFileDiv.textContent = 'File terpilih: ' + fileName;
+					selectedFileDiv.style.display = 'block';
+				} else {
+					selectedFileDiv.style.display = 'none';
+				}
+			});
+
+			// Load dosen pembimbing untuk taruna
+			async function loadDosbingForTaruna() {
+				const userId = localStorage.getItem('userId');
+				if (!userId) return;
+
+				try {
+					const response = await fetch(`http://104.43.89.154:8087/dosbingproposal?user_id=${userId}`);
+					const result = await response.json();
+
+					const dosbingInfo = document.getElementById('dosbingInfo');
+					const dosenIdInput = document.getElementById('dosenIdInput');
+
+					if (result.status === 'success') {
+						dosbingInfo.innerHTML = `<strong>${result.data.nama}</strong>`;
+						dosenIdInput.value = result.data.dosen_id;
+					} else {
+						dosbingInfo.innerHTML = `<span class="text-danger">Anda belum memiliki dosen pembimbing proposal</span>`;
+						dosenIdInput.value = '';
+					}
+				} catch (err) {
+					console.error('Error fetching dosbing:', err);
+					document.getElementById('dosbingInfo').innerHTML = `<span class="text-danger">Gagal memuat dosen pembimbing</span>`;
+				}
+			}
+
+			// Panggil loadProposalData dan loadProposalReviewData saat halaman dimuat
+			document.addEventListener('DOMContentLoaded', () => {
+				loadDosbingForTaruna();
+				loadProposalData();
+				loadProposalReviewData();
+			});
+
+			// Handle form submission untuk mengunggah Proposal
+			document.getElementById('proposalForm').addEventListener('submit', async function(e) {
+				e.preventDefault();
+				
+				const submitButton = this.querySelector('button[type="submit"]');
+				const formData = new FormData(this);
+				formData.append('user_id', localStorage.getItem('userId'));
+
+				// Set loading state
+				submitButton.disabled = true;
+				submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+
+				try {
+					const response = await fetch('http://104.43.89.154:8087/upload/proposal', {
+						method: 'POST',
+						body: formData
+					});
+
+					let data;
+					try {
+						data = await response.json();
+					} catch (err) {
+						// Jika response bukan JSON, ambil teksnya
+						const text = await response.text();
+						showAlert(text || 'Terjadi kesalahan pada server', 'danger');
+						return;
+					}
+
+					// Tampilkan pesan berdasarkan status
+					showAlert(data.message, data.status === 'success' ? 'success' : 'danger');
+
+					// Reset form jika sukses
+					if (data.status === 'success') {
+						this.reset();
+						document.querySelector('.custom-file-label').textContent = 'Choose file';
+						document.getElementById('selectedFileName').style.display = 'none';
+
+						if (typeof refreshTable === 'function') {
+							refreshTable();
+						}
+
+						loadProposalData();
+					}
+				} catch (error) {
+					console.error('Error:', error);
+					showAlert('Terjadi kesalahan pada server. Mohon coba lagi.', 'danger');
+				} finally {
+					// Reset tombol
+					submitButton.disabled = false;
+					submitButton.innerHTML = 'Tambah Proposal';
+				}
+			});
+
+			// Add function to open upload modal untuk mengunggah revisi Proposal
+			function openUploadRevisionModal(dosenId, topikPenelitian) {
+				console.log('Opening modal with:', { dosenId, topikPenelitian });
+				document.getElementById('revisionDosenId').value = dosenId;
+				document.getElementById('revisionTopikPenelitian').value = topikPenelitian;
+				$('#uploadRevisionModal').modal('show');
+			}
+
+			// Add function to submit revision untuk mengunggah revisi Proposal
+			async function submitRevision() {
+				const form = document.getElementById('revisionForm');
+				const formData = new FormData(form);
+				
+				try {
+					const userId = localStorage.getItem('userId');
+					if (!userId) {
+						showAlert('User ID tidak ditemukan. Silakan login ulang.', 'danger');
+						return;
+					}
+
+					// Tambahkan user_id sebagai taruna_id
+					formData.append('taruna_id', userId);
+					
+						const response = await fetch('http://104.43.89.154:8087/upload/revisiproposal/taruna', {
+						method: 'POST',
+						body: formData
+					});
+					
+					const data = await response.json();
+					
+					if (data.status === 'success') {
+						showAlert('Revisi Proposal berhasil diunggah', 'success');
+						$('#uploadRevisionModal').modal('hide');
+						form.reset();
+						await loadProposalData();
+						await loadProposalReviewData();
+					} else {
+						showAlert(data.message || 'Gagal mengunggah revisi', 'danger');
+					}
+				} catch (error) {
+					console.error('Error:', error);
+					showAlert('Terjadi kesalahan: ' + error.message, 'danger');
+				}
+			}
+
+			// Fungsi untuk menampilkan alert
+			function showAlert(message, type) {
+				const alertContainer = document.getElementById('alertContainer');
+				const alertMessage = document.getElementById('alertMessage');
+				
+				// Pastikan container dan message element ada
+				if (!alertContainer || !alertMessage) {
+					console.error('Alert elements not found');
+					return;
+				}
+
+				// Set class dan pesan
+				alertMessage.className = `alert alert-${type}`;
+				alertMessage.textContent = message;
+				
+				// Tampilkan alert
+				alertContainer.style.display = 'block';
+				
+				// Scroll ke atas agar alert terlihat
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+				
+				// Sembunyikan alert setelah 5 detik
+				setTimeout(() => {
+					alertContainer.style.display = 'none';
+				}, 5000);
+			}
+
+			// Fungsi untuk mengisi jurusan dan kelas dari taruna
+			async function isiJurusanDanKelasDariTarunaFinalProposal() {
+				const userId = localStorage.getItem('userId');
+				const token = localStorage.getItem('token');
+				if (!userId || !token) return;
+
+				try {
+					const res = await fetch(`http://104.43.89.154:8086/taruna?user_id=${userId}`, {
+					headers: {
+						'Authorization': `Bearer ${token}`
+					}
+					});
+					const json = await res.json();
+					if (json.status === 'success' && Array.isArray(json.data)) {
+					const taruna = json.data.find(t => t.user_id === parseInt(userId));
+					if (taruna) {
+						document.getElementById('hiddenJurusan').value = taruna.jurusan || '';
+						document.getElementById('hiddenKelas').value = taruna.kelas || '';
+					}
+					}
+				} catch (err) {
+					console.error('Gagal ambil data taruna:', err);
+				}
+			}
+
+			// Fungsi untuk mengisi jurusan dan kelas dari taruna
+			async function isiJurusanDanKelasDariTarunaRevisiProposal() {
+				const userId = localStorage.getItem('userId');
+				const token = localStorage.getItem('token');
+				if (!userId || !token) return;
+
+				try {
+					const res = await fetch(`http://104.43.89.154:8086/taruna?user_id=${userId}`, {
+					headers: {
+						'Authorization': `Bearer ${token}`
+					}
+					});
+					const json = await res.json();
+					if (json.status === 'success' && Array.isArray(json.data)) {
+					const taruna = json.data.find(t => t.user_id === parseInt(userId));
+					if (taruna) {
+						document.getElementById('hiddenJurusanRevisi').value = taruna.jurusan || '';
+						document.getElementById('hiddenKelasRevisi').value = taruna.kelas || '';
+					}
+					}
+				} catch (err) {
+					console.error('Gagal ambil data taruna:', err);
+				}
+			}
+
+			// Panggil isiJurusanDanKelasDariTaruna saat halaman dimuat
+			document.addEventListener('DOMContentLoaded', () => {
+				isiJurusanDanKelasDariTarunaFinalProposal();
+				isiJurusanDanKelasDariTarunaRevisiProposal();
+			});
+
+			// Update nama file saat file dipilih untuk Final Proposal
+			document.getElementById('finalProposalFile').addEventListener('change', function(e) {
+				var fileName = e.target.files[0] ? e.target.files[0].name : 'Choose file';
+				var label = this.nextElementSibling;
+				label.textContent = fileName;
+				
+				var selectedFileDiv = document.getElementById('finalSelectedFileName');
+				if (e.target.files[0]) {
+					selectedFileDiv.textContent = 'File terpilih: ' + fileName;
+					selectedFileDiv.style.display = 'block';
+				} else {
+					selectedFileDiv.style.display = 'none';
+				}
+			});
+
+			// Update nama file saat file dipilih untuk Form Bimbingan
+			document.getElementById('formBimbinganFile').addEventListener('change', function(e) {
+				var fileName = e.target.files[0] ? e.target.files[0].name : 'Choose file';
+				var label = this.nextElementSibling;
+				label.textContent = fileName;
+				
+				var selectedFileDiv = document.getElementById('formBimbinganSelectedFileName');
+				if (e.target.files[0]) {
+					selectedFileDiv.textContent = 'File terpilih: ' + fileName;
+					selectedFileDiv.style.display = 'block';
+				} else {
+					selectedFileDiv.style.display = 'none';
+				}
+			});
+
+			// ====== UPDATE LABEL FILE PENDUKUNG ======
+			const supportInput = document.getElementById('supportFiles');
+			if (supportInput) {
+				supportInput.addEventListener('change', function (e) {
+					const files = Array.from(e.target.files || []);
+					const label = this.nextElementSibling;
+					const infoDiv = document.getElementById('supportSelectedFileName');
+
+					if (files.length === 0) {
+						label.textContent = 'Pilih file pendukung';
+						infoDiv.style.display = 'none';
+						return;
+					}
+
+					label.textContent = `${files.length} file dipilih`;
+					infoDiv.innerHTML = 'File terpilih:<br>- ' + files.map(f => f.name).join('<br>- ');
+					infoDiv.style.display = 'block';
+				});
+			}
+
+			// ====== SUBMIT FORM ======
+			document.getElementById('finalProposalForm').addEventListener('submit', async function (e) {
+				e.preventDefault();
+
+				const submitButton = this.querySelector('button[type="submit"]');
+				submitButton.disabled = true;
+				submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+
+				try {
+					const formData = new FormData(this);
+					const userId = localStorage.getItem('userId');
+					const token = localStorage.getItem('token');
+
+					if (!userId || !token) {
+						throw new Error('User ID atau token tidak ditemukan');
+					}
+
+					// Ambil data taruna
+					const tarunaResponse = await fetch(`http://104.43.89.154:8086/taruna?user_id=${userId}`, {
+						headers: { 'Authorization': `Bearer ${token}` }
+					});
+
+					if (!tarunaResponse.ok) {
+						throw new Error('Gagal mengambil data taruna');
+					}
+
+					const tarunaData = await tarunaResponse.json();
+					const taruna = tarunaData.data?.find(t => t.user_id === parseInt(userId));
+
+					if (!taruna || !taruna.nama_lengkap) {
+						throw new Error('Data taruna tidak lengkap atau tidak ditemukan');
+					}
+
+					// Tambahkan user_id dan nama_lengkap ke formData
+					formData.append('user_id', userId);
+					formData.append('nama_lengkap', taruna.nama_lengkap);
+
+					// Kirim ke server
+					const response = await fetch('http://104.43.89.154:8087/finalproposal/upload', {
+						method: 'POST',
+						body: formData
+					});
+
+					let data;
+					try {
+						data = await response.json();
+					} catch {
+						const rawText = await response.text();
+						showAlert(rawText || 'Terjadi kesalahan pada server', 'danger');
+						return;
+					}
+
+					showAlert(data.message, data.status === 'success' ? 'success' : 'danger');
+
+					if (data.status === 'success') {
+						this.reset();
+						document.querySelector('#finalProposalFile').nextElementSibling.textContent = 'Choose file';
+						document.getElementById('finalSelectedFileName').style.display = 'none';
+						if (supportInput) {
+							supportInput.nextElementSibling.textContent = 'Pilih file pendukung';
+							document.getElementById('supportSelectedFileName').style.display = 'none';
+						}
+						if (typeof loadFinalProposalData === 'function') loadFinalProposalData();
+					}
+
+				} catch (error) {
+					console.error('Error saat upload final Proposal:', error);
+					let errorMessage = error.message || 'Terjadi kesalahan saat mengunggah Final Proposal';
+					if (errorMessage.includes('token')) {
+						errorMessage = 'User ID atau token tidak ditemukan. Silakan login kembali.';
+					} else if (errorMessage.includes('taruna')) {
+						errorMessage = 'Data taruna tidak lengkap atau tidak ditemukan. Silakan hubungi administrator.';
+					}
+					showAlert(errorMessage, 'danger');
+				} finally {
+					submitButton.disabled = false;
+					submitButton.innerHTML = 'Upload Final Proposal';
+				}
+			});
+
+			// Update fungsi loadFinalProposalData
+			async function loadFinalProposalData() {
+				const userId = localStorage.getItem('userId');
+				if (!userId) {
+					console.error('User ID not found in localStorage');
+					showAlert('User ID tidak ditemukan. Silakan login ulang.', 'danger');
+					return;
+				}
+				
+				try {
+					console.log('Fetching Final Proposal data for user:', userId);
+					const response = await fetch(`http://104.43.89.154:8087/finalproposal/list?user_id=${userId}`);
+					
+					if (!response.ok) {
+						throw new Error(`HTTP error! status: ${response.status}`);
+					}
+					
+					const data = await response.json();
+					console.log('Received Final Proposal data:', data);
+					
+					if (data.status === 'success') {
+						const tbody = document.querySelector('#finalProposalTable tbody');
+						if (!tbody) {
+							console.error('Table body element not found');
+							return;
+						}
+						
+						tbody.innerHTML = '';
+						
+						if (data.data && data.data.length > 0) {
+							data.data.forEach(finalProposal => {
+								const statusClass = {
+									'pending': 'badge badge-warning',
+									'approved': 'badge badge-success',
+									'rejected': 'badge badge-danger',
+									'on review': 'badge badge-info'
+								}[finalProposal.status] || 'badge badge-secondary';
+
+								// Buat link file pendukung
+								let supportLinks = '';
+								if (Array.isArray(finalProposal.support_files) && finalProposal.support_files.length > 0) {
+									finalProposal.support_files.forEach(sf => {
+										supportLinks += `
+											<a class="dropdown-item" href="${sf.url}" download>
+												<i class="dw dw-download"></i>${sf.name}
+											</a>
+										`;
+									});
+								} else {
+									supportLinks += `
+										<span class="dropdown-item text-muted">
+											<i class="dw dw-file-2"></i> Tidak ada file pendukung
+										</span>
+									`;
+								}
+
+								tbody.innerHTML += `
+									<tr>
+										<td>${finalProposal.topik_penelitian || '-'}</td>
+										<td>${finalProposal.jurusan || '-'}</td>
+										<td>${finalProposal.kelas || '-'}</td>
+										<td><span class="${statusClass}">${finalProposal.status || 'pending'}</span></td>
+										<td>
+											<div class="dropdown">
+												<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
+												href="#" role="button" data-toggle="dropdown">
+												<i class="dw dw-more"></i>
+												</a>
+												<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+													<a class="dropdown-item" href="${finalProposal.form_bimbingan_url}" download>
+														<i class="dw dw-download"></i> Download Form Bimbingan
+													</a>
+													<a class="dropdown-item" href="${finalProposal.final_download_url}" download>
+														<i class="dw dw-download"></i> Download Final Proposal
+													</a>
+													<div class="dropdown-divider"></div>
+													${supportLinks}
+												</div>
+											</div>
+										</td>
+									</tr>
+								`;
+							});
+						} else {
+							tbody.innerHTML = `
+								<tr>
+									<td colspan="5" class="text-center">Belum ada Final Proposal yang diupload</td>
+								</tr>
+							`;
+						}
+					} else {
+						console.error('Failed to load Final Proposal data:', data.message);
+						showAlert('Gagal memuat data Final Proposal: ' + (data.message || 'Unknown error'), 'danger');
+					}
+				} catch (error) {
+					console.error('Error loading Final Proposal data:', error);
+					showAlert('Terjadi kesalahan saat memuat data Final Proposal: ' + error.message, 'danger');
+				}
+			}
+
+			// Load Final Proposal data saat halaman dimuat
+			document.addEventListener('DOMContentLoaded', () => {
+				loadFinalProposalData();
+			});
+
+			// Call getUserData when page loads
+			document.addEventListener('DOMContentLoaded', () => {
+				getUserData();
+				loadProposalData();
+				loadProposalReviewData();
+				loadFinalProposalData();
+			});
+
+			// Fungsi untuk memuat data Catatan Perbaikan Dosen
+			async function loadCatatanPerbaikanTaruna() {
+				const userId = localStorage.getItem('userId');
+				if (!userId) {
+					console.error('User ID not found in localStorage');
+					return;
+				}
+
+				try {
+					const response = await fetch(`http://104.43.89.154:8087/catatanperbaikanproposal/taruna?user_id=${userId}`);
+					const data = await response.json();
+
+					const tableBody = document.querySelector('#catatanPerbaikanTable tbody');
+					if (!tableBody) {
+						console.error('Tabel catatan perbaikan tidak ditemukan');
+						return;
+					}
+
+					tableBody.innerHTML = '';
+
+					if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
+						data.data.forEach(item => {
+							const formattedDate = new Date(item.submitted_at).toLocaleString('id-ID', {
+								dateStyle: 'medium',
+								timeStyle: 'short'
+							});
+
+							const fileName = item.file_path ? item.file_path.split('/').pop() : '';
+
+							tableBody.innerHTML += `
+								<tr>
+									<td>${item.nama_dosen || '-'}</td>
+									<td>${item.topik_penelitian || '-'}</td>
+									<td>${formattedDate}</td>
+									<td>
+										<div class="dropdown">
+											<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
+												href="#" role="button" data-toggle="dropdown">
+												<i class="dw dw-more"></i>
+											</a>
+											<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+												${fileName.startsWith('Catatan_Perbaikan_') ? `
+													<a class="dropdown-item" href="http://104.43.89.154:8087/penilaian/proposal/download?path=${fileName}" download>
+														<i class="dw dw-download"></i> Unduh Catatan
+													</a>
+												` : `
+													<span class="dropdown-item text-muted">
+														<i class="dw dw-ban"></i> Tidak tersedia
+													</span>
+												`}
+											</div>
+										</div>
+									</td>
+								</tr>
+							`;
+						});
+					} else {
+						tableBody.innerHTML = `
+							<tr>
+								<td colspan="4" class="text-center">Belum ada catatan perbaikan</td>
+							</tr>
+						`;
+					}
+				} catch (error) {
+					console.error('Gagal memuat catatan perbaikan:', error);
+					const tableBody = document.querySelector('#catatanPerbaikanTable tbody');
+					if (tableBody) {
+						tableBody.innerHTML = `
+							<tr>
+								<td colspan="4" class="text-center text-danger">Gagal memuat data</td>
+							</tr>
+						`;
+					}
+				}
+			}		
+
+			// Panggil fungsi saat halaman dimuat
+			document.addEventListener('DOMContentLoaded', function() {
+				loadCatatanPerbaikanTaruna();
+			});
+			
+			// Update nama file saat file dipilih untuk Revisi Proposal
+			document.getElementById('revisiProposalFile').addEventListener('change', function(e) {
+				var fileName = e.target.files[0] ? e.target.files[0].name : 'Choose file';
+				var label = this.nextElementSibling;
+				label.textContent = fileName;
+				
+				var selectedFileDiv = document.getElementById('revisiProposalFile');
+				if (e.target.files[0]) {
+					selectedFileDiv.textContent = 'File terpilih: ' + fileName;
+					selectedFileDiv.style.display = 'block';
+				} else {
+					selectedFileDiv.style.display = 'none';
+				}
+			});
+
+			// Handle form submission untuk mengunggah Revisi Proposal
+			document.getElementById('revisiProposalForm').addEventListener('submit', async function(e) {
+				e.preventDefault();
+
+				const submitButton = this.querySelector('button[type="submit"]');
+				submitButton.disabled = true;
+				submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+
+				try {
+					await isiJurusanDanKelasDariTarunaRevisiProposal();
+					const formData = new FormData(this);
+					const userId = localStorage.getItem('userId');
+					const token = localStorage.getItem('token');
+
+					if (!userId || !token) throw new Error('User ID atau token tidak ditemukan');
+
+					const tarunaResponse = await fetch(`http://104.43.89.154:8086/taruna?user_id=${userId}`, {
+						headers: { 'Authorization': `Bearer ${token}` }
+					});
+					if (!tarunaResponse.ok) throw new Error('Gagal mengambil data taruna');
+
+					const tarunaData = await tarunaResponse.json();
+					if (tarunaData.status !== 'success' || !Array.isArray(tarunaData.data)) {
+						throw new Error('Data taruna tidak ditemukan');
+					}
+
+					const taruna = tarunaData.data.find(t => t.user_id === parseInt(userId));
+					if (!taruna) throw new Error('Data taruna tidak ditemukan untuk user ID ini');
+					if (!taruna.nama_lengkap) throw new Error('Data taruna tidak lengkap: nama lengkap tidak ditemukan');
+
+					formData.append('user_id', userId);
+					formData.append('nama_lengkap', taruna.nama_lengkap);
+					formData.append('jurusan', document.getElementById('hiddenJurusanRevisi').value);
+					formData.append('kelas', document.getElementById('hiddenKelasRevisi').value);
+
+					const response = await fetch('http://104.43.89.154:8087/revisiproposal/upload', {
+						method: 'POST',
+						body: formData
+					});
+
+					let data;
+					try {
+						data = await response.json();
+					} catch (err) {
+						const text = await response.text();
+						showAlert(text || 'Terjadi kesalahan pada server', 'danger');
+						return;
+					}
+
+					showAlert(data.message, data.status === 'success' ? 'success' : 'danger');
+
+					if (data.status === 'success') {
+						this.reset();
+						document.querySelector('#revisiProposalFile').nextElementSibling.textContent = 'Choose file';
+						document.getElementById('revisiSelectedFileName').style.display = 'none';
+						loadRevisiProposalData();
+					}
+
+				} catch (error) {
+					let errorMessage = 'Terjadi kesalahan pada server';
+					if (error.message.includes('user ID')) {
+						errorMessage = 'Data taruna tidak ditemukan untuk akun Anda. Silakan hubungi administrator.';
+					} else if (error.message.includes('data taruna tidak ditemukan')) {
+						errorMessage = 'Data taruna tidak ditemukan. Silakan hubungi administrator.';
+					} else if (error.message.includes('nama lengkap')) {
+						errorMessage = 'Profil taruna belum lengkap. Silakan lengkapi nama lengkap Anda.';
+					} else if (error.message.includes('Gagal mengambil')) {
+						errorMessage = 'Gagal mengambil data taruna. Silakan coba lagi.';
+					}
+					showAlert(errorMessage, 'danger');
+				} finally {
+					submitButton.disabled = false;
+					submitButton.innerHTML = 'Upload Revisi Proposal';
+				}
+			});
+
+			// Helper kecil biar aman dari HTML injection
+			function escapeHtml(str) {
+			return (str || '').toString().replace(/[&<>"']/g, m => ({
+				'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+			}[m]));
+			}
+
+			// Panggil endpoint download (sama seperti yang sudah kamu punya)
+			async function downloadRevisiProposal(id) {
+			try {
+				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+				if (!token) {
+				alert('Token tidak ditemukan. Silakan login ulang.');
+				return;
+				}
+
+				const resp = await fetch(`http://104.43.89.154:8087/revisiproposal/download/${id}`, {
+				method: 'GET',
+				headers: { 'Authorization': `Bearer ${token}` }
+				});
+
+				if (!resp.ok) {
+				const msg = await resp.text().catch(() => '');
+				throw new Error(msg || `Gagal mengunduh (HTTP ${resp.status})`);
+				}
+
+				const cd = resp.headers.get('Content-Disposition') || '';
+				let filename = null;
+				const fnStar = cd.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
+				if (fnStar) filename = decodeURIComponent(fnStar[1]);
+				else {
+				const fn = cd.match(/filename\s*=\s*("?)([^"]+)\1/i);
+				if (fn) filename = fn[2];
+				}
+				filename = filename || `revisi_proposal_${id}.pdf`;
+
+				const blob = await resp.blob();
+				const url = URL.createObjectURL(blob);
+
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = filename;
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				URL.revokeObjectURL(url);
+			} catch (err) {
+				console.error(err);
+				alert(`Unduh gagal: ${err.message}`);
+			}
+			}
+
+			async function loadRevisiProposalData() {
+			const userId = localStorage.getItem('userId');
+			if (!userId) {
+				console.error('User ID not found in localStorage');
+				showAlert('User ID tidak ditemukan. Silakan login ulang.', 'danger');
+				return;
+			}
+
+			try {
+				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+				console.log('Fetching Revisi Proposal data for user:', userId);
+
+				const response = await fetch(`http://104.43.89.154:8087/revisiproposal/list?user_id=${encodeURIComponent(userId)}`, {
+				headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+				});
+				if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+				const data = await response.json();
+				console.log('Received Revisi Proposal data:', data);
+
+				if (data.status === 'success') {
+				const tbody = document.querySelector('#revisiProposalTable tbody');
+				if (!tbody) {
+					console.error('Table body element not found');
+					return;
+				}
+
+				tbody.innerHTML = '';
+
+				if (Array.isArray(data.data) && data.data.length > 0) {
+					data.data.forEach(revisiProposal => {
+					const statusClass = ({
+						'pending': 'badge badge-warning',
+						'approved': 'badge badge-success',
+						'rejected': 'badge badge-danger',
+						'on review': 'badge badge-info'
+					}[revisiProposal.status] || 'badge badge-secondary');
+
+					// pastikan ada id; dukung {id} atau {revisi_proposal_id}
+					const revId = revisiProposal.revisi_proposal_id || revisiProposal.id || null;
+
+					// Jika id ada → tombol download via API; kalau tidak, fallback ke file_path (kalau memang ada endpoint public)
+					const downloadHtml = revId
+						? `<a class="dropdown-item" href="#" data-download-id="${revId}">
+							<i class="dw dw-download"></i> Downloadss
+						</a>`
+						: (revisiProposal.file_path
+							? `<a class="dropdown-item" href="http://104.43.89.154:8087/download?path=${encodeURIComponent(revisiProposal.file_path)}" download>
+								<i class="dw dw-download"></i> Download (fallback)
+							</a>`
+							: `<span class="dropdown-item text-muted disabled">Tidak ada file</span>`);
+
+					tbody.insertAdjacentHTML('beforeend', `
+						<tr>
+						<td>${escapeHtml(revisiProposal.topik_penelitian) || '-'}</td>
+						<td>${escapeHtml(revisiProposal.jurusan) || '-'}</td>
+						<td>${escapeHtml(revisiProposal.kelas) || '-'}</td>
+						<td><span class="${statusClass}">${revisiProposal.status || 'pending'}</span></td>
+						<td>
+							<div class="dropdown">
+							<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
+								href="#" role="button" data-toggle="dropdown">
+								<i class="dw dw-more"></i>
+							</a>
+							<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+								${downloadHtml}
+							</div>
+							</div>
+						</td>
+						</tr>
+					`);
+					});
+
+					// Delegasi event klik download, agar tidak menempel event per-row
+					if (!tbody.dataset.boundDownload) {
+					tbody.addEventListener('click', (e) => {
+						const a = e.target.closest('a[data-download-id]');
+						if (!a) return;
+						e.preventDefault();
+						const id = a.getAttribute('data-download-id');
+						downloadRevisiProposal(id);
+					});
+					tbody.dataset.boundDownload = '1';
+					}
+				} else {
+					tbody.innerHTML = `
+					<tr>
+						<td colspan="5" class="text-center">Belum ada Revisi Proposal yang diupload</td>
+					</tr>
+					`;
+				}
+				} else {
+				console.error('Failed to load Revisi Proposal data:', data.message);
+				showAlert('Gagal memuat data Revisi Proposal: ' + (data.message || 'Unknown error'), 'danger');
+				}
+			} catch (error) {
+				console.error('Error loading Revisi Proposal data:', error);
+				showAlert('Terjadi kesalahan saat memuat data Revisi Proposal: ' + error.message, 'danger');
+			}
+			}
+
+			// Load Revisi Proposal data saat halaman dimuat
+			document.addEventListener('DOMContentLoaded', () => {
+				loadRevisiProposalData();
+			});
+
+		</script>
+
+		<style>
+		.badge {
+			padding: 5px 10px;
+			border-radius: 4px;
+			font-weight: normal;
+		}
+		.badge-warning {
+			background-color: #ffc107;
+			color: #000;
+		}
+		.badge-success {
+			background-color: #28a745;
+			color: #fff;
+		}
+		.badge-danger {
+			background-color: #dc3545;
+			color: #fff;
+		}
+		</style>
+
+	</body>
+</html>

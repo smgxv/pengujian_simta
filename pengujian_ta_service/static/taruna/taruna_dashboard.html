@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- Basic Page Info -->
+		<meta charset="utf-8" />
+		<title>SIMTA - Taruna Panel</title>
+
+		<!-- Site favicon -->
+		<link
+			rel="apple-touch-icon"
+			sizes="180x180"
+			href="vendors/images/apple-touch-icon.png"
+		/>
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="32x32"
+			href="vendors/images/logo.png"
+		/>
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="16x16"
+			href="vendors/images/logo.png"
+		/>
+
+		<!-- Mobile Specific Metas -->
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, maximum-scale=1"
+		/>
+
+		<!-- Google Font -->
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+			rel="stylesheet"
+		/>
+		<!-- CSS -->
+		<link rel="stylesheet" type="text/css" href="vendors/styles/core.css" />
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="vendors/styles/icon-font.min.css"
+		/>
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="src/plugins/datatables/css/dataTables.bootstrap4.min.css"
+		/>
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="src/plugins/datatables/css/responsive.bootstrap4.min.css"
+		/>
+		<link rel="stylesheet" type="text/css" href="vendors/styles/style.css" />
+
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script
+			async
+			src="https://www.googletagmanager.com/gtag/js?id=G-GBZ3SGGX85"
+		></script>
+		<script
+			async
+			src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2973766580778258"
+			crossorigin="anonymous"
+		></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() {
+				dataLayer.push(arguments);
+			}
+			gtag("js", new Date());
+
+			gtag("config", "G-GBZ3SGGX85");
+		</script>
+		<!-- Google Tag Manager -->
+		<script>
+			(function (w, d, s, l, i) {
+				w[l] = w[l] || [];
+				w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+				var f = d.getElementsByTagName(s)[0],
+					j = d.createElement(s),
+					dl = l != "dataLayer" ? "&l=" + l : "";
+				j.async = true;
+				j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+				f.parentNode.insertBefore(j, f);
+			})(window, document, "script", "dataLayer", "GTM-NXZMQSS");
+		</script>
+		<!-- End Google Tag Manager -->
+
+		<style>
+		body {
+			background: #f4f6fb;
+			min-height: 100vh;
+		}
+
+		.card {
+			border-radius: 1rem;
+			transition: 0.2s;
+			box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+		}
+		.card:hover {
+			transform: translateY(-5px) scale(1.03);
+			box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+		}
+
+		.border-left-primary {
+			border-left: 5px solid #007bff !important;
+		}
+		.border-left-info {
+			border-left: 5px solid #17a2b8 !important;
+		}
+
+		.fs-2 {
+			font-size: 2rem;
+		}
+		.me-3 {
+			margin-right: 1rem;
+		}
+
+		.section-title {
+			font-weight: 700;
+			color: #2d3a8c;
+			margin-bottom: 1.2rem;
+			letter-spacing: 0.5px;
+		}
+
+		.alert-primary {
+			background: linear-gradient(90deg, #e0e7ff 0%, #c7d2fe 100%);
+			color: #2d3a8c;
+			border: none;
+			border-radius: 0.75rem;
+			font-size: 1.1rem;
+		}
+
+		.list-group-item.p-1 {
+			padding-top: 0.25rem !important;
+			padding-bottom: 0.25rem !important;
+			background: transparent;
+			border: none;
+		}
+
+		.badge {
+			font-size: 0.95em;
+			padding: 0.4em 0.8em;
+			border-radius: 0.5em;
+			font-weight: 600;
+			letter-spacing: 0.03em;
+			vertical-align: middle;
+		}
+
+		.progress {
+			height: 12px;
+			border-radius: 8px;
+			background: #e5e7eb;
+		}
+		.progress-bar {
+			border-radius: 8px;
+			font-size: 0.9em;
+		}
+
+		@media (max-width: 768px) {
+			.container.mt-4 {
+				padding: 0 0.5rem;
+			}
+			.card {
+				margin-bottom: 1.2rem;
+			}
+		}
+
+		.icp-list li {
+			margin-bottom: 0.5em;
+		}
+
+		/* 🎨 Tambahan CSS baru untuk Status Tugas Akhir */
+		.status-card {
+			padding: 1.5rem;
+			min-height: 100%;
+			transition: all 0.2s ease-in-out;
+			border-radius: 1rem;
+			box-shadow: 0 1px 8px rgba(0, 0, 0, 0.05);
+		}
+		.status-card:hover {
+			transform: translateY(-4px);
+			box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+		}
+		.status-card h6 {
+			font-weight: 600;
+			font-size: 1rem;
+		}
+		.status-card p,
+		.status-card li {
+			font-size: 0.95rem;
+		}
+		.status-card ul {
+			padding-left: 0.5rem;
+		}
+
+		/* 👁️ Responsif grid spacing */
+		.row.g-4 > [class*="col-"] {
+			margin-bottom: 1.5rem;
+		}
+
+		</style>
+	</head>
+
+	<body>
+
+		<div class="pre-loader">
+			<div class="pre-loader-box">
+				<div class="loader-logo">
+					<img src="vendors/images/logo_loading.png" alt="" />
+				</div>
+				<div class="loader-progress" id="progress_div">
+					<div class="bar" id="bar1"></div>
+				</div>
+				<div class="percent" id="percent1">0%</div>
+				<div class="loading-text">Loading...</div>
+			</div>
+		</div>
+
+		<div class="header">
+			<div class="header-left">
+				<div class="menu-icon bi bi-list"></div>
+				<div
+					class="search-toggle-icon bi bi-search"
+					data-toggle="header_search"
+				></div>
+				<div class="header-search">
+					<form>
+						<div class="form-group mb-0">
+							<i class="dw dw-search2 search-icon"></i>
+							<input
+								type="text"
+								class="form-control search-input"
+								placeholder="Search Here"
+							/>
+							<div class="dropdown">
+								<a
+									class="dropdown-toggle no-arrow"
+									href="#"
+									role="button"
+									data-toggle="dropdown"
+								>
+									<i class="ion-arrow-down-c"></i>
+								</a>
+								<div class="dropdown-menu dropdown-menu-right">
+									<div class="form-group row">
+										<label class="col-sm-12 col-md-2 col-form-label"
+											>From</label
+										>
+										<div class="col-sm-12 col-md-10">
+											<input
+												class="form-control form-control-sm form-control-line"
+												type="text"
+											/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-12 col-md-2 col-form-label">To</label>
+										<div class="col-sm-12 col-md-10">
+											<input
+												class="form-control form-control-sm form-control-line"
+												type="text"
+											/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-12 col-md-2 col-form-label"
+											>Subject</label
+										>
+										<div class="col-sm-12 col-md-10">
+											<input
+												class="form-control form-control-sm form-control-line"
+												type="text"
+											/>
+										</div>
+									</div>
+									<div class="text-right">
+										<button class="btn btn-primary">Search</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+
+			<div class="header-right">
+				<div class="dashboard-setting user-notification">
+					<div class="dropdown">
+						<a
+							class="dropdown-toggle no-arrow"
+							href="javascript:;"
+							data-toggle="right-sidebar"
+						>
+							<i class="dw dw-settings2"></i>
+						</a>
+					</div>
+				</div>
+
+				<div class="user-notification">
+					<div class="dropdown">
+						<a
+							class="dropdown-toggle no-arrow"
+							href="#"
+							role="button"
+							data-toggle="dropdown"
+						>
+							<i class="icon-copy dw dw-notification"></i>
+							<span class="badge notification-active"></span>
+						</a>
+						<div class="dropdown-menu dropdown-menu-right">
+							<div class="notification-list mx-h-350 customscroll">
+								<ul id="notif-list">
+									<!-- Notifikasi akan dimuat lewat JavaScript -->
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="user-info-dropdown">
+					<div class="dropdown">
+						<a
+							class="dropdown-toggle"
+							href="#"
+							role="button"
+							data-toggle="dropdown"
+						>
+							<span class="user-icon">
+								<img src="vendors/images/photo1.jpg" alt="" />
+							</span>
+							<span class="user-name" id="username"></span>
+						</a>
+						<div
+							class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list"
+						>
+							<a class="dropdown-item" href="#" onclick="redirectToProfile(); return false;">
+								<i class="dw dw-user1"></i> Profile
+							</a>
+							<a class="dropdown-item" href="#" onclick="logout(); return false;">
+								<i class="dw dw-logout"></i> Log Out
+							</a>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		<div class="right-sidebar">
+			<div class="sidebar-title">
+				<h3 class="weight-600 font-16 text-blue">
+					Layout Settings
+					<span class="btn-block font-weight-400 font-12"
+						>User Interface Settings</span
+					>
+				</h3>
+				<div class="close-sidebar" data-toggle="right-sidebar-close">
+					<i class="icon-copy ion-close-round"></i>
+				</div>
+			</div>
+			<div class="right-sidebar-body customscroll">
+				<div class="right-sidebar-body-content">
+					<h4 class="weight-600 font-18 pb-10">Header Background</h4>
+					<div class="sidebar-btn-group pb-30 mb-10">
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary header-white active"
+							>White</a
+						>
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary header-dark"
+							>Dark</a
+						>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Sidebar Background</h4>
+					<div class="sidebar-btn-group pb-30 mb-10">
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary sidebar-light"
+							>White</a
+						>
+						<a
+							href="javascript:void(0);"
+							class="btn btn-outline-primary sidebar-dark active"
+							>Dark</a
+						>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Menu Dropdown Icon</h4>
+					<div class="sidebar-radio-group pb-10 mb-10">
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-1"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-1"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebaricon-1"
+								><i class="fa fa-angle-down"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-2"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-2"
+							/>
+							<label class="custom-control-label" for="sidebaricon-2"
+								><i class="ion-plus-round"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebaricon-3"
+								name="menu-dropdown-icon"
+								class="custom-control-input"
+								value="icon-style-3"
+							/>
+							<label class="custom-control-label" for="sidebaricon-3"
+								><i class="fa fa-angle-double-right"></i
+							></label>
+						</div>
+					</div>
+
+					<h4 class="weight-600 font-18 pb-10">Menu List Icon</h4>
+					<div class="sidebar-radio-group pb-30 mb-10">
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-1"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-1"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebariconlist-1"
+								><i class="ion-minus-round"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-2"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-2"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-2"
+								><i class="fa fa-circle-o" aria-hidden="true"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-3"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-3"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-3"
+								><i class="dw dw-check"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-4"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-4"
+								checked=""
+							/>
+							<label class="custom-control-label" for="sidebariconlist-4"
+								><i class="icon-copy dw dw-next-2"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-5"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-5"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-5"
+								><i class="dw dw-fast-forward-1"></i
+							></label>
+						</div>
+						<div class="custom-control custom-radio custom-control-inline">
+							<input
+								type="radio"
+								id="sidebariconlist-6"
+								name="menu-list-icon"
+								class="custom-control-input"
+								value="icon-list-style-6"
+							/>
+							<label class="custom-control-label" for="sidebariconlist-6"
+								><i class="dw dw-next"></i
+							></label>
+						</div>
+					</div>
+
+					<div class="reset-options pt-30 text-center">
+						<button class="btn btn-danger" id="reset-settings">
+							Reset Settings
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="left-side-bar">
+			<div class="brand-logo">
+				<a href="/taruna/dashboard">
+					<img src="vendors/images/logo_taruna_panel.png" alt="" class="dark-logo" />
+				<div class="close-sidebar" data-toggle="left-sidebar-close">
+					<i class="ion-close-round"></i>
+				</div>
+			</div>
+
+			<div class="menu-block customscroll">
+				<div class="sidebar-menu">
+					<ul id="accordion-menu">
+						<li>
+							<a href="/taruna/dashboard" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-house"></span
+								><span class="mtext">Home</span>
+							</a>
+						</li>
+
+						<li>
+							<a href="/taruna/icp" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Idea Concept Project</span>
+							</a>
+						</li>
+						
+						<li>
+							<a href="/taruna/proposal" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Proposal</span>
+							</a>
+						</li>
+
+						<li>
+							<a href="/taruna/ta70" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Tugas Akhir 70%</span>
+							</a>
+						</li>
+
+						<li>
+							<a href="/taruna/ta100" class="dropdown-toggle no-arrow">
+								<span class="micon bi bi-file-earmark-text"></span
+								><span class="mtext">Tugas Akhir 100%</span>
+							</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="mobile-menu-overlay"></div>
+
+		<div class="main-container">
+			<div class="xs-pd-20-10 pd-ltr-20">
+
+				<div class="card-box pd-20 height-100-p mb-30">
+					<div class="row align-items-center">
+						<div class="col-md-4">
+							<img src="vendors/images/banner-img.png" alt="" />
+						</div>
+						<div class="col-md-8">
+							<h4 class="font-20 weight-500 mb-10 text-capitalize">
+								Welcome back <span class="weight-600 font-30 text-blue" id="nama-taruna-header">Taruna!</span>
+							</h4>
+							<p class="font-18 max-width-600">
+								Selamat datang kembali! Di bawah ini adalah rangkuman lengkap mengenai perkembangan tugas akhir Anda. Silakan tinjau setiap bagian untuk memastikan semuanya berjalan sesuai rencana.
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="container mt-4">
+					<div class="row">
+					  <div class="col-md-4">
+						<div class="card shadow-sm p-3 mb-4">
+						  <h6 class="text-muted">Nama</h6>
+						  <p class="mb-0 fw-bold" id="nama-taruna">-</p>
+						</div>
+					  </div>
+					  <div class="col-md-4">
+						<div class="card shadow-sm p-3 mb-4">
+						  <h6 class="text-muted">NPM</h6>
+						  <p class="mb-0 fw-bold" id="npm-taruna">-</p>
+						</div>
+					  </div>
+					  <div class="col-md-4">
+						<div class="card shadow-sm p-3 mb-4">
+						  <h6 class="text-muted">Jurusan</h6>
+						  <p class="mb-0 fw-bold" id="jurusan">-</p>
+						</div>
+					  </div>
+					  <div class="col-md-4">
+						<div class="card shadow-sm p-3 mb-4">
+						  <h6 class="text-muted">Kelas</h6>
+						  <p class="mb-0 fw-bold" id="kelas">-</p>
+						</div>
+					  </div>
+					</div>
+				  
+					<h4 class="section-title mb-3">📄 Status Tugas Akhir</h4>
+					<div class="row g-4">
+					<!-- ICP -->
+					<div class="col-md-6 col-lg-4">
+						<div class="card status-card border-start border-primary border-4">
+						<h6 class="text-muted">ICP</h6>
+						<p class="mb-1">Status:</p>
+						<div id="status-icp">Belum Submit</div>
+						</div>
+					</div>
+
+					<!-- Dosen Pembimbing -->
+					<div class="col-md-6 col-lg-4">
+						<div class="card status-card border-start border-info border-4">
+						<h6 class="text-muted">Dosen Pembimbing</h6>
+						<p class="fw-bold mb-0" id="dosen-pembimbing">-</p>
+						</div>
+					</div>
+
+					<!-- Proposal -->
+					<div class="col-md-6 col-lg-4">
+						<div class="card status-card border-start border-warning border-4">
+						<h6 class="text-muted">Proposal</h6>
+						<p class="mb-1">Status: <span class="fw-bold" id="status-proposal-badge"><span id="status-proposal">Menunggu</span></span></p>
+						<ul class="list-group list-group-flush small">
+							<li class="list-group-item p-1">Ketua Penguji: <span id="penguji-ketua-proposal">-</span></li>
+							<li class="list-group-item p-1">Penguji 1: <span id="penguji-1-proposal">-</span></li>
+							<li class="list-group-item p-1">Penguji 2: <span id="penguji-2-proposal">-</span></li>
+						</ul>
+						</div>
+					</div>
+
+					<!-- Laporan 70% -->
+					<div class="col-md-6 col-lg-4">
+						<div class="card status-card border-start border-success border-4">
+						<h6 class="text-muted">Laporan 70%</h6>
+						<p class="mb-1">Status: <span class="fw-bold" id="status-ta70">Belum Submit</span></p>
+						<ul class="list-group list-group-flush small">
+							<li class="list-group-item p-1">Penguji 1: <span id="penguji-1-laporan70">-</span></li>
+							<li class="list-group-item p-1">Penguji 2: <span id="penguji-2-laporan70">-</span></li>
+						</ul>
+						</div>
+					</div>
+
+					<!-- Laporan 100% -->
+					<div class="col-md-6 col-lg-4">
+						<div class="card status-card border-start border-warning border-4">
+						<h6 class="text-muted">Laporan 100%</h6>
+						<p class="mb-1">Status: <span id="status-ta100">Belum Submit</span></p>
+						<ul class="list-group list-group-flush small">
+							<li class="list-group-item p-1">Ketua Penguji: <span id="penguji-ketua-laporan100">-</span></li>
+							<li class="list-group-item p-1">Penguji 1: <span id="penguji-1-laporan100">-</span></li>
+							<li class="list-group-item p-1">Penguji 2: <span id="penguji-2-laporan100">-</span></li>
+						</ul>
+						</div>
+					</div>
+					</div>
+
+				</div>
+
+			</div>
+		</div>
+
+		<!-- js -->
+		<script src="vendors/scripts/core.js"></script>
+		<script src="vendors/scripts/script.min.js"></script>
+		<script src="vendors/scripts/process.js"></script>
+		<script src="vendors/scripts/layout-settings.js"></script>
+		<script src="src/plugins/apexcharts/apexcharts.min.js"></script>
+		<script src="src/plugins/datatables/js/jquery.dataTables.min.js"></script>
+		<script src="src/plugins/datatables/js/dataTables.bootstrap4.min.js"></script>
+		<script src="src/plugins/datatables/js/dataTables.responsive.min.js"></script>
+		<script src="src/plugins/datatables/js/responsive.bootstrap4.min.js"></script>
+		<script src="vendors/scripts/dashboard3.js"></script>
+		<!-- Google Tag Manager (noscript) -->
+		<noscript
+			><iframe
+				src="https://www.googletagmanager.com/ns.html?id=GTM-NXZMQSS"
+				height="0"
+				width="0"
+				style="display: none; visibility: hidden"
+			></iframe
+		></noscript>
+		<!-- End Google Tag Manager (noscript) -->
+
+
+		<script>
+		// JS notifikasi
+		document.addEventListener("DOMContentLoaded", function () {
+			fetch("http://104.43.89.154:8088/notifications?role=Taruna")
+				.then(res => res.json())
+				.then(data => {
+					const ul = document.getElementById("notif-list");
+					ul.innerHTML = ""; // Kosongkan
+
+					if (data.length === 0) {
+						ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
+						return;
+					}
+
+					data.forEach(item => {
+						const li = document.createElement("li");
+						li.innerHTML = `
+							<a href="/taruna/detailinformasitaruna?id=${item.ID}">
+								<img src="vendors/images/logo.png" alt="" />
+								<h3>${item.Judul}</h3>
+								<p>${item.Deskripsi.length > 50 ? item.Deskripsi.substring(0, 50) + "..." : item.Deskripsi}</p>
+							</a>`;
+						ul.appendChild(li);
+					});
+
+					document.querySelector(".notification-active").style.display = "inline-block";
+				})
+				.catch(err => {
+					console.error("Gagal mengambil notifikasi:", err);
+				});
+		});
+
+		function redirectToProfile() {
+			window.location.href = '/taruna/profile';
+		}
+
+		// Fungsi untuk logout
+		async function logout() {
+			try {
+				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+				
+				const response = await fetch('http://104.43.89.154:8085/logout', {
+					method: 'POST',
+					headers: {
+						'Authorization': token ? `Bearer ${token}` : '',
+						'Content-Type': 'application/json'
+					},
+					credentials: 'include'
+				});
+
+				const data = await response.json();
+				
+				if (response.ok && data.status === 'success') {
+					// Clear localStorage
+					localStorage.clear();
+					
+					// Clear sessionStorage
+					sessionStorage.clear();
+					
+					// Clear all cookies for all possible paths
+					const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
+					const cookies = document.cookie.split(';');
+					
+					for (let cookie of cookies) {
+						const eqPos = cookie.indexOf('=');
+						const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+						
+						// Hapus cookie untuk setiap path
+						paths.forEach(path => {
+							document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+						});
+					}
+					
+					// Clear cache if browser supports it
+					if (window.caches) {
+						caches.keys().then(names => {
+							names.forEach(name => {
+								caches.delete(name);
+							});
+						});
+					}
+
+					// Clear application cache
+					if (window.applicationCache) {
+						window.applicationCache.abort();
+					}
+
+					// Clear service workers if any
+					if (navigator.serviceWorker) {
+						navigator.serviceWorker.getRegistrations().then(registrations => {
+							registrations.forEach(registration => {
+								registration.unregister();
+							});
+						});
+					}
+					
+					console.log('Logout berhasil');
+					
+					// Force reload halaman login untuk membersihkan cache
+					window.location.href = '/loginusers';
+					window.location.reload(true);
+				} else {
+					throw new Error(data.message || 'Gagal logout');
+				}
+			} catch (error) {
+				console.error('Error during logout:', error);
+				alert('Gagal logout. Silakan coba lagi.');
+			}
+		}
+
+		// Modify the existing DOMContentLoaded event listener
+		document.addEventListener('DOMContentLoaded', function () {
+			const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+			if (!token) {
+				window.location.replace('/loginusers');
+				return;
+			}
+
+			const userId = localStorage.getItem('userId');
+			if (!userId) {
+				window.location.replace('/loginusers');
+				return;
+			}
+
+			// Ambil data user untuk profile
+			fetch(`http://104.43.89.154:8086/users?id=${userId}`, {
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			})
+				.then(response => response.json())
+				.then(user => {
+					const usernameElement = document.getElementById('username');
+					if (usernameElement) {
+						usernameElement.textContent = user.username || user.nama_lengkap || 'User';
+					}
+				})
+				.catch(() => {
+					const usernameElement = document.getElementById('username');
+					if (usernameElement) {
+						usernameElement.textContent = 'User';
+					}
+				});
+
+			// Fetch data dashboard taruna
+			fetch(`http://104.43.89.154:8086/taruna/dashboard?user_id=${userId}`, {
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			})
+				.then(response => response.json())
+				.then(result => {
+					if (result.status === 'success' && result.data) {
+						const data = result.data;
+
+						// Identitas taruna
+						document.getElementById('nama-taruna').textContent = data.nama_lengkap || '-';
+						document.getElementById('nama-taruna-header').textContent = data.nama_lengkap || 'Taruna';
+						document.getElementById('npm-taruna').textContent = data.npm || '-';
+						document.getElementById('jurusan').textContent = data.jurusan || '-';
+						document.getElementById('kelas').textContent = data.kelas || '-';
+
+						// ICP
+						const icpList = data.icp_list || [];
+						const statusIcpElem = document.getElementById('status-icp');
+						if (icpList.length === 0) {
+							statusIcpElem.innerHTML = '<span class="badge bg-secondary">Belum mengumpulkan ICP</span>';
+						} else {
+							let html = '<ul class="icp-list" style="padding-left: 1.2em;">';
+							icpList.forEach(icp => {
+								let badgeClass = 'badge bg-secondary';
+								if (icp.status?.toLowerCase() === 'pending') badgeClass = 'badge bg-warning text-dark';
+								if (icp.status?.toLowerCase() === 'approved') badgeClass = 'badge bg-success';
+								if (icp.status?.toLowerCase() === 'rejected') badgeClass = 'badge bg-danger';
+								html += `<li><b>${icp.topik_penelitian || '-'}</b> &mdash; <span class="${badgeClass}">${icp.status || '-'}</span></li>`;
+							});
+							html += '</ul>';
+							statusIcpElem.innerHTML = html;
+						}
+
+						// Dosen pembimbing
+						const dosenPembimbing = data.dosen_pembimbing;
+						document.getElementById('dosen-pembimbing').textContent =
+							(!dosenPembimbing || dosenPembimbing === '-') ? 'Anda belum memiliki dosen pembimbing' : dosenPembimbing;
+
+						// Proposal
+						const proposal = data.proposal || {};
+						const statusProposal = proposal.status || 'Menunggu';
+						const statusBadge = document.getElementById('status-proposal-badge');
+						let badgeClass = 'badge bg-secondary';
+						if (statusProposal.toLowerCase() === 'pending') badgeClass = 'badge bg-warning text-dark';
+						if (statusProposal.toLowerCase() === 'approved') badgeClass = 'badge bg-success';
+						if (statusProposal.toLowerCase() === 'rejected') badgeClass = 'badge bg-danger';
+						statusBadge.innerHTML = `<span class="${badgeClass}">${statusProposal}</span>`;
+						document.getElementById('penguji-ketua-proposal').textContent = proposal.penguji_ketua || '-';
+						document.getElementById('penguji-1-proposal').textContent = proposal.penguji_1 || '-';
+						document.getElementById('penguji-2-proposal').textContent = proposal.penguji_2 || '-';
+
+						// Laporan 70%
+						const laporan70 = data.laporan_70 || {};
+						const laporan70Status = laporan70.status || 'Belum Submit';
+						const statusTa70Elem = document.getElementById('status-ta70');
+
+						let ta70BadgeClass = 'badge bg-secondary';
+						const statusLower = laporan70Status.toLowerCase();
+						if (statusLower === 'pending') ta70BadgeClass = 'badge bg-warning text-dark';
+						if (statusLower === 'approved') ta70BadgeClass = 'badge bg-success';
+						if (statusLower === 'rejected') ta70BadgeClass = 'badge bg-danger';
+						if (statusLower === 'belum submit') ta70BadgeClass = 'badge bg-secondary';
+
+						statusTa70Elem.innerHTML = `<span class="${ta70BadgeClass}">${laporan70Status}</span>`;
+
+						document.getElementById('penguji-1-laporan70').textContent = laporan70.penguji_1 || '-';
+						document.getElementById('penguji-2-laporan70').textContent = laporan70.penguji_2 || '-';
+
+						// Laporan 100%
+						const laporan100 = data.laporan_100 || {};
+						const laporan100Status = laporan100.status || 'Belum Submit';
+						const statusTa100Elem = document.getElementById('status-ta100');
+
+						let ta100BadgeClass = 'badge bg-secondary';
+						const status100Lower = laporan100Status.toLowerCase();
+						if (status100Lower === 'pending') ta100BadgeClass = 'badge bg-warning text-dark';
+						if (status100Lower === 'approved') ta100BadgeClass = 'badge bg-success';
+						if (status100Lower === 'rejected') ta100BadgeClass = 'badge bg-danger';
+						if (status100Lower === 'belum submit') ta100BadgeClass = 'badge bg-secondary';
+
+						statusTa100Elem.innerHTML = `<span class="${ta100BadgeClass}">${laporan100Status}</span>`;
+
+						document.getElementById('penguji-ketua-laporan100').textContent = laporan100.penguji_ketua || '-';
+						document.getElementById('penguji-1-laporan100').textContent = laporan100.penguji_1 || '-';
+						document.getElementById('penguji-2-laporan100').textContent = laporan100.penguji_2 || '-';
+
+					} else {
+						// Fallback tampilan kosong
+						document.getElementById('nama-taruna').textContent = '-';
+						document.getElementById('nama-taruna-header').textContent = 'Taruna';
+						document.getElementById('npm-taruna').textContent = '-';
+						document.getElementById('jurusan').textContent = '-';
+						document.getElementById('kelas').textContent = '-';
+						document.getElementById('status-icp').innerHTML = 'Belum mengumpulkan ICP';
+						document.getElementById('dosen-pembimbing').textContent = 'Anda belum memiliki dosen pembimbing';
+						document.getElementById('status-proposal-badge').innerHTML = '<span class="badge bg-secondary">-</span>';
+						document.getElementById('penguji-ketua-proposal').textContent = '-';
+						document.getElementById('penguji-1-proposal').textContent = '-';
+						document.getElementById('penguji-2-proposal').textContent = '-';
+						document.getElementById('status-ta70').textContent = 'Belum Submit';
+						document.getElementById('penguji-1-laporan70').textContent = '-';
+						document.getElementById('penguji-2-laporan70').textContent = '-';
+						document.getElementById('status-ta100').textContent = 'Belum Submit';
+						document.getElementById('penguji-ketua-laporan100').textContent = '-';
+						document.getElementById('penguji-1-laporan100').textContent = '-';
+						document.getElementById('penguji-2-laporan100').textContent = '-';
+					}
+				})
+				.catch(() => {
+					document.getElementById('nama-taruna').textContent = '-';
+					document.getElementById('nama-taruna-header').textContent = 'Taruna';
+					document.getElementById('npm-taruna').textContent = '-';
+					document.getElementById('jurusan').textContent = '-';
+					document.getElementById('kelas').textContent = '-';
+					document.getElementById('status-icp').innerHTML = 'Belum mengumpulkan ICP';
+					document.getElementById('dosen-pembimbing').textContent = 'Anda belum memiliki dosen pembimbing';
+					document.getElementById('status-proposal-badge').innerHTML = '<span class="badge bg-secondary">-</span>';
+					document.getElementById('penguji-ketua-proposal').textContent = '-';
+					document.getElementById('penguji-1-proposal').textContent = '-';
+					document.getElementById('penguji-2-proposal').textContent = '-';
+					document.getElementById('status-ta70').textContent = 'Belum Submit';
+					document.getElementById('penguji-1-laporan70').textContent = '-';
+					document.getElementById('penguji-2-laporan70').textContent = '-';
+					document.getElementById('status-ta100').textContent = 'Belum Submit';
+					document.getElementById('penguji-ketua-laporan100').textContent = '-';
+					document.getElementById('penguji-1-laporan100').textContent = '-';
+					document.getElementById('penguji-2-laporan100').textContent = '-';
+				});
+		});
+
+		// Event listener untuk tombol logout
+		document.addEventListener('DOMContentLoaded', function() {
+			const logoutButton = document.querySelector('a[onclick="logout()"]');
+			if (logoutButton) {
+				logoutButton.addEventListener('click', function(e) {
+					e.preventDefault();
+					logout();
+				});
+			}
+		});
+		</script>
+
+	</body>
+</html>
