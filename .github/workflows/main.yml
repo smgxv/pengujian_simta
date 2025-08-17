@@ -371,7 +371,7 @@ jobs:
   #           docker run -d -p 8088:8088 --name pengujian-notification-service -v /home/youruser/uploads:/app/uploads smgxv/pengujian-notification-service
   #           docker network connect simta_net pengujian-notification-service
 
-    zap_scan:
+  zap_scan:
     runs-on: ubuntu-latest
     name: Scan the webapplication
     steps:
