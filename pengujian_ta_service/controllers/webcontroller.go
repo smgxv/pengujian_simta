@@ -779,26 +779,7 @@ func ICP(w http.ResponseWriter, r *http.Request) {
 	// Set header content type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// Ambil token dari cookie atau header
-	var tokenString string
-	cookie, err := r.Cookie("token")
-	if err == nil {
-		tokenString = cookie.Value
-	} else {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader != "" {
-			tokenString = strings.Replace(authHeader, "Bearer ", "", 1)
-		}
-	}
-
-	// Validasi token
-	claims, err := utils.ParseJWT(tokenString)
-	if err != nil || strings.ToLower(claims.Role) != "taruna" { // Ubah dari "admin" menjadi "taruna"
-		http.Redirect(w, r, "/loginusers", http.StatusSeeOther)
-		return
-	}
-
-	// Serve the ICP HTML file
+	// ✅ Langsung serve file tanpa validasi token / role
 	http.ServeFile(w, r, "static/taruna/icp.html")
 }
 
@@ -995,25 +976,6 @@ func Laporan100(w http.ResponseWriter, r *http.Request) {
 func DetailInformasiTaruna(w http.ResponseWriter, r *http.Request) {
 	// Set header content type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	// Ambil token dari cookie atau header
-	var tokenString string
-	cookie, err := r.Cookie("token")
-	if err == nil {
-		tokenString = cookie.Value
-	} else {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader != "" {
-			tokenString = strings.Replace(authHeader, "Bearer ", "", 1)
-		}
-	}
-
-	// Validasi token
-	claims, err := utils.ParseJWT(tokenString)
-	if err != nil || strings.ToLower(claims.Role) != "taruna" {
-		http.Redirect(w, r, "/loginusers", http.StatusSeeOther)
-		return
-	}
 
 	http.ServeFile(w, r, "static/taruna/detail_informasi.html")
 }

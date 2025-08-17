@@ -826,1190 +826,708 @@
 		</div>
 
 		<script>
-			// JS notifikasi
+			/* ===========================
+			   Helper
+			=========================== */
+			const API_USER   = 'http://104.43.89.154:8086';
+			const API_AUTH   = 'http://104.43.89.154:8085';
+			const API_NOTIF  = 'http://104.43.89.154:8088';
+			const API_TA     = 'http://104.43.89.154:8087';
+			
+			function getQueryParam(key){
+			  const p = new URLSearchParams(window.location.search);
+			  return p.get(key);
+			}
+			function getUserId() {
+			  return localStorage.getItem('userId') || getQueryParam('user_id') || '';
+			}
+			function setText(id, val){
+			  const el = document.getElementById(id);
+			  if (el) el.textContent = val;
+			}
+			function escapeHtml(str) {
+			  return (str || '').toString().replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+			}
+			
+			/* ===========================
+			   Notifikasi (tanpa token)
+			=========================== */
 			document.addEventListener("DOMContentLoaded", function () {
-				fetch("http://104.43.89.154:8088/notifications?role=Taruna")
-					.then(res => res.json())
-					.then(data => {
-						const ul = document.getElementById("notif-list");
-						ul.innerHTML = ""; // Kosongkan
-
-						if (data.length === 0) {
-							ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
-							return;
-						}
-
-						data.forEach(item => {
-							const li = document.createElement("li");
-							li.innerHTML = `
-								<a href="/taruna/detailinformasitaruna?id=${item.ID}">
-									<img src="vendors/images/logo.png" alt="" />
-									<h3>${item.Judul}</h3>
-									<p>${item.Deskripsi.length > 50 ? item.Deskripsi.substring(0, 50) + "..." : item.Deskripsi}</p>
-								</a>`;
-							ul.appendChild(li);
-						});
-
-						document.querySelector(".notification-active").style.display = "inline-block";
-					})
-					.catch(err => {
-						console.error("Gagal mengambil notifikasi:", err);
-					});
-			});
-
-			// Fungsi untuk memuat data ICP
-			async function loadICPData() {
-				const userId = localStorage.getItem('userId');
-				try {
-					const response = await fetch(`http://104.43.89.154:8087/icp?user_id=${userId}`);
-					const data = await response.json();
-					
-					if (data.status === 'success') {
-						const tbody = document.querySelector('.data-table tbody');
-						tbody.innerHTML = '';
-						
-						data.data.forEach(icp => {
-							const statusClass = {
-								'pending': 'badge badge-warning',
-								'approved': 'badge badge-success',
-								'rejected': 'badge badge-danger'
-							}[icp.status] || 'badge badge-secondary';
-
-							tbody.innerHTML += `
-								<tr>
-									<td>${icp.topik_penelitian}</td>
-									<td>${icp.dosen_nama}</td>
-									<td><span class="${statusClass}">${icp.status}</span></td>
-									<td>
-										<div class="dropdown">
-											<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
-											href="#" role="button" data-toggle="dropdown">
-												<i class="dw dw-more"></i>
-											</a>
-											<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
-												<a class="dropdown-item" href="http://104.43.89.154:8087/icp/download?filename=${icp.file_path.replace('uploads/icp/', '')}" download>
-													<i class="dw dw-download"></i> Download
-												</a>
-											</div>
-										</div>
-									</td>
-								</tr>
-							`;
-						});
-					}
-				} catch (error) {
-					console.error('Error:', error);
-				}
-			}
-
-			// Fungsi untuk memuat data ICP hasil review dosen
-			async function loadICPReviewData() {
-				const userId = localStorage.getItem('userId');
-				if (!userId) {
-					console.error('User ID not found in localStorage');
-					return;
-				}
-				
-				try {
-					console.log('Fetching review data for user:', userId);
-					const response = await fetch(`http://104.43.89.154:8087/reviewicp/dosen/list?taruna_id=${userId}`);
-					const data = await response.json();
-					
-					if (data.status === 'success') {
-						// Find the table that follows the heading "Tabel Hasil Review Dosen"
-						const tables = document.querySelectorAll('.card-box table');
-						let reviewTable = null;
-						
-						for (const table of tables) {
-							const heading = table.closest('.card-box').querySelector('h4.text-blue');
-							if (heading && heading.textContent.includes('Tabel Hasil Review Dosen')) {
-								reviewTable = table.querySelector('tbody');
-								break;
-							}
-						}
-						
-						if (!reviewTable) {
-							console.error('Review table not found');
-							return;
-						}
-						
-						reviewTable.innerHTML = '';
-						
-						if (data.data && data.data.length > 0) {
-							data.data.forEach(review => {
-								reviewTable.innerHTML += `
-									<tr>
-										<td>${review.topik_penelitian || '-'}</td>
-										<td>${review.dosen_nama || '-'}</td>
-										<td>${review.cycle_number || 1}</td>
-										<td>${review.keterangan || '-'}</td>
-										<td>
-											<div class="dropdown">
-												<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
-												   href="#" role="button" data-toggle="dropdown">
-													<i class="dw dw-more"></i>
-												</a>
-												<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
-													<a class="dropdown-item" href="http://104.43.89.154:8087/download/reviewicp/dosen?path=${review.file_path}" download>
-														<i class="dw dw-download"></i> Download Review
-													</a>
-													<a class="dropdown-item" href="#" onclick="openUploadRevisionModal(${review.dosen_id}, '${review.topik_penelitian}')">
-														<i class="dw dw-upload"></i> Upload Revisi
-													</a>
-												</div>
-											</div>
-										</td>
-									</tr>
-								`;
-							});
-						} else {
-							reviewTable.innerHTML = `
-								<tr>
-									<td colspan="5" class="text-center">Tidak ada data review</td>
-								</tr>
-							`;
-						}
-					} else {
-						console.error('Failed to load review data:', data.message);
-						showAlert('Gagal memuat data review: ' + (data.message || 'Unknown error'), 'danger');
-					}
-				} catch (error) {
-					console.error('Error loading review data:', error);
-					showAlert('Gagal memuat data review: ' + error.message, 'danger');
-				}
-			}
-
-			// Fungsi Logout
-			async function logout() {
-				try {
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					
-					const response = await fetch('http://104.43.89.154:8085/logout', {
-						method: 'POST',
-						headers: {
-							'Authorization': token ? `Bearer ${token}` : '',
-							'Content-Type': 'application/json'
-						},
-						credentials: 'include'
-					});
-
-					const data = await response.json();
-					
-					if (response.ok && data.status === 'success') {
-						// Clear localStorage
-						localStorage.clear();
-						
-						// Clear sessionStorage
-						sessionStorage.clear();
-						
-						// Clear all cookies for all possible paths
-						const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
-						const cookies = document.cookie.split(';');
-						
-						for (let cookie of cookies) {
-							const eqPos = cookie.indexOf('=');
-							const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-							
-							// Hapus cookie untuk setiap path
-							paths.forEach(path => {
-								document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
-							});
-						}
-						
-						// Clear cache if browser supports it
-						if (window.caches) {
-							caches.keys().then(names => {
-								names.forEach(name => {
-									caches.delete(name);
-								});
-							});
-						}
-
-						// Clear application cache
-						if (window.applicationCache) {
-							window.applicationCache.abort();
-						}
-
-						// Clear service workers if any
-						if (navigator.serviceWorker) {
-							navigator.serviceWorker.getRegistrations().then(registrations => {
-								registrations.forEach(registration => {
-									registration.unregister();
-								});
-							});
-						}
-						
-						console.log('Logout berhasil');
-						
-						// Force reload halaman login untuk membersihkan cache
-						window.location.href = '/loginusers';
-						window.location.reload(true);
-					} else {
-						throw new Error(data.message || 'Gagal logout');
-					}
-				} catch (error) {
-					console.error('Error during logout:', error);
-					alert('Gagal logout. Silakan coba lagi.');
-				}
-			}
-
-			// dropdown untuk menampilkan dosen yang terdaftar
-			document.addEventListener('DOMContentLoaded', function() {
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				
-				console.log('Fetching dosen data...');
-				
-				fetch('http://104.43.89.154:8086/dosen', {
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				})
-				.then(response => response.json())
+			  fetch(`${API_NOTIF}/notifications?role=Taruna`)
+				.then(res => res.json())
 				.then(data => {
-					const dosenSelect = document.getElementById('dosenSelect');
-					
-					if (data.status === 'success' && Array.isArray(data.data)) {
-						data.data.forEach(dosen => {
-							const option = document.createElement('option');
-							option.value = dosen.id;
-							option.textContent = `${dosen.nama_lengkap} - ${dosen.jurusan}`;
-							dosenSelect.appendChild(option);
-						});
-					}
-				})
-				.catch(error => {
-					console.error('Error:', error);
-				});
-			});
-
-			// Tambahkan pengecekan autentikasi saat halaman dimuat
-			document.addEventListener('DOMContentLoaded', function() {
-				// Cek token
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				if (!token) {
-					window.location.replace('/loginusers');
+				  const ul = document.getElementById("notif-list");
+				  if (!ul) return;
+				  ul.innerHTML = "";
+			
+				  if (!Array.isArray(data) || data.length === 0) {
+					ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
 					return;
-				}
-
-				// Ambil ID user dari token
-				const userId = localStorage.getItem('userId');
-
-				// Ambil data user dari API
-				fetch(`http://104.43.89.154:8086/users?id=${userId}`, {
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
+				  }
+			
+				  data.forEach(item => {
+					const li = document.createElement("li");
+					li.innerHTML = `
+					  <a href="/taruna/detailinformasitaruna?id=${item.ID}">
+						<img src="vendors/images/logo.png" alt="" />
+						<h3>${item.Judul}</h3>
+						<p>${(item.Deskripsi||'').length > 50 ? item.Deskripsi.substring(0, 50) + "..." : (item.Deskripsi||'')}</p>
+					  </a>`;
+					ul.appendChild(li);
+				  });
+			
+				  const na = document.querySelector(".notification-active");
+				  if (na) na.style.display = "inline-block";
 				})
-				.then(response => {
-					if (!response.ok) {
-						throw new Error('Gagal mengambil data user');
-					}
-					return response.json();
-				})
-				.then(user => {
-					// Update username di header
-					const usernameElement = document.getElementById('username');
-					if (usernameElement) {
-						usernameElement.textContent = user.username || user.nama_lengkap || 'User';
-					}
-				})
-				.catch(error => {
-					console.error('Error:', error);
-					const usernameElement = document.getElementById('username');
-					if (usernameElement) {
-						usernameElement.textContent = 'User';
-					}
-				});
-
-				// Validasi token dengan server
-				fetch('http://104.43.89.154:8085/taruna/dashboard', { // Ubah ke endpoint taruna
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				}).catch(() => {
-					window.location.replace('/loginusers');
-				});
+				.catch(err => console.error("Gagal mengambil notifikasi:", err));
 			});
-
-			// Pastikan event listener untuk tombol logout terpasang dengan benar
-			document.addEventListener('DOMContentLoaded', function() {
-				const logoutButton = document.querySelector('a[onclick="logout()"]');
-				if (logoutButton) {
-					logoutButton.addEventListener('click', function(e) {
-						e.preventDefault();
-						logout();
-					});
+			
+			/* ===========================
+			   ICP list (tanpa token)
+			=========================== */
+			async function loadICPData() {
+			  const userId = getUserId();
+			  if (!userId) return;
+			  try {
+				const response = await fetch(`${API_TA}/icp?user_id=${encodeURIComponent(userId)}`);
+				const data = await response.json();
+				if (data.status === 'success') {
+				  const tbody = document.querySelector('.data-table tbody');
+				  if (!tbody) return;
+				  tbody.innerHTML = '';
+				  (data.data || []).forEach(icp => {
+					const statusClass = ({
+					  'pending':'badge badge-warning',
+					  'approved':'badge badge-success',
+					  'rejected':'badge badge-danger'
+					}[(icp.status||'').toLowerCase()] || 'badge badge-secondary');
+			
+					tbody.insertAdjacentHTML('beforeend', `
+					  <tr>
+						<td>${icp.topik_penelitian || '-'}</td>
+						<td>${icp.dosen_nama || '-'}</td>
+						<td><span class="${statusClass}">${icp.status || '-'}</span></td>
+						<td>
+						  <div class="dropdown">
+							<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle" href="#" role="button" data-toggle="dropdown">
+							  <i class="dw dw-more"></i>
+							</a>
+							<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+							  <a class="dropdown-item" href="${API_TA}/icp/download?filename=${(icp.file_path||'').replace('uploads/icp/', '')}" download>
+								<i class="dw dw-download"></i> Download
+							  </a>
+							</div>
+						  </div>
+						</td>
+					  </tr>
+					`);
+				  });
 				}
-			});
-		
-			// Update nama file saat file dipilih
-			document.querySelector('.custom-file-input').addEventListener('change', function(e) {
-				var fileName = e.target.files[0] ? e.target.files[0].name : 'Choose file';
-				var label = document.querySelector('.custom-file-label');
-				label.textContent = fileName;
-				
-				var selectedFileDiv = document.getElementById('selectedFileName');
-				if (e.target.files[0]) {
-					selectedFileDiv.textContent = 'File terpilih: ' + fileName;
-					selectedFileDiv.style.display = 'block';
+			  } catch (e) { console.error('Error loadICPData:', e); }
+			}
+			
+			/* ===========================
+			   ICP review dosen (tanpa token)
+			=========================== */
+			async function loadICPReviewData() {
+			  const userId = getUserId();
+			  if (!userId) return;
+			
+			  try {
+				const response = await fetch(`${API_TA}/reviewicp/dosen/list?taruna_id=${encodeURIComponent(userId)}`);
+				const data = await response.json();
+			
+				const tables = document.querySelectorAll('.card-box table');
+				let reviewTBody = null;
+				for (const table of tables) {
+				  const heading = table.closest('.card-box')?.querySelector('h4.text-blue');
+				  if (heading && heading.textContent.includes('Tabel Hasil Review Dosen')) {
+					reviewTBody = table.querySelector('tbody'); break;
+				  }
+				}
+				if (!reviewTBody) return;
+			
+				reviewTBody.innerHTML = '';
+			
+				if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
+				  data.data.forEach(review => {
+					reviewTBody.insertAdjacentHTML('beforeend', `
+					  <tr>
+						<td>${review.topik_penelitian || '-'}</td>
+						<td>${review.dosen_nama || '-'}</td>
+						<td>${review.cycle_number || 1}</td>
+						<td>${review.keterangan || '-'}</td>
+						<td>
+						  <div class="dropdown">
+							<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle" href="#" role="button" data-toggle="dropdown">
+							  <i class="dw dw-more"></i>
+							</a>
+							<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+							  <a class="dropdown-item" href="${API_TA}/download/reviewicp/dosen?path=${encodeURIComponent(review.file_path||'')}" download>
+								<i class="dw dw-download"></i> Download Review
+							  </a>
+							  <a class="dropdown-item" href="#" onclick="openUploadRevisionModal(${review.dosen_id}, '${escapeHtml(review.topik_penelitian||'')}')">
+								<i class="dw dw-upload"></i> Upload Revisi
+							  </a>
+							</div>
+						  </div>
+						</td>
+					  </tr>
+					`);
+				  });
 				} else {
-					selectedFileDiv.style.display = 'none';
+				  reviewTBody.innerHTML = `<tr><td colspan="5" class="text-center">Tidak ada data review</td></tr>`;
 				}
-			});
-
-			// Panggil loadICPData dan loadICPReviewData saat halaman dimuat
-			document.addEventListener('DOMContentLoaded', () => {
-				loadICPData();
-				loadICPReviewData();
-			});
-
-			// Handle form submission untuk mengunggah ICP
-			document.getElementById('icpForm').addEventListener('submit', async function(e) {
-				e.preventDefault();
-				
-				const submitButton = this.querySelector('button[type="submit"]');
-				const formData = new FormData(this);
-				formData.append('user_id', localStorage.getItem('userId'));
-				
-				// Set loading state
-				submitButton.disabled = true;
-				submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
-				
-				try {
-					const response = await fetch('http://104.43.89.154:8087/upload/icp', {
-						method: 'POST',
-						body: formData
-					});
-					
-					let data;
-					try {
-						data = await response.json();
-					} catch (error) {
-						// Jika response bukan JSON, ambil text responsenya
-						const textResponse = await response.text();
-						showAlert(textResponse || 'Terjadi kesalahan pada server', 'danger');
-						return;
-					}
-
-					showAlert(data.message, data.status === 'success' ? 'success' : 'danger');
-					
-					if (data.status === 'success') {
-						this.reset();
-						document.querySelector('.custom-file-label').textContent = 'Choose file';
-						document.getElementById('selectedFileName').style.display = 'none';
-						loadICPData();
-					}
-				} catch (error) {
-					showAlert('Terjadi kesalahan pada server. Mohon coba lagi.', 'danger');
-				} finally {
-					// Reset button state
-					submitButton.disabled = false;
-					submitButton.innerHTML = 'Tambah ICP';
-				}
-			});
-
-			// Update nama file saat file dipilih
-			document.querySelector('input[name="file"]').addEventListener('change', function(e) {
-				const file = e.target.files[0];
-				const fileName = file ? file.name : 'Choose file';
-				const label = document.querySelector('.custom-file-label');
-				label.textContent = fileName;
-				
-				const selectedFileDiv = document.getElementById('selectedFileName');
-				if (file) {
-					selectedFileDiv.textContent = 'File terpilih: ' + fileName;
-					selectedFileDiv.style.display = 'block';
-				} else {
-					selectedFileDiv.style.display = 'none';
-				}
-			});
-
-			// Add function to open upload modal untuk mengunggah revisi ICP
-			function openUploadRevisionModal(dosenId, topikPenelitian) {
-				console.log('Opening modal with:', { dosenId, topikPenelitian });
-				document.getElementById('revisionDosenId').value = dosenId;
-				document.getElementById('revisionTopikPenelitian').value = topikPenelitian;
-				$('#uploadRevisionModal').modal('show');
+			  } catch (e) {
+				console.error('Error loadICPReviewData:', e);
+				showAlert('Gagal memuat data review: ' + e.message, 'danger');
+			  }
 			}
-
-			// Add function to submit revision untuk mengunggah revisi ICP
-			async function submitRevision() {
-				const form = document.getElementById('revisionForm');
-				const formData = new FormData(form);
-				
-				try {
-					const userId = localStorage.getItem('userId');
-					if (!userId) {
-						showAlert('User ID tidak ditemukan. Silakan login ulang.', 'danger');
-						return;
-					}
-
-					// Tambahkan user_id sebagai taruna_id
-					formData.append('taruna_id', userId);
-					
-					const response = await fetch('http://104.43.89.154:8087/upload/revisiicp/taruna', {
-						method: 'POST',
-						body: formData
-					});
-					
-					const data = await response.json();
-					
-					if (data.status === 'success') {
-						showAlert('Revisi ICP berhasil diunggah', 'success');
-						$('#uploadRevisionModal').modal('hide');
-						form.reset();
-						await loadICPData();
-						await loadICPReviewData();
-					} else {
-						showAlert(data.message || 'Gagal mengunggah revisi', 'danger');
-					}
-				} catch (error) {
-					console.error('Error:', error);
-					showAlert('Terjadi kesalahan: ' + error.message, 'danger');
-				}
-			}
-
-			// Fungsi untuk menampilkan alert
-			function showAlert(message, type) {
-				const alertContainer = document.getElementById('alertContainer');
-				const alertMessage = document.getElementById('alertMessage');
-				
-				// Pastikan container dan message element ada
-				if (!alertContainer || !alertMessage) {
-					console.error('Alert elements not found');
-					return;
-				}
-
-				// Set class dan pesan
-				alertMessage.className = `alert alert-${type}`;
-				alertMessage.textContent = message;
-				
-				// Tampilkan alert
-				alertContainer.style.display = 'block';
-				
-				// Scroll ke atas agar alert terlihat
-				window.scrollTo({ top: 0, behavior: 'smooth' });
-				
-				// Sembunyikan alert setelah 5 detik
-				setTimeout(() => {
-					alertContainer.style.display = 'none';
-				}, 5000);
-			}
-
-			// Pastikan container alert ada di bagian atas halaman
+			
+			/* ===========================
+			   Dropdown dosen (tanpa token)
+			=========================== */
 			document.addEventListener('DOMContentLoaded', function() {
-				// Cek apakah container alert sudah ada
-				let alertContainer = document.getElementById('alertContainer');
-				if (!alertContainer) {
-					// Jika belum ada, buat container baru
-					alertContainer = document.createElement('div');
-					alertContainer.id = 'alertContainer';
-					alertContainer.className = 'alert-wrapper';
-					alertContainer.style.display = 'none';
-					
-					const alertMessage = document.createElement('div');
-					alertMessage.id = 'alertMessage';
-					alertMessage.className = 'alert';
-					alertMessage.setAttribute('role', 'alert');
-					
-					alertContainer.appendChild(alertMessage);
-					
-					// Tambahkan ke awal body
-					document.body.insertBefore(alertContainer, document.body.firstChild);
-				}
+			  fetch(`${API_USER}/dosen`)
+				.then(r => r.json())
+				.then(data => {
+				  const sel = document.getElementById('dosenSelect');
+				  if (!sel) return;
+				  if (data.status === 'success' && Array.isArray(data.data)) {
+					data.data.forEach(dosen => {
+					  const opt = document.createElement('option');
+					  opt.value = dosen.id;
+					  opt.textContent = `${dosen.nama_lengkap} - ${dosen.jurusan}`;
+					  sel.appendChild(opt);
+					});
+				  }
+				})
+				.catch(console.error);
 			});
-
-			// Fungsi untuk mengisi jurusan dan kelas dari taruna
+			
+			/* ===========================
+			   Header username (tanpa token)
+			=========================== */
+			document.addEventListener('DOMContentLoaded', function () {
+			  const userId = getUserId();
+			  if (!userId) { setText('username', 'User'); return; }
+			
+			  fetch(`${API_USER}/users?id=${encodeURIComponent(userId)}`)
+				.then(r => r.ok ? r.json() : Promise.reject(r))
+				.then(user => setText('username', user?.username || user?.nama_lengkap || 'User'))
+				.catch(() => setText('username', 'User'));
+			});
+			
+			/* ===========================
+			   Logout (tanpa header Authorization)
+			=========================== */
+			async function logout() {
+			  try {
+				await fetch(`${API_AUTH}/logout`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include' }).catch(()=>{});
+				localStorage.clear(); sessionStorage.clear();
+			
+				const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
+				document.cookie.split(';').forEach(c => {
+				  const name = (c.split('=')[0] || '').trim();
+				  if (!name) return;
+				  paths.forEach(p => document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${p}`);
+				});
+			
+				if (window.caches) { const names = await caches.keys(); await Promise.all(names.map(n => caches.delete(n))); }
+				if (navigator.serviceWorker) { const regs = await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map(r => r.unregister())); }
+			
+				window.location.href = '/loginusers';
+				window.location.reload(true);
+			  } catch (e) {
+				console.error('Error during logout:', e);
+				alert('Gagal logout. Silakan coba lagi.');
+			  }
+			}
+			window.logout = logout;
+			
+			document.addEventListener('DOMContentLoaded', function() {
+			  const btn = document.querySelector('a[onclick="logout()"]');
+			  if (btn) btn.addEventListener('click', function(e){ e.preventDefault(); logout(); });
+			});
+			
+			/* ===========================
+			   Isi jurusan & kelas untuk Revisi ICP (tanpa token)
+			=========================== */
 			async function isiJurusanDanKelasDariTarunaRevisiICP() {
-				const userId = localStorage.getItem('userId');
-				const token = localStorage.getItem('token');
-				if (!userId || !token) return;
-
-				try {
-					const res = await fetch(`http://104.43.89.154:8086/taruna?user_id=${userId}`, {
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-					});
-					const json = await res.json();
-					if (json.status === 'success' && Array.isArray(json.data)) {
-					const taruna = json.data.find(t => t.user_id === parseInt(userId));
-					if (taruna) {
-						document.getElementById('hiddenJurusanRevisi').value = taruna.jurusan || '';
-						document.getElementById('hiddenKelasRevisi').value = taruna.kelas || '';
-					}
-					}
-				} catch (err) {
-					console.error('Gagal ambil data taruna:', err);
+			  const userId = getUserId();
+			  if (!userId) return;
+			  try {
+				const res = await fetch(`${API_USER}/taruna?user_id=${encodeURIComponent(userId)}`);
+				const json = await res.json();
+				if (json.status === 'success' && Array.isArray(json.data)) {
+				  const taruna = json.data.find(t => String(t.user_id) === String(userId));
+				  if (taruna) {
+					const j = document.getElementById('hiddenJurusanRevisi');
+					const k = document.getElementById('hiddenKelasRevisi');
+					if (j) j.value = taruna.jurusan || '';
+					if (k) k.value = taruna.kelas || '';
+				  }
 				}
+			  } catch (err) { console.error('Gagal ambil data taruna:', err); }
 			}
-
-			// Panggil isiJurusanDanKelasDariTaruna saat halaman dimuat
+			
 			document.addEventListener('DOMContentLoaded', () => {
-				// isiJurusanDanKelasDariTarunaFinalProposal();
-				isiJurusanDanKelasDariTarunaRevisiICP();
+			  isiJurusanDanKelasDariTarunaRevisiICP();
 			});
-
-			// ====== UPDATE LABEL FINAL ICP ======
-			document.getElementById('finalIcpFile').addEventListener('change', function (e) {
-				const file = e.target.files[0];
-				const label = this.nextElementSibling;
-				const infoDiv = document.getElementById('finalSelectedFileName');
-
-				if (!file) {
-					label.textContent = 'Choose file';
-					infoDiv.style.display = 'none';
-					return;
-				}
-
-				label.textContent = file.name;
-				infoDiv.textContent = 'File terpilih: ' + file.name;
-				infoDiv.style.display = 'block';
+			
+			/* ===========================
+			   Final ICP: UI helpers
+			=========================== */
+			document.getElementById('finalIcpFile')?.addEventListener('change', function (e) {
+			  const file = e.target.files[0];
+			  const label = this.nextElementSibling;
+			  const infoDiv = document.getElementById('finalSelectedFileName');
+			  if (!file) { if (label) label.textContent='Choose file'; if (infoDiv) infoDiv.style.display='none'; return; }
+			  if (label) label.textContent = file.name;
+			  if (infoDiv) { infoDiv.textContent = 'File terpilih: ' + file.name; infoDiv.style.display = 'block'; }
 			});
-
-			// ====== UPDATE LABEL FILE PENDUKUNG ======
+			
 			const supportInput = document.getElementById('supportFiles');
 			if (supportInput) {
-				supportInput.addEventListener('change', function (e) {
-					const files = Array.from(e.target.files || []);
-					const label = this.nextElementSibling;
-					const infoDiv = document.getElementById('supportSelectedFileName');
-
-					if (files.length === 0) {
-						label.textContent = 'Pilih file pendukung';
-						infoDiv.style.display = 'none';
-						return;
-					}
-
-					label.textContent = `${files.length} file dipilih`;
-					infoDiv.innerHTML = 'File terpilih:<br>- ' + files.map(f => f.name).join('<br>- ');
-					infoDiv.style.display = 'block';
-				});
+			  supportInput.addEventListener('change', function (e) {
+				const files = Array.from(e.target.files || []);
+				const label = this.nextElementSibling;
+				const infoDiv = document.getElementById('supportSelectedFileName');
+				if (files.length === 0) { if (label) label.textContent='Pilih file pendukung'; if (infoDiv) infoDiv.style.display='none'; return; }
+				if (label) label.textContent = `${files.length} file dipilih`;
+				if (infoDiv) { infoDiv.innerHTML = 'File terpilih:<br>- ' + files.map(f => f.name).join('<br>- '); infoDiv.style.display='block'; }
+			  });
 			}
-
-			// ====== SUBMIT FORM FINAL ICP ======
-			const fpForm = document.getElementById('finalIcpForm'); // <- disamakan dengan HTML
+			
+			/* ===========================
+			   Final ICP: submit (tanpa token)
+			=========================== */
+			const fpForm = document.getElementById('finalIcpForm');
 			if (fpForm) {
-			fpForm.addEventListener('submit', async function (e) {
+			  fpForm.addEventListener('submit', async function (e) {
 				e.preventDefault();
-
 				const submitButton = this.querySelector('button[type="submit"]');
 				submitButton.disabled = true;
-				submitButton.innerHTML =
-				'<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
-
-				// referensi elemen input file (untuk reset label nanti)
-				const finalInput   = document.getElementById('finalIcpFile'); // <- disamakan
+				submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+			
+				const finalInput   = document.getElementById('finalIcpFile');
 				const supportInput = document.getElementById('supportFiles');
-
+			
 				try {
-				// (opsional) isi jurusan & kelas dari backend
-				if (typeof isiJurusanDanKelasDariTarunaFinalProposal === 'function') {
+				  if (typeof isiJurusanDanKelasDariTarunaFinalProposal === 'function') {
 					await isiJurusanDanKelasDariTarunaFinalProposal();
-				}
-
-				const formData = new FormData(this);
-				const userId = localStorage.getItem('userId');
-				const token  = localStorage.getItem('token');
-				if (!userId || !token) throw new Error('User ID atau token tidak ditemukan');
-
-				// Ambil data taruna (untuk nama_lengkap)
-				const tarunaResponse = await fetch(`http://104.43.89.154:8086/taruna?user_id=${userId}`, {
-					headers: { 'Authorization': `Bearer ${token}` }
-				});
-				if (!tarunaResponse.ok) throw new Error('Gagal mengambil data taruna');
-
-				const tarunaData = await tarunaResponse.json();
-				const taruna = tarunaData.data?.find(t => t.user_id === parseInt(userId, 10));
-				if (!taruna || !taruna.nama_lengkap) throw new Error('Data taruna tidak lengkap atau tidak ditemukan');
-
-				formData.append('user_id', userId);
-				formData.append('nama_lengkap', taruna.nama_lengkap);
-
-				// ikutkan jurusan & kelas jika ada hidden field
-				const jurusan = document.getElementById('hiddenJurusan')?.value;
-				const kelas   = document.getElementById('hiddenKelas')?.value;
-				if (jurusan) formData.set('jurusan', jurusan);
-				if (kelas)   formData.set('kelas', kelas);
-
-				const response = await fetch('http://104.43.89.154:8087/finalicp/upload', {
-					method: 'POST',
-					body: formData
-				});
-
-				let data;
-				try { data = await response.json(); }
-				catch {
+				  }
+			
+				  const formData = new FormData(this);
+				  const userId = getUserId();
+				  if (!userId) throw new Error('User ID tidak ditemukan');
+			
+				  // Ambil data taruna (tanpa token)
+				  const tarunaResponse = await fetch(`${API_USER}/taruna?user_id=${encodeURIComponent(userId)}`);
+				  if (!tarunaResponse.ok) throw new Error('Gagal mengambil data taruna');
+				  const tarunaData = await tarunaResponse.json();
+				  const taruna = Array.isArray(tarunaData.data) ? tarunaData.data.find(t => String(t.user_id) === String(userId)) : null;
+				  if (!taruna || !taruna.nama_lengkap) throw new Error('Data taruna tidak lengkap atau tidak ditemukan');
+			
+				  formData.append('user_id', userId);
+				  formData.append('nama_lengkap', taruna.nama_lengkap);
+			
+				  const jurusan = document.getElementById('hiddenJurusan')?.value;
+				  const kelas   = document.getElementById('hiddenKelas')?.value;
+				  if (jurusan) formData.set('jurusan', jurusan);
+				  if (kelas)   formData.set('kelas', kelas);
+			
+				  const response = await fetch(`${API_TA}/finalicp/upload`, { method: 'POST', body: formData });
+				  let data;
+				  try { data = await response.json(); }
+				  catch {
 					const rawText = await response.text();
 					showAlert(rawText || 'Terjadi kesalahan pada server', 'danger');
 					return;
-				}
-
-				showAlert(data.message, data.status === 'success' ? 'success' : 'danger');
-
-				if (data.status === 'success') {
+				  }
+			
+				  showAlert(data.message, data.status === 'success' ? 'success' : 'danger');
+			
+				  if (data.status === 'success') {
 					this.reset();
-
-					if (finalInput) {
-					const lbl = finalInput.nextElementSibling;
-					if (lbl) lbl.textContent = 'Choose file';
-					const info = document.getElementById('finalSelectedFileName');
-					if (info) info.style.display = 'none';
-					}
-
-					if (supportInput) {
-					const lbl = supportInput.nextElementSibling;
-					if (lbl) lbl.textContent = 'Pilih satu atau lebih file';
-					const info = document.getElementById('supportSelectedFileName');
-					if (info) info.style.display = 'none';
-					}
-
+					if (finalInput) { const lbl = finalInput.nextElementSibling; if (lbl) lbl.textContent = 'Choose file'; const info = document.getElementById('finalSelectedFileName'); if (info) info.style.display = 'none'; }
+					if (supportInput) { const lbl2 = supportInput.nextElementSibling; if (lbl2) lbl2.textContent = 'Pilih satu atau lebih file'; const info2 = document.getElementById('supportSelectedFileName'); if (info2) info2.style.display='none'; }
 					if (typeof loadFinalProposalData === 'function') loadFinalProposalData();
-				}
+				  }
 				} catch (error) {
-				console.error('Error saat upload Final Proposal:', error);
-				let msg = error.message || 'Terjadi kesalahan saat mengunggah Final Proposal';
-				if (msg.toLowerCase().includes('token')) {
-					msg = 'User ID atau token tidak ditemukan. Silakan login kembali.';
-				} else if (msg.toLowerCase().includes('taruna')) {
-					msg = 'Data taruna tidak lengkap atau tidak ditemukan. Silakan hubungi administrator.';
-				}
-				showAlert(msg, 'danger');
+				  console.error('Error saat upload Final Proposal:', error);
+				  showAlert(error.message || 'Terjadi kesalahan saat mengunggah Final Proposal', 'danger');
 				} finally {
-				submitButton.disabled = false;
-				submitButton.innerHTML = 'Upload Final Proposal';
+				  submitButton.disabled = false;
+				  submitButton.innerHTML = 'Upload Final Proposal';
 				}
-			});
+			  });
 			}
-
-			// Definisi kelas per jurusan
+			
+			/* ===========================
+			   Dropdown kelas otomatis
+			=========================== */
 			const kelasPerJurusan = {
-				'Keamanan Siber': [
-					'IV Rekayasa Keamanan Siber Echo',
-					'IV Rekayasa Keamanan Siber Trace',
-					'IV Rekayasa Keamanan Siber Route'
-				],
-				'Kriptografi': [
-					'IV Rekayasa Perangkat Lunak Kripto',
-					'IV Rekayasa Perangkat Keras Kriptografi',
-					'IV Rekayasa Sistem Kriptografi'
-				]
+			  'Keamanan Siber': [
+				'IV Rekayasa Keamanan Siber Echo',
+				'IV Rekayasa Keamanan Siber Trace',
+				'IV Rekayasa Keamanan Siber Route'
+			  ],
+			  'Kriptografi': [
+				'IV Rekayasa Perangkat Lunak Kripto',
+				'IV Rekayasa Perangkat Keras Kriptografi',
+				'IV Rekayasa Sistem Kriptografi'
+			  ]
 			};
-
-			// Fungsi untuk mengupdate dropdown kelas berdasarkan jurusan yang dipilih
 			function updateFinalKelas() {
-				const jurusanSelect = document.getElementById('finalJurusan');
-				const kelasSelect = document.getElementById('finalKelas');
-				const selectedJurusan = jurusanSelect.value;
-				
-				// Reset kelas dropdown
-				kelasSelect.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>';
-				
-				if (selectedJurusan && kelasPerJurusan[selectedJurusan]) {
-					kelasPerJurusan[selectedJurusan].forEach(kelas => {
-						const option = document.createElement('option');
-						option.value = kelas;
-						option.textContent = kelas;
-						kelasSelect.appendChild(option);
-					});
-					kelasSelect.disabled = false;
-				} else {
-					kelasSelect.disabled = true;
-				}
-			}
-
-			// Pastikan dropdown kelas ter-update saat halaman siap
-			document.addEventListener('DOMContentLoaded', () => {
-			updateFinalKelas();       // <- inisialisasi awal (opsional, bagus)     // sudah ada di kode kamu
-			});
-
-			// Update fungsi loadFinalICPData
-			async function loadFinalICPData() {
-				const userId = localStorage.getItem('userId');
-				if (!userId) {
-					console.error('User ID not found in localStorage');
-					showAlert('User ID tidak ditemukan. Silakan login ulang.', 'danger');
-					return;
-				}
-
-				try {
-					console.log('Fetching Final ICP data for user:', userId);
-					const response = await fetch(`http://104.43.89.154:8087/finalicp/list?user_id=${userId}`);
-
-					if (!response.ok) {
-						throw new Error(`HTTP error! status: ${response.status}`);
-					}
-
-					const data = await response.json();
-					console.log('Received Final ICP data:', data);
-
-					if (data.status === 'success') {
-						const tbody = document.querySelector('#finalIcpTable tbody');
-						if (!tbody) {
-							console.error('Table body element not found');
-							return;
-						}
-
-						tbody.innerHTML = '';
-
-						if (data.data && data.data.length > 0) {
-							data.data.forEach(finalIcp => {
-								const statusClass = {
-									'pending': 'badge badge-warning',
-									'approved': 'badge badge-success',
-									'rejected': 'badge badge-danger',
-									'on review': 'badge badge-info'
-								}[finalIcp.status] || 'badge badge-secondary';
-
-								// Parsing file pendukung dari JSON string
-								let pendukungLinks = '';
-								if (finalIcp.file_pendukung_path) {
-									try {
-										const supportFiles = JSON.parse(finalIcp.file_pendukung_path);
-										supportFiles.forEach((path, idx) => {
-											const fileName = path.split('/').pop(); // Ambil nama file asli
-											pendukungLinks += `
-												<a class="dropdown-item" 
-												href="http://104.43.89.154:8087/finalicp/download/${finalIcp.final_icp_id}?type=support&index=${idx}" 
-												download>
-													<i class="dw dw-download"></i> ${fileName}
-												</a>
-											`;
-										});
-									} catch (e) {
-										console.error('Gagal parse file_pendukung_path:', e);
-									}
-								}
-
-								tbody.innerHTML += `
-									<tr>
-										<td>${finalIcp.topik_penelitian || '-'}</td>
-										<td>${finalIcp.jurusan || '-'}</td>
-										<td>${finalIcp.kelas || '-'}</td>
-										<td><span class="${statusClass}">${finalIcp.status || 'pending'}</span></td>
-										<td>
-											<div class="dropdown">
-												<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
-												href="#" role="button" data-toggle="dropdown">
-													<i class="dw dw-more"></i>
-												</a>
-												<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
-													<a class="dropdown-item" 
-													href="http://104.43.89.154:8087/finalicp/download/${finalIcp.final_icp_id}?type=final" 
-													download>
-														<i class="dw dw-download"></i> Final ICP
-													</a>
-													${pendukungLinks}
-												</div>
-											</div>
-										</td>
-									</tr>
-								`;
-							});
-						} else {
-							tbody.innerHTML = `
-								<tr>
-									<td colspan="5" class="text-center">Belum ada Final ICP yang diupload</td>
-								</tr>
-							`;
-						}
-					} else {
-						console.error('Failed to load Final ICP data:', data.message);
-						showAlert('Gagal memuat data Final ICP: ' + (data.message || 'Unknown error'), 'danger');
-					}
-				} catch (error) {
-					console.error('Error loading Final ICP data:', error);
-					showAlert('Terjadi kesalahan saat memuat data Final ICP: ' + error.message, 'danger');
-				}
-			}
-
-			// Load Final ICP data saat halaman dimuat
-			document.addEventListener('DOMContentLoaded', () => {
-				loadFinalICPData();
-			});
-
-			// Add this function to get user data
-			async function getUserData() {
-				const userId = localStorage.getItem('userId');
-				const token = localStorage.getItem('token');
-				
-				if (!userId || !token) {
-					console.error('User ID or token not found');
-					return;
-				}
-
-				try {
-					const response = await fetch(`http://104.43.89.154:8086/taruna?user_id=${userId}`, {
-						headers: {
-							'Authorization': `Bearer ${token}`
-						}
-					});
-					
-					if (!response.ok) {
-						throw new Error('Failed to fetch taruna data');
-					}
-					
-					const data = await response.json();
-					
-					if (data && data.status === 'success' && data.data) {
-						// Set jurusan if available
-						const jurusanSelect = document.getElementById('finalJurusan');
-						if (data.data.jurusan) {
-							jurusanSelect.value = data.data.jurusan;
-							// Trigger kelas update
-							updateFinalKelas();
-						}
-					}
-				} catch (error) {
-					console.error('Error fetching taruna data:', error);
-					showAlert('Gagal memuat data taruna: ' + error.message, 'danger');
-				}
-			}
-
-			// Call getUserData when page loads
-			document.addEventListener('DOMContentLoaded', () => {
-				getUserData();
-				loadICPData();
-				loadICPReviewData();
-				loadFinalICPData();
-			});
-
-			// Fungsi untuk memuat data hasil telaah ICP
-			async function loadHasilTelaahData() {
-				const userId = localStorage.getItem('userId');
-				if (!userId) {
-					console.error('User ID not found in localStorage');
-					return;
-				}
-
-				try {
-					const response = await fetch(`http://104.43.89.154:8087/hasiltelaah/taruna?user_id=${userId}`);
-					const data = await response.json();
-
-					const tableBody = document.querySelector('#hasilTelaahTable tbody');
-					if (!tableBody) {
-						console.error('Tabel Hasil Telaah tidak ditemukan');
-						return;
-					}
-
-					tableBody.innerHTML = '';
-
-					if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
-						data.data.forEach(item => {
-							const formattedDate = new Date(item.tanggal_telaah).toLocaleString('id-ID', {
-								dateStyle: 'medium',
-								timeStyle: 'short'
-							});
-
-							const fileName = item.file_path ? item.file_path.split('/').pop() : '';
-
-							tableBody.innerHTML += `
-								<tr>
-									<td>${item.nama_dosen || '-'}</td>
-									<td>${item.topik_penelitian || '-'}</td>
-									<td>${formattedDate}</td>
-									<td>
-										<div class="dropdown">
-											<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
-												href="#" role="button" data-toggle="dropdown">
-												<i class="dw dw-more"></i>
-											</a>
-											<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
-												${fileName.startsWith('HASIL_TELAAH_ICP_') ? `
-													<a class="dropdown-item" href="http://104.43.89.154:8087/hasiltelaah/download?path=${fileName}" download>
-														<i class="dw dw-download"></i> Unduh Hasil Telaah
-													</a>
-												` : `
-													<span class="dropdown-item text-muted">
-														<i class="dw dw-ban"></i> Tidak tersedia
-													</span>
-												`}
-											</div>
-										</div>
-									</td>
-								</tr>
-							`;
-						});
-					} else {
-						tableBody.innerHTML = `
-							<tr>
-								<td colspan="4" class="text-center">Belum ada hasil telaah</td>
-							</tr>
-						`;
-					}
-				} catch (error) {
-					console.error('Gagal memuat hasil telaah:', error);
-					const tableBody = document.querySelector('#hasilTelaahTable tbody');
-					if (tableBody) {
-						tableBody.innerHTML = `
-							<tr>
-								<td colspan="4" class="text-center text-danger">Gagal memuat data</td>
-							</tr>
-						`;
-					}
-				}
-			}
-
-			// Panggil fungsi saat halaman dimuat
-			document.addEventListener('DOMContentLoaded', function() {
-				loadHasilTelaahData();
-			});
-
-			// Update nama file saat file dipilih untuk Revisi ICP
-			document.getElementById('revisiICPFile').addEventListener('change', function(e) {
-				var fileName = e.target.files[0] ? e.target.files[0].name : 'Choose file';
-				var label = this.nextElementSibling;
-				label.textContent = fileName;
-				
-				var selectedFileDiv = document.getElementById('revisiICPFile');
-				if (e.target.files[0]) {
-					selectedFileDiv.textContent = 'File terpilih: ' + fileName;
-					selectedFileDiv.style.display = 'block';
-				} else {
-					selectedFileDiv.style.display = 'none';
-				}
-			});
-
-			// Handle form submission untuk Revisi ICP
-			document.getElementById('revisiICPForm').addEventListener('submit', async function(e) {
-				e.preventDefault();
-
-				const submitButton = this.querySelector('button[type="submit"]');
-				submitButton.disabled = true;
-				submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
-
-				try {
-					await isiJurusanDanKelasDariTarunaRevisiICP();
-
-					const formData = new FormData(this);
-					const userId = localStorage.getItem('userId');
-					const token = localStorage.getItem('token');
-
-					if (!userId || !token) {
-						throw new Error('User ID atau token tidak ditemukan');
-					}
-
-					const tarunaResponse = await fetch(`http://104.43.89.154:8086/taruna?user_id=${userId}`, {
-						headers: {
-							'Authorization': `Bearer ${token}`
-						}
-					});
-
-					if (!tarunaResponse.ok) {
-						throw new Error('Gagal mengambil data taruna');
-					}
-
-					const tarunaData = await tarunaResponse.json();
-					const taruna = tarunaData.data?.find(t => t.user_id === parseInt(userId));
-
-					if (!taruna || !taruna.nama_lengkap) {
-						throw new Error('Data taruna tidak lengkap atau tidak ditemukan');
-					}
-
-					formData.append('user_id', userId);
-					formData.append('nama_lengkap', taruna.nama_lengkap);
-					formData.append('jurusan', document.getElementById('hiddenJurusanRevisi').value);
-					formData.append('kelas', document.getElementById('hiddenKelasRevisi').value);
-
-					const response = await fetch('http://104.43.89.154:8087/revisiicp/upload', {
-						method: 'POST',
-						body: formData
-					});
-
-					let data;
-					try {
-						data = await response.json();
-					} catch (err) {
-						const rawText = await response.text();
-						showAlert(rawText || 'Terjadi kesalahan pada server', 'danger');
-						return;
-					}
-
-					showAlert(data.message, data.status === 'success' ? 'success' : 'danger');
-
-					if (data.status === 'success') {
-						this.reset();
-						document.querySelector('#revisiICPFile').nextElementSibling.textContent = 'Choose file';
-						document.getElementById('revisiSelectedFileName').style.display = 'none';
-						loadRevisiICPData();
-					}
-
-				} catch (error) {
-					console.error('Error saat upload Revisi ICP:', error);
-					let errorMessage = 'Terjadi kesalahan saat mengunggah Revisi ICP';
-
-					if (error.message.includes('token')) {
-						errorMessage = 'User ID atau token tidak ditemukan. Silakan login kembali.';
-					} else if (error.message.includes('data taruna')) {
-						errorMessage = 'Data taruna tidak lengkap atau tidak ditemukan. Silakan hubungi administrator.';
-					}
-
-					showAlert(errorMessage, 'danger');
-				} finally {
-					submitButton.disabled = false;
-					submitButton.innerHTML = 'Upload Revisi ICP';
-				}
-			});
-
-			// Helper kecil biar aman dari HTML injection
-			function escapeHtml(str) {
-			return (str || '').toString().replace(/[&<>"']/g, m => ({
-				'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-			}[m]));
-			}
-
-			// Panggil endpoint download (sama seperti yang sudah kamu punya)
-			async function downloadRevisiICP(id) {
-			try {
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				if (!token) {
-				alert('Token tidak ditemukan. Silakan login ulang.');
-				return;
-				}
-
-				const resp = await fetch(`http://104.43.89.154:8087/revisiicp/download/${id}`, {
-				method: 'GET',
-				headers: { 'Authorization': `Bearer ${token}` }
+			  const jurusanSelect = document.getElementById('finalJurusan');
+			  const kelasSelect = document.getElementById('finalKelas');
+			  if (!jurusanSelect || !kelasSelect) return;
+			  const selectedJurusan = jurusanSelect.value;
+			  kelasSelect.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>';
+			  if (selectedJurusan && kelasPerJurusan[selectedJurusan]) {
+				kelasPerJurusan[selectedJurusan].forEach(k => {
+				  const o = document.createElement('option'); o.value = k; o.textContent = k; kelasSelect.appendChild(o);
 				});
-
-				if (!resp.ok) {
-				const msg = await resp.text().catch(() => '');
-				throw new Error(msg || `Gagal mengunduh (HTTP ${resp.status})`);
+				kelasSelect.disabled = false;
+			  } else {
+				kelasSelect.disabled = true;
+			  }
+			}
+			document.addEventListener('DOMContentLoaded', () => { updateFinalKelas(); });
+			
+			/* ===========================
+			   Final ICP list (tanpa token)
+			=========================== */
+			async function loadFinalICPData() {
+			  const userId = getUserId();
+			  if (!userId) { showAlert('User ID tidak ditemukan. Silakan isi atau pilih user.', 'danger'); return; }
+			
+			  try {
+				const response = await fetch(`${API_TA}/finalicp/list?user_id=${encodeURIComponent(userId)}`);
+				if (!response.ok) throw new Error(`HTTP ${response.status}`);
+				const data = await response.json();
+			
+				const tbody = document.querySelector('#finalIcpTable tbody');
+				if (!tbody) return;
+				tbody.innerHTML = '';
+			
+				if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
+				  data.data.forEach(finalIcp => {
+					const statusClass = ({
+					  'pending':'badge badge-warning',
+					  'approved':'badge badge-success',
+					  'rejected':'badge badge-danger',
+					  'on review':'badge badge-info'
+					}[(finalIcp.status||'').toLowerCase()] || 'badge badge-secondary');
+			
+					let pendukungLinks = '';
+					if (finalIcp.file_pendukung_path) {
+					  try {
+						const supportFiles = JSON.parse(finalIcp.file_pendukung_path);
+						supportFiles.forEach((path, idx) => {
+						  const fileName = String(path).split('/').pop();
+						  pendukungLinks += `
+							<a class="dropdown-item" href="${API_TA}/finalicp/download/${finalIcp.final_icp_id}?type=support&index=${idx}" download>
+							  <i class="dw dw-download"></i> ${fileName}
+							</a>`;
+						});
+					  } catch(e){ console.error('Parse pendukung gagal:', e); }
+					}
+			
+					tbody.insertAdjacentHTML('beforeend', `
+					  <tr>
+						<td>${finalIcp.topik_penelitian || '-'}</td>
+						<td>${finalIcp.jurusan || '-'}</td>
+						<td>${finalIcp.kelas || '-'}</td>
+						<td><span class="${statusClass}">${finalIcp.status || 'pending'}</span></td>
+						<td>
+						  <div class="dropdown">
+							<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle" href="#" role="button" data-toggle="dropdown">
+							  <i class="dw dw-more"></i>
+							</a>
+							<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+							  <a class="dropdown-item" href="${API_TA}/finalicp/download/${finalIcp.final_icp_id}?type=final" download>
+								<i class="dw dw-download"></i> Final ICP
+							  </a>
+							  ${pendukungLinks}
+							</div>
+						  </div>
+						</td>
+					  </tr>
+					`);
+				  });
+				} else {
+				  tbody.innerHTML = `<tr><td colspan="5" class="text-center">Belum ada Final ICP yang diupload</td></tr>`;
 				}
-
+			  } catch (e) {
+				console.error('Error loadFinalICPData:', e);
+				showAlert('Terjadi kesalahan saat memuat data Final ICP: ' + e.message, 'danger');
+			  }
+			}
+			
+			/* ===========================
+			   getUserData (tanpa token)
+			=========================== */
+			async function getUserData() {
+			  const userId = getUserId();
+			  if (!userId) return;
+			  try {
+				const resp = await fetch(`${API_USER}/taruna?user_id=${encodeURIComponent(userId)}`);
+				if (!resp.ok) throw new Error('Failed to fetch taruna data');
+				const data = await resp.json();
+				const jurusanSelect = document.getElementById('finalJurusan');
+				// jika backend kirim array, ambil yang match
+				const taruna = Array.isArray(data.data) ? data.data.find(t => String(t.user_id) === String(userId)) : data.data;
+				if (jurusanSelect && taruna?.jurusan) {
+				  jurusanSelect.value = taruna.jurusan;
+				  updateFinalKelas();
+				}
+			  } catch (e) {
+				console.error('Error fetching taruna data:', e);
+				showAlert('Gagal memuat data taruna: ' + e.message, 'danger');
+			  }
+			}
+			
+			/* ===========================
+			   Hasil Telaah ICP (tanpa token)
+			=========================== */
+			async function loadHasilTelaahData() {
+			  const userId = getUserId();
+			  if (!userId) return;
+			
+			  try {
+				const response = await fetch(`${API_TA}/hasiltelaah/taruna?user_id=${encodeURIComponent(userId)}`);
+				const data = await response.json();
+			
+				const tableBody = document.querySelector('#hasilTelaahTable tbody');
+				if (!tableBody) return;
+				tableBody.innerHTML = '';
+			
+				if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
+				  data.data.forEach(item => {
+					const formattedDate = new Date(item.tanggal_telaah).toLocaleString('id-ID',{dateStyle:'medium', timeStyle:'short'});
+					const fileName = item.file_path ? String(item.file_path).split('/').pop() : '';
+					tableBody.insertAdjacentHTML('beforeend', `
+					  <tr>
+						<td>${item.nama_dosen || '-'}</td>
+						<td>${item.topik_penelitian || '-'}</td>
+						<td>${formattedDate}</td>
+						<td>
+						  <div class="dropdown">
+							<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle" href="#" role="button" data-toggle="dropdown">
+							  <i class="dw dw-more"></i>
+							</a>
+							<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+							  ${fileName.startsWith('HASIL_TELAAH_ICP_') ? `
+								<a class="dropdown-item" href="${API_TA}/hasiltelaah/download?path=${encodeURIComponent(fileName)}" download>
+								  <i class="dw dw-download"></i> Unduh Hasil Telaah
+								</a>` : `
+								<span class="dropdown-item text-muted">
+								  <i class="dw dw-ban"></i> Tidak tersedia
+								</span>`}
+							</div>
+						  </div>
+						</td>
+					  </tr>
+					`);
+				  });
+				} else {
+				  tableBody.innerHTML = `<tr><td colspan="4" class="text-center">Belum ada hasil telaah</td></tr>`;
+				}
+			  } catch (e) {
+				console.error('Gagal memuat hasil telaah:', e);
+				const tb = document.querySelector('#hasilTelaahTable tbody');
+				if (tb) tb.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Gagal memuat data</td></tr>`;
+			  }
+			}
+			
+			/* ===========================
+			   Revisi ICP: UI & submit (tanpa token)
+			=========================== */
+			document.getElementById('revisiICPFile')?.addEventListener('change', function(e){
+			  const f = e.target.files[0];
+			  const label = this.nextElementSibling;
+			  if (label) label.textContent = f ? f.name : 'Choose file';
+			  const selected = document.getElementById('revisiSelectedFileName');
+			  if (selected) { selected.textContent = f ? ('File terpilih: '+f.name) : ''; selected.style.display = f ? 'block' : 'none'; }
+			});
+			
+			function openUploadRevisionModal(dosenId, topikPenelitian) {
+			  document.getElementById('revisionDosenId').value = dosenId;
+			  document.getElementById('revisionTopikPenelitian').value = topikPenelitian;
+			  $('#uploadRevisionModal').modal('show');
+			}
+			
+			async function submitRevision() {
+			  const form = document.getElementById('revisionForm');
+			  const formData = new FormData(form);
+			  try {
+				const userId = getUserId();
+				if (!userId) { showAlert('User ID tidak ditemukan. Silakan login ulang.', 'danger'); return; }
+				await isiJurusanDanKelasDariTarunaRevisiICP();
+				formData.append('taruna_id', userId);
+			
+				// tambahkan nama_lengkap dari user service
+				const tarunaResp = await fetch(`${API_USER}/taruna?user_id=${encodeURIComponent(userId)}`);
+				const tarunaJson = await tarunaResp.json();
+				const taruna = Array.isArray(tarunaJson.data) ? tarunaJson.data.find(t => String(t.user_id) === String(userId)) : null;
+				if (taruna?.nama_lengkap) formData.append('nama_lengkap', taruna.nama_lengkap);
+			
+				const response = await fetch(`${API_TA}/upload/revisiicp/taruna`, { method: 'POST', body: formData });
+				const data = await response.json();
+			
+				if (data.status === 'success') {
+				  showAlert('Revisi ICP berhasil diunggah', 'success');
+				  $('#uploadRevisionModal').modal('hide');
+				  form.reset();
+				  await loadICPData();
+				  await loadICPReviewData();
+				  await loadRevisiICPData();
+				} else {
+				  showAlert(data.message || 'Gagal mengunggah revisi', 'danger');
+				}
+			  } catch (e) {
+				console.error('Error submitRevision:', e);
+				showAlert('Terjadi kesalahan: ' + e.message, 'danger');
+			  }
+			}
+			
+			/* ===========================
+			   Revisi ICP list (tanpa token)
+			=========================== */
+			async function downloadRevisiICP(id) {
+			  try {
+				const resp = await fetch(`${API_TA}/revisiicp/download/${id}`, { method: 'GET' });
+				if (!resp.ok) {
+				  const msg = await resp.text().catch(()=> '');
+				  throw new Error(msg || `Gagal mengunduh (HTTP ${resp.status})`);
+				}
 				const cd = resp.headers.get('Content-Disposition') || '';
 				let filename = null;
 				const fnStar = cd.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
 				if (fnStar) filename = decodeURIComponent(fnStar[1]);
 				else {
-				const fn = cd.match(/filename\s*=\s*("?)([^"]+)\1/i);
-				if (fn) filename = fn[2];
+				  const fn = cd.match(/filename\s*=\s*("?)([^"]+)\1/i);
+				  if (fn) filename = fn[2];
 				}
 				filename = filename || `revisi_icp_${id}.pdf`;
-
+			
 				const blob = await resp.blob();
 				const url = URL.createObjectURL(blob);
-
-				const a = document.createElement('a');
-				a.href = url;
-				a.download = filename;
-				document.body.appendChild(a);
-				a.click();
-				a.remove();
-				URL.revokeObjectURL(url);
-			} catch (err) {
-				console.error(err);
-				alert(`Unduh gagal: ${err.message}`);
+				const a = document.createElement('a'); a.href = url; a.download = filename;
+				document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+			  } catch (err) {
+				console.error(err); alert(`Unduh gagal: ${err.message}`);
+			  }
 			}
-			}
-
+			
 			async function loadRevisiICPData() {
-			const userId = localStorage.getItem('userId');
-			if (!userId) {
-				console.error('User ID not found in localStorage');
-				showAlert('User ID tidak ditemukan. Silakan login ulang.', 'danger');
-				return;
-			}
-
-			try {
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				console.log('Fetching Revisi ICP data for user:', userId);
-
-				const response = await fetch(`http://104.43.89.154:8087/revisiicp/list?user_id=${encodeURIComponent(userId)}`, {
-				headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-				});
-				if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
+			  const userId = getUserId();
+			  if (!userId) { showAlert('User ID tidak ditemukan. Silakan login ulang.', 'danger'); return; }
+			
+			  try {
+				const response = await fetch(`${API_TA}/revisiicp/list?user_id=${encodeURIComponent(userId)}`);
+				if (!response.ok) throw new Error(`HTTP ${response.status}`);
 				const data = await response.json();
-				console.log('Received Revisi ICP data:', data);
-
-				if (data.status === 'success') {
+			
 				const tbody = document.querySelector('#revisiICPTable tbody');
-				if (!tbody) {
-					console.error('Table body element not found');
-					return;
-				}
-
+				if (!tbody) return;
 				tbody.innerHTML = '';
-
-				if (Array.isArray(data.data) && data.data.length > 0) {
-					data.data.forEach(revisiICP => {
+			
+				if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
+				  data.data.forEach(revisiICP => {
 					const statusClass = ({
-						'pending': 'badge badge-warning',
-						'approved': 'badge badge-success',
-						'rejected': 'badge badge-danger',
-						'on review': 'badge badge-info'
-					}[revisiICP.status] || 'badge badge-secondary');
-
-					// pastikan ada id; dukung {id} atau {revisi_icp_id}
+					  'pending':'badge badge-warning',
+					  'approved':'badge badge-success',
+					  'rejected':'badge badge-danger',
+					  'on review':'badge badge-info'
+					}[(revisiICP.status||'').toLowerCase()] || 'badge badge-secondary');
+			
 					const revId = revisiICP.revisi_icp_id || revisiICP.id || null;
-
-					// Jika id ada → tombol download via API; kalau tidak, fallback ke file_path (kalau memang ada endpoint public)
 					const downloadHtml = revId
-						? `<a class="dropdown-item" href="#" data-download-id="${revId}">
-							<i class="dw dw-download"></i> Download
-						</a>`
-						: (revisiICP.file_path
-							? `<a class="dropdown-item" href="http://104.43.89.154:8087/download?path=${encodeURIComponent(revisiICP.file_path)}" download>
-								<i class="dw dw-download"></i> Download (fallback)
-							</a>`
-							: `<span class="dropdown-item text-muted disabled">Tidak ada file</span>`);
-
+					  ? `<a class="dropdown-item" href="#" data-download-id="${revId}">
+						   <i class="dw dw-download"></i> Download
+						 </a>`
+					  : (revisiICP.file_path
+						  ? `<a class="dropdown-item" href="${API_TA}/download?path=${encodeURIComponent(revisiICP.file_path)}" download>
+							   <i class="dw dw-download"></i> Download (fallback)
+							 </a>`
+						  : `<span class="dropdown-item text-muted disabled">Tidak ada file</span>`);
+			
 					tbody.insertAdjacentHTML('beforeend', `
-						<tr>
+					  <tr>
 						<td>${escapeHtml(revisiICP.topik_penelitian) || '-'}</td>
 						<td>${escapeHtml(revisiICP.jurusan) || '-'}</td>
 						<td>${escapeHtml(revisiICP.kelas) || '-'}</td>
 						<td><span class="${statusClass}">${revisiICP.status || 'pending'}</span></td>
 						<td>
-							<div class="dropdown">
-							<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
-								href="#" role="button" data-toggle="dropdown">
-								<i class="dw dw-more"></i>
+						  <div class="dropdown">
+							<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle" href="#" role="button" data-toggle="dropdown">
+							  <i class="dw dw-more"></i>
 							</a>
 							<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
-								${downloadHtml}
+							  ${downloadHtml}
 							</div>
-							</div>
+						  </div>
 						</td>
-						</tr>
+					  </tr>
 					`);
-					});
-
-					// Delegasi event klik download, agar tidak menempel event per-row
-					if (!tbody.dataset.boundDownload) {
+				  });
+			
+				  if (!tbody.dataset.boundDownload) {
 					tbody.addEventListener('click', (e) => {
-						const a = e.target.closest('a[data-download-id]');
-						if (!a) return;
-						e.preventDefault();
-						const id = a.getAttribute('data-download-id');
-						downloadRevisiICP(id);
+					  const a = e.target.closest('a[data-download-id]');
+					  if (!a) return;
+					  e.preventDefault();
+					  const id = a.getAttribute('data-download-id');
+					  downloadRevisiICP(id);
 					});
 					tbody.dataset.boundDownload = '1';
-					}
+				  }
 				} else {
-					tbody.innerHTML = `
-					<tr>
-						<td colspan="5" class="text-center">Belum ada Revisi ICP yang diupload</td>
-					</tr>
-					`;
+				  tbody.innerHTML = `<tr><td colspan="5" class="text-center">Belum ada Revisi ICP yang diupload</td></tr>`;
 				}
-				} else {
-				console.error('Failed to load Revisi ICP data:', data.message);
-				showAlert('Gagal memuat data Revisi ICP: ' + (data.message || 'Unknown error'), 'danger');
-				}
-			} catch (error) {
-				console.error('Error loading Revisi ICP data:', error);
-				showAlert('Terjadi kesalahan saat memuat data Revisi ICP: ' + error.message, 'danger');
+			  } catch (e) {
+				console.error('Error loadRevisiICPData:', e);
+				showAlert('Terjadi kesalahan saat memuat data Revisi ICP: ' + e.message, 'danger');
+			  }
 			}
+			
+			/* ===========================
+			   Alert helper
+			=========================== */
+			function showAlert(message, type) {
+			  let alertContainer = document.getElementById('alertContainer');
+			  let alertMessage = document.getElementById('alertMessage');
+			  if (!alertContainer) {
+				alertContainer = document.createElement('div'); alertContainer.id='alertContainer'; alertContainer.className='alert-wrapper'; alertContainer.style.display='none';
+				alertMessage = document.createElement('div'); alertMessage.id='alertMessage'; alertMessage.className='alert'; alertMessage.setAttribute('role','alert');
+				alertContainer.appendChild(alertMessage);
+				document.body.insertBefore(alertContainer, document.body.firstChild);
+			  }
+			  alertMessage.className = `alert alert-${type}`;
+			  alertMessage.textContent = message;
+			  alertContainer.style.display = 'block';
+			  window.scrollTo({ top: 0, behavior: 'smooth' });
+			  setTimeout(() => { alertContainer.style.display = 'none'; }, 5000);
 			}
-
-			// Load Revisi ICP data saat halaman dimuat
+			
+			/* ===========================
+			   Inisialisasi page (tanpa cek token)
+			=========================== */
 			document.addEventListener('DOMContentLoaded', () => {
-				loadRevisiICPData();
+			  // Tidak ada redirect ke /loginusers
+			  loadICPData();
+			  loadICPReviewData();
+			  loadFinalICPData();
+			  loadHasilTelaahData();
+			  loadRevisiICPData();
+			  getUserData();
+			  // updateFinalKelas() sudah dipanggil di listener lain
 			});
-
-		</script>
+			</script>
+			
 
 		<style>
 		.badge {
