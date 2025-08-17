@@ -295,7 +295,6 @@ jobs:
           - { name: pengujian-user-service,         path: pengujian_user_service }
           - { name: pengujian-document-service,     path: pengujian_document_service }
           - { name: pengujian-notification-service, path: pengujian_notification_service }
-
     steps:
       - name: Checkout
       - uses: actions/checkout@v4
