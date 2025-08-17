@@ -317,13 +317,14 @@ jobs:
         uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: ${{ matrix.service.name }}:scan
-          format: 'sarif'
+          format: sarif
           output: ${{ matrix.service.name }}-image.sarif
-          vuln-type: 'os,library'
+          vuln-type: os,library
           ignore-unfixed: true
-          severity: 'HIGH,CRITICAL'
-          exit-code: '1'
-        continue-on-error: false
+          severity: CRITICAL
+          exit-code: '1'      # fail kalau ada CRITICAL
+          hide-progress: true
+          timeout: 10m
 
       - name: Upload SARIF (Image)
         if: always()
