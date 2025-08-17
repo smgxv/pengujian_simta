@@ -376,62 +376,46 @@ jobs:
   #           docker run -d -p 8088:8088 --name pengujian-notification-service -v /home/youruser/uploads:/app/uploads smgxv/pengujian-notification-service
   #           docker network connect simta_net pengujian-notification-service
 
-  zap-dast:
+   zap-dast:
     runs-on: ubuntu-latest
     steps:
       - name: Pull ZAP image (GHCR)
         run: docker pull ghcr.io/zaproxy/zaproxy:stable
 
-      - name: Run ZAP Baseline (no auth) and copy reports
+      - name: Run ZAP Quick Scan (no auth) and generate HTML report
         run: |
           set -euo pipefail
           mkdir -p zap-out
 
-          # Jalankan container TANPA --rm supaya bisa docker cp setelah selesai
+          # Jalankan tanpa --rm agar bisa docker cp reportnya
           docker rm -f zaprun 2>/dev/null || true
           docker run --name zaprun \
             ghcr.io/zaproxy/zaproxy:stable \
-              /zap/zap-baseline.py \
-                -t "http://104.43.89.154:8085/taruna/dashboard" \
-                -r "/zap/wrk/report.html" \
-                -J "/zap/wrk/report.json" \
-                -m 5 \
-                -d \
-                -I \
-                -z "-config spider.maxDuration=3 -config spider.parseComments=true -config spider.parseRobotsTxt=true"
+              zap.sh -cmd \
+                -addonupdate \
+                -addoninstall quickstart,report \
+                -config log.level=DEBUG \
+                -quickurl "http://104.43.89.154:8085/taruna/dashboard" \
+                -quickprogress \
+                -quickout "/home/zap/.ZAP/reports/zap-report.html"
 
-          # Simpan console log container
-          docker logs zaprun > zap-out/console.log || true
+          # Simpan log & ambil report dari dalam container
+          docker logs zaprun > zap-out/zap.log || true
+          docker cp zaprun:/home/zap/.ZAP/reports/zap-report.html zap-out/zap-report.html || true
 
-          echo "== List di dalam container =="
-          docker exec zaprun sh -lc 'ls -lah /zap /zap/wrk || true'
-
-          # Copy report dari container ke host (dua lokasi kemungkinan)
-          docker cp zaprun:/zap/wrk/report.html zap-out/report.html 2>/dev/null || true
-          docker cp zaprun:/zap/wrk/report.json zap-out/report.json 2>/dev/null || true
-
-          # Fallback: jika ZAP menaruh di /zap (bukan /zap/wrk)
-          if [ ! -s zap-out/report.html ] && docker exec zaprun sh -lc 'test -f /zap/report.html'; then
-            docker cp zaprun:/zap/report.html zap-out/report.html || true
-          fi
-          if [ ! -s zap-out/report.json ] && docker exec zaprun sh -lc 'test -f /zap/report.json'; then
-            docker cp zaprun:/zap/report.json zap-out/report.json || true
-          fi
-
-          echo "== Files di host =="
+          echo "== Files in zap-out =="
           ls -lah zap-out
 
           # Bersihkan container
           docker rm -f zaprun || true
 
-      - name: Upload artifacts
+      - name: Upload HTML report
         uses: actions/upload-artifact@v4
         with:
-          name: zaptaruna${{ github.run_id }}
+          name: zaptaruna${{ github.run_id }}   # lowercase + angka saja
           path: |
-            zap-out/report.html
-            zap-out/report.json
-            zap-out/console.log
+            zap-out/zap-report.html
+            zap-out/zap.log
           if-no-files-found: error
 
 
