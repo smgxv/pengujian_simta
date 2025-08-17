@@ -209,7 +209,12 @@
   #           docker network connect simta_net notification-service || true
 
 
+name: CI
 
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
 
 permissions:
   contents: read
