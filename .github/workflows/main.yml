@@ -1,103 +1,237 @@
-# name: CI Pipeline - Secure SIMTA
+name: CI/CD SIMTA
 
-# on:
-#   push:
-#     branches: [main]
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
 
-# jobs:
+permissions:
+  contents: read
+  actions: write
+  issues: write
+  security-events: write
 
-  # # 1. SAST - CodeQL (GitHub Native)
-  # sast-codeql:
-  #   name: SAST dengan CodeQL (Go + JS)
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     security-events: write
-  #     actions: read
-  #     contents: read
+env:
+  GO_VERSION: "1.23"
 
-  #   steps:
-  #     - name: Checkout source code
-  #       uses: actions/checkout@v4
+jobs:
+  # 1) DEPENDENCY SCAN (govulncheck)
+  dep-scan:
+    name: Govulncheck (${{ matrix.service.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - { name: pengujian-ta-service,           path: pengujian_ta_service }
+          - { name: pengujian-user-service,         path: pengujian_user_service }
+          - { name: pengujian-document-service,     path: pengujian_document_service }
+          - { name: pengujian-notification-service, path: pengujian_notification_service }
 
-  #     - name: Setup Go
-  #       uses: actions/setup-go@v5
-  #       with:
-  #         go-version: 1.23
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  #     - name: Initialize CodeQL
-  #       uses: github/codeql-action/init@v3
-  #       with:
-  #         languages: go, javascript
+      # Gate + simpan laporan TEXT
+      - name: Govulncheck (gate + save text report)
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-input: ${{ env.GO_VERSION }}         # contoh: "1.22.x" atau "1.23"
+          work-dir: ${{ matrix.service.path }}             # jalankan per service (monorepo)
+          go-package: ./...                                # analisis semua paket
+          output-format: text                              # penting: TEXT → mengikuti exit code
+          output-file: ${{ matrix.service.name }}-govulncheck.txt
+          repo-checkout: false
+          cache: true
+          cache-dependency-path: ${{ matrix.service.path }}/go.sum
 
-  #     - name: Perform CodeQL Analysis
-  #       uses: github/codeql-action/analyze@v3
+      # Arsipkan laporan TEXT
+      - name: Upload govulncheck report (artifact)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: govulncheck-${{ matrix.service.name }}
+          path: ${{ matrix.service.name }}-govulncheck.txt
 
-# # 2. BUILD & PUSH DOCKER IMAGES
-#   build-image:
-#     name: Build Docker Images
-#     needs: sast-codeql
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout Code
-#         uses: actions/checkout@v4
 
-#       - name: Build Docker Images
-#         run: |
-#           docker build -t smgxv/ta-service -f ta_service/Dockerfile ta_service
-#           docker build -t smgxv/user-service -f user_service/Dockerfile user_service
-#           docker build -t smgxv/document-service -f document_service/Dockerfile document_service
-#           docker build -t smgxv/notification-service -f notification_service/Dockerfile notification_service
+  # IMAGE SCAN (trivy)
+  image-scan:
+    name: Image Scan (${{ matrix.service.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - { name: pengujian-ta-service,           path: pengujian_ta_service,           dockerfile: pengujian_ta_service/Dockerfile }
+          - { name: pengujian-user-service,         path: pengujian_user_service,         dockerfile: pengujian_user_service/Dockerfile }
+          - { name: pengujian-document-service,     path: pengujian_document_service,     dockerfile: pengujian_document_service/Dockerfile }
+          - { name: pengujian-notification-service, path: pengujian_notification_service, dockerfile: pengujian_notification_service/Dockerfile }
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-#       - name: Login to DockerHub
-#         uses: docker/login-action@v3
-#         with:
-#           username: ${{ secrets.DOCKERHUB_USERNAME }}
-#           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build image (local daemon)
+        run: |
+          docker build \
+            -f "${{ matrix.service.dockerfile }}" \
+            -t "${{ matrix.service.name }}:scan" \
+            "${{ matrix.service.path }}"
 
-#       - name: Push Docker Images
-#         run: |
-#           docker push smgxv/ta-service
-#           docker push smgxv/user-service
-#           docker push smgxv/document-service
-#           docker push smgxv/notification-service
+      - name: Trivy Image scan (gate, no SARIF)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ matrix.service.name }}:scan
+          format: table
+          vuln-type: os,library
+          ignore-unfixed: true
+          severity: CRITICAL      # atau 'CRITICAL,HIGH' sesuai kebijakan
+          exit-code: '1'          # fail kalau ada temuan di level itu
+          hide-progress: true
+          timeout: 10m
 
-#   # 3. DEPLOY TO VPS (STAGING)
-#   deploy-staging:
-#     name: Deploy Semua Service ke VPS Local(Staging)
-#     needs: build-image
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Deploy Semua Service ke VPS Local(Staging)
-#         uses: appleboy/ssh-action@master
-#         with:
-#           host: ${{ secrets.VPS_HOST }}
-#           username: ${{ secrets.VPS_USERNAME }}
-#           password: ${{ secrets.VPS_PASSWORD }}
-#           port: ${{ secrets.VPS_PORT }}
-#           script: |
-#             docker stop ta-service || true && docker rm ta-service || true
-#             docker stop user-service || true && docker rm user-service || true
-#             docker stop document-service || true && docker rm document-service || true
-#             docker stop notification-service || true && docker rm notification-service || true
+  # Build Image ()
+  build-pengujian-ta-service:
+    needs: image-scan
+    name: Build Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build Image
+        run: docker build -t smgxv/pengujian-ta-service -f pengujian_ta_service/Dockerfile pengujian_ta_service
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Push Image
+        run: docker push smgxv/pengujian-ta-service
+  
+  build-pengujian-user-service:
+    needs: image-scan
+    name: Build User Service Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build Image
+        run: docker build -t smgxv/pengujian-user-service -f pengujian_user_service/Dockerfile pengujian_user_service
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Push Image
+        run: docker push smgxv/pengujian-user-service
 
-#             docker system prune -af
+  build-pengujian-document-service:
+    needs: image-scan
+    name: Build Document Service Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build Image
+        run: docker build -t smgxv/pengujian-document-service -f pengujian_document_service/Dockerfile pengujian_document_service
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Push Image
+        run: docker push smgxv/pengujian-document-service
+  
+  build-pengujian-notification-service:
+    needs: image-scan
+    name: Build Notification Service Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build Image
+        run: docker build -t smgxv/pengujian-notification-service -f pengujian_notification_service/Dockerfile pengujian_notification_service
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Push Image
+        run: docker push smgxv/pengujian-notification-service
 
-#             docker pull smgxv/ta-service
-#             docker pull smgxv/user-service
-#             docker pull smgxv/document-service
-#             docker pull smgxv/notification-service
+  # Deploy ke lingkungan sementara 
+  deploy-pengujian-ta-service:
+    needs: build-pengujian-ta-service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            docker stop pengujian-ta-service || true && docker rm pengujian-ta-service || true
+            docker system prune -af
+            docker pull smgxv/pengujian-ta-service
+            docker run -d -p 8085:8085 --name pengujian-ta-service smgxv/pengujian-ta-service
+            docker network connect simta_net pengujian-ta-service
 
-#             docker run -d -p 8080:8080 --name ta-service smgxv/ta-service
-#             docker run -d -p 8081:8081 --name user-service smgxv/user-service
-#             docker run -d -p 8082:8082 --name document-service smgxv/document-service
-#             docker run -d -p 8083:8083 --name notification-service smgxv/notification-service
+  deploy-pengujian-user-service:
+    needs: build-pengujian-user-service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy User Service to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            docker stop pengujian-user-service || true && docker rm pengujian-user-service || true
+            docker system prune -af
+            docker pull smgxv/pengujian-user-service
+            docker run -d -p 8086:8086 --name pengujian-user-service smgxv/pengujian-user-service
+            docker network connect simta_net pengujian-user-service
 
-#             docker network connect simta_net ta-service || true
-#             docker network connect simta_net user-service || true
-#             docker network connect simta_net document-service || true
-#             docker network connect simta_net notification-service || true
+  deploy-pengujian-document-service:
+    needs: build-pengujian-document-service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Document Service to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            docker stop pengujian-document-service || true && docker rm pengujian-document-service || true
+            docker system prune -af
+            docker pull smgxv/pengujian-document-service
+            docker run -d -p 8087:8087 --name pengujian-document-service smgxv/pengujian-document-service
+            docker network connect simta_net pengujian-document-service
 
-  # # 4. SAST - SONARCLOUD
+  deploy-pengujian-notification-service:
+    needs: build-pengujian-notification-service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Notification Service to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            docker stop pengujian-notification-service || true && docker rm pengujian-notification-service || true
+            docker system prune -af
+            docker pull smgxv/pengujian-notification-service
+            docker run -d -p 8088:8088 --name pengujian-notification-service -v /home/youruser/uploads:/app/uploads smgxv/pengujian-notification-service
+            docker network connect simta_net pengujian-notification-service
+
+  # # SAST - SONARCLOUD
   # sast-analysis:
   #   name: SAST dengan SonarCloud
   #   needs: deploy-staging
@@ -119,391 +253,14 @@
   #       env:
   #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   
-  # # 5. DAST - ZAP TEST TERHADAP VPS
-  # dast-analysis:
-  #   name: DAST dengan OWASP ZAP (TA Service + Auth)
-  #   # needs: deploy-staging
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
-
-  #     - name: Jalankan ZAP terhadap TA Service
-  #       run: |
-  #         docker run --rm \
-  #           -v $(pwd)/zap_output:/zap/wrk \
-  #           -v $(pwd)/.zap:/zap/.zap/scripts/ \
-  #           ghcr.io/zaproxy/zaproxy:stable \
-  #           zap.sh -cmd -autorun /zap/wrk/simta.yaml || true
-
-  #     - name: Upload Laporan ZAP TA Service
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: zap-ta-report
-  #         path: .zap/report.html
-
-
-
-
-  # # 2. BUILD & PUSH DOCKER IMAGES
-  # build-image:
-  #   name: Build Docker Images
-  #   # needs: sast-codeql
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v4
-
-  #     - name: Build Docker Images
-  #       run: |
-  #         docker build -t smgxv/ta-service -f ta_service/Dockerfile ta_service
-  #         docker build -t smgxv/user-service -f user_service/Dockerfile user_service
-  #         docker build -t smgxv/document-service -f document_service/Dockerfile document_service
-  #         docker build -t smgxv/notification-service -f notification_service/Dockerfile notification_service
-
-  #     - name: Login to DockerHub
-  #       uses: docker/login-action@v3
-  #       with:
-  #         username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-  #     - name: Push Docker Images
-  #       run: |
-  #         docker push smgxv/ta-service
-  #         docker push smgxv/user-service
-  #         docker push smgxv/document-service
-  #         docker push smgxv/notification-service
-
-  # # 3. DEPLOY TO VPS (STAGING)
-  # deploy-staging:
-  #   name: Deploy Semua Service ke VPS Local(Staging)
-  #   needs: build-image
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Deploy Semua Service ke VPS Local(Staging)
-  #       uses: appleboy/ssh-action@master
-  #       with:
-  #         host: ${{ secrets.VPS_HOST }}
-  #         username: ${{ secrets.VPS_USERNAME }}
-  #         password: ${{ secrets.VPS_PASSWORD }}
-  #         port: ${{ secrets.VPS_PORT }}
-  #         script: |
-  #           docker stop ta-service || true && docker rm ta-service || true
-  #           docker stop user-service || true && docker rm user-service || true
-  #           docker stop document-service || true && docker rm document-service || true
-  #           docker stop notification-service || true && docker rm notification-service || true
-
-  #           docker pull smgxv/ta-service
-  #           docker pull smgxv/user-service
-  #           docker pull smgxv/document-service
-  #           docker pull smgxv/notification-service
-
-  #           docker run -d -p 8080:8080 --name ta-service smgxv/ta-service
-  #           docker run -d -p 8081:8081 --name user-service smgxv/user-service
-  #           docker run -d -p 8082:8082 --name document-service smgxv/document-service
-  #           docker run -d -p 8083:8083 --name notification-service smgxv/notification-service
-
-  #           docker network connect simta_net ta-service || true
-  #           docker network connect simta_net user-service || true
-  #           docker network connect simta_net document-service || true
-  #           docker network connect simta_net notification-service || true
-
-
-name: CI
-
-on:
-  push:
-    branches: [main]
-  workflow_dispatch: {}
-
-permissions:
-  contents: read
-  actions: write
-  issues: write
-  security-events: write
-
-env:
-  GO_VERSION: "1.23"
-
-jobs:
-  # 1) DEPENDENCY SCAN
-  dep-scan:
-    name: Dependency Scan (${{ matrix.service.name }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        service:
-          - { name: pengujian-ta-service,           path: pengujian_ta_service }
-          - { name: pengujian-user-service,         path: pengujian_user_service }
-          - { name: pengujian-document-service,     path: pengujian_document_service }
-          - { name: pengujian-notification-service, path: pengujian_notification_service }
-    defaults:
-      run:
-        working-directory: ${{ matrix.service.path }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Cache Go modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ matrix.service.name }}-${{ hashFiles(format('{0}/go.sum', matrix.service.path)) }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      # govulncheck via CLI agar hormati working-directory
-      - name: govulncheck
-        run: |
-          go install golang.org/x/vuln/cmd/govulncheck@latest
-          "$(go env GOPATH)/bin/govulncheck" ./...
-
-      - name: Trivy FS scan
-        uses: aquasecurity/trivy-action@0.24.0
-        with:
-          scan-type: 'fs'
-          scan-ref: ${{ matrix.service.path }}
-          format: 'sarif'
-          output: ${{ matrix.service.name }}-fs.sarif
-          ignore-unfixed: true
-          severity: 'HIGH,CRITICAL'
-        continue-on-error: true
-
-      - name: Upload SARIF (FS)
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: ${{ matrix.service.name }}-fs.sarif
-
-  # 2) IMAGE SCAN
-  image-scan:
-    name: Image Scan (${{ matrix.service.name }})
-    runs-on: ubuntu-latest
-    needs: [dep-scan]
-    strategy:
-      fail-fast: false
-      matrix:
-        service:
-          - { name: pengujian-ta-service,           path: pengujian_ta_service }
-          - { name: pengujian-user-service,         path: pengujian_user_service }
-          - { name: pengujian-document-service,     path: pengujian_document_service }
-          - { name: pengujian-notification-service, path: pengujian_notification_service }
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build image (local)
-        uses: docker/build-push-action@v6
-        with:
-          context: ${{ matrix.service.path }}
-          file: ${{ matrix.service.path }}/Dockerfile
-          tags: ${{ matrix.service.name }}:scan
-          load: true
-
-      # --- GATE: FAIL kalau ada CRITICAL, tampilkan tabel di log ---
-      - name: Trivy Image Gate (table)
-        uses: aquasecurity/trivy-action@0.24.0
-        with:
-          image-ref: ${{ matrix.service.name }}:scan
-          format: 'table'
-          scanners: 'vuln'           # hanya vulnerability
-          vuln-type: 'os,library'
-          ignore-unfixed: true
-          severity: 'CRITICAL'       # hanya CRITICAL
-          exit-code: '1'             # bikin job merah kalau ada CRITICAL
-          hide-progress: true
-          timeout: 10m
-
-      # --- Buat SARIF untuk Code Scanning (tidak bikin fail) ---
-      - name: Trivy Image SARIF (for upload)
-        if: always()
-        uses: aquasecurity/trivy-action@0.24.0
-        with:
-          image-ref: ${{ matrix.service.name }}:scan
-          format: 'sarif'
-          scanners: 'vuln'
-          vuln-type: 'os,library'
-          ignore-unfixed: true
-          severity: 'CRITICAL'
-          limit-severities-for-sarif: 'CRITICAL'  # hanya CRITICAL di SARIF
-          exit-code: '0'             # JANGAN fail di step ini
-          hide-progress: true
-          timeout: 10m
-          output: ${{ matrix.service.name }}-image.sarif
-
-      # --- Upload SARIF apapun hasilnya ---
-      - name: Upload SARIF (Image)
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: ${{ matrix.service.name }}-image.sarif
-
-
-
-
-
-  build-pengujian-ta-service:
-    needs: image-scan
-    name: Build Image
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Build Image
-        run: docker build -t smgxv/pengujian-ta-service -f pengujian_ta_service/Dockerfile pengujian_ta_service
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Push Image
-        run: docker push smgxv/pengujian-ta-service
-
-  deploy-pengujian-ta-service:
-    needs: build-pengujian-ta-service
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to VPS
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          port: ${{ secrets.VPS_PORT }}
-          script: |
-            docker stop pengujian-ta-service || true && docker rm pengujian-ta-service || true
-            docker system prune -af
-            docker pull smgxv/pengujian-ta-service
-            docker run -d -p 8085:8085 --name pengujian-ta-service smgxv/pengujian-ta-service
-            docker network connect simta_net pengujian-ta-service
-
-
-  build-pengujian-user-service:
-    needs: image-scan
-    name: Build User Service Image
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Build Image
-        run: docker build -t smgxv/pengujian-user-service -f pengujian_user_service/Dockerfile pengujian_user_service
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Push Image
-        run: docker push smgxv/pengujian-user-service
-
-  deploy-pengujian-user-service:
-    needs: build-pengujian-user-service
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy User Service to VPS
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          port: ${{ secrets.VPS_PORT }}
-          script: |
-            docker stop pengujian-user-service || true && docker rm pengujian-user-service || true
-            docker system prune -af
-            docker pull smgxv/pengujian-user-service
-            docker run -d -p 8086:8086 --name pengujian-user-service smgxv/pengujian-user-service
-            docker network connect simta_net pengujian-user-service
-
-  build-pengujian-document-service:
-    needs: image-scan
-    name: Build Document Service Image
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Build Image
-        run: docker build -t smgxv/pengujian-document-service -f pengujian_document_service/Dockerfile pengujian_document_service
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Push Image
-        run: docker push smgxv/pengujian-document-service
-
-  deploy-pengujian-document-service:
-    needs: build-pengujian-document-service
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy Document Service to VPS
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          port: ${{ secrets.VPS_PORT }}
-          script: |
-            docker stop pengujian-document-service || true && docker rm pengujian-document-service || true
-            docker system prune -af
-            docker pull smgxv/pengujian-document-service
-            docker run -d -p 8087:8087 --name pengujian-document-service smgxv/pengujian-document-service
-            docker network connect simta_net pengujian-document-service
-
-  build-pengujian-notification-service:
-    needs: image-scan
-    name: Build Notification Service Image
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Build Image
-        run: docker build -t smgxv/pengujian-notification-service -f pengujian_notification_service/Dockerfile pengujian_notification_service
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Push Image
-        run: docker push smgxv/pengujian-notification-service
-
-  deploy-pengujian-notification-service:
-    needs: build-pengujian-notification-service
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy Notification Service to VPS
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          port: ${{ secrets.VPS_PORT }}
-          script: |
-            docker stop pengujian-notification-service || true && docker rm pengujian-notification-service || true
-            docker system prune -af
-            docker pull smgxv/pengujian-notification-service
-            docker run -d -p 8088:8088 --name pengujian-notification-service -v /home/youruser/uploads:/app/uploads smgxv/pengujian-notification-service
-            docker network connect simta_net pengujian-notification-service
-
+  # # DAST - OWASP ZAP
   # zap-dast:
   #   runs-on: ubuntu-latest
   #   steps:
   #     - name: Pull ZAP image (GHCR)
   #       run: docker pull ghcr.io/zaproxy/zaproxy:stable
 
-  #     - name: Run ZAP Quick Scan (no auth) and generate HTML report
+  #     - name: Run ZAP Quick Scan and generate HTML report
   #       run: |
   #         set -euo pipefail
   #         mkdir -p zap-out
@@ -538,242 +295,3 @@ jobs:
   #           zap-out/zap-report.html
   #           zap-out/zap.log
   #         if-no-files-found: error
-
-
-# name: ZAP API Scan
-
-# permissions:
-#   contents: read
-#   issues: write
-  
-# on:
-#   push:
-#     branches:
-#       - main
-
-# jobs:
-#   zap_scan:
-#     runs-on: ubuntu-latest
-#     # env:
-#     #   ZAP_AUTH_HEADER: 'Authorization'
-#     #   ZAP_AUTH_HEADER_VALUE: 'Bearer ${{ secrets.API_TOKEN }}'
-#     #   ZAP_AUTH_HEADER_SITE: 'http://104.43.89.154:8080'
-
-#     steps:
-#       - name: Checkout repo
-#         uses: actions/checkout@v4
-
-#       - name: Jalankan ZAP API Scan
-#         uses: zaproxy/action-api-scan@v0.9.0
-#         with:
-#           token: ${{ secrets.GITHUB_TOKEN }}
-#           target: 'http://104.43.89.154/openapi.yaml'
-#           format: openapi
-#           cmd_options: '-a'
-
-# name: ZAP API Scan
-
-# permissions:
-#   contents: read
-#   issues: write
-  
-# on:
-#   push:
-#     branches:
-#       - main
-
-# jobs:
-#   zap_scan:
-#     runs-on: ubuntu-latest
-#     env:
-#       ZAP_AUTH_HEADER: 'Authorization'
-#       ZAP_AUTH_HEADER_VALUE: 'Bearer ${{ secrets.API_TOKEN }}'
-#       ZAP_AUTH_HEADER_SITE: 'http://104.43.89.154:8081'
-
-#     steps:
-#       - name: Checkout repo
-#         uses: actions/checkout@v4
-
-#       - name: Jalankan ZAP API Scan
-#         uses: zaproxy/action-api-scan@v0.9.0
-#         with:
-#           token: ${{ secrets.GITHUB_TOKEN }}
-#           target: 'http://104.43.89.154/openapi_users.yaml'
-#           format: openapi
-#           cmd_options: '-a'
-
-
-# name: ZAP Full Scan for Taruna Dashboard
-
-# permissions:
-#   contents: read
-#   issues: write
-  
-# on:
-#   push:
-#     branches:
-#       - main
-
-# jobs:
-#   zap_scan:
-#     runs-on: ubuntu-latest
-
-#     services:
-#       ta-service:
-#         image: smgxv/ta-service
-#         ports:
-#           - 8080:8080
-#         options: >-
-#           --health-cmd "curl --fail http://localhost:8080/loginusers || exit 1"
-#           --health-interval 10s
-#           --health-timeout 5s
-#           --health-retries 10
-
-#     steps:
-#       - name: Checkout repository
-#         uses: actions/checkout@v4
-
-#       - name: Docker Hub Login
-#         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-#       - name: ZAP Full Scan
-#         uses: zaproxy/action-full-scan@v0.12.0
-#         with:
-#           target: 'http://localhost:8080/taruna/dashboard'
-#           cmd_options: '-a -j'
-#         env:
-#           ZAP_AUTH_HEADER: "Authorization"
-#           ZAP_AUTH_HEADER_VALUE: "Bearer ${{ secrets.TARUNA_TOKEN }}"
-#           ZAP_AUTH_HEADER_SITE: "http://localhost:8080"
-
-# .github/workflows/zap-analysis.yml
-
-# name: DAST - ZAP TEST TERHADAP VPS
-
-# on:
-#   workflow_dispatch:
-#   push:
-#     branches:
-#       - main
-
-# jobs:
-#   dast-analysis:
-#     name: DAST dengan OWASP ZAP (Target VPS)
-#     # needs: deploy-staging
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout Repository
-#         uses: actions/checkout@v3
-
-#       - name: Siapkan Direktori Output
-#         run: mkdir -p zap_output
-
-#       - name: Jalankan ZAP terhadap TA Service
-#         run: |
-#           docker run --rm \
-#           -v $(pwd)/zap_output:/zap/wrk \
-#           ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
-#           -t http://104.43.89.154:8080 \
-#           -r ta_report.html || true
-
-#       - name: Jalankan ZAP terhadap User Service
-#         run: |
-#           docker run --rm \
-#           -v $(pwd)/zap_output:/zap/wrk \
-#           ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
-#           -t http://104.43.89.154:8081 \
-#           -r user_report.html || true
-
-#       - name: Jalankan ZAP terhadap Document Service
-#         run: |
-#           docker run --rm \
-#           -v $(pwd)/zap_output:/zap/wrk \
-#           ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
-#           -t http://104.43.89.154:8082 \
-#           -r document_report.html || true
-
-#       - name: Jalankan ZAP terhadap Notification Service
-#         run: |
-#           docker run --rm \
-#           -v $(pwd)/zap_output:/zap/wrk \
-#           ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
-#           -t http://104.43.89.154:8083 \
-#           -r notification_report.html || true
-
-#       - name: Upload Semua Laporan ZAP
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: zap-dast-reports
-#           path: |
-#             zap_output/ta_report.html
-#             zap_output/user_report.html
-#             zap_output/document_report.html
-#             zap_output/notification_report.html
-
-
-# name: ZAP DAST (Taruna)
-
-# on:
-#   push:
-#     branches: [ "main" ]
-#   workflow_dispatch:
-
-# jobs:
-#   zap-dast:
-#     runs-on: ubuntu-latest
-#     env:
-#       TARGET_URL: https://securesimta.my.id/loginusers         # dipakai oleh script JWT
-#       LOGIN_EMAIL: daniel@gmail.com
-#       LOGIN_PASSWORD: P@ssword1
-
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
-
-#       - name: Check Environment
-#         run: |
-#          echo "$TARGET_URL"
-#          echo "$LOGIN_EMAIL"
-#          echo "$LOGIN_PASSWORD"
-      
-#       - name: Check URL
-#         run: curl "$TARGET_URL"
-
-#       - name: Pull ZAP image (GHCR)
-#         run: docker pull ghcr.io/zaproxy/zaproxy:stable
-
-#       - name: Run ZAP (named container)
-#         run: |
-#           docker rm -f zaprun 2>/dev/null || true
-#           docker run --name zaprun \
-#             -e TARGET_URL -e LOGIN_EMAIL -e LOGIN_PASSWORD \
-#             -v "$PWD/security/zap/zap.yaml:/zap/wrk/zap.yaml:ro" \
-#             -v "$PWD/security/zap/jwt-taruna.js:/zap/wrk/jwt-taruna.js:ro" \
-#             -v "$PWD/security/zap/Taruna.policy:/home/zap/.ZAP/policies/Taruna.policy:ro" \
-#             ghcr.io/zaproxy/zaproxy:stable \
-#             zap.sh -cmd \
-#               -addonupdate \
-#               -addoninstall reports \
-#               -config log.level=DEBUG \
-#               -autorun /zap/wrk/zap.yaml \
-#               -silent
-
-#           mkdir -p zap-out
-#           docker cp zaprun:/home/zap/.ZAP/reports/zap-report.html  zap-out/zap-report.html  || true
-#           docker cp zaprun:/home/zap/.ZAP/reports/zap-results.json zap-out/zap-results.json || true
-#           docker cp zaprun:/home/zap/.ZAP/zap.log                  zap-out/zap.log          || true
-#           docker rm -f zaprun || true
-
-#       - name: Upload reports
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: zap-dast-reports
-#           path: |
-#             zap-out/zap-report.html
-#             zap-out/zap-results.json
-#             zap-out/zap.log
-
-
-          
-
