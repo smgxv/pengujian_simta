@@ -705,293 +705,261 @@
 
 
 		<script>
-		// JS notifikasi
-		document.addEventListener("DOMContentLoaded", function () {
-			fetch("http://104.43.89.154:8088/notifications?role=Taruna")
-				.then(res => res.json())
-				.then(data => {
+			(function(){
+			  const API_USER   = 'http://104.43.89.154:8086';
+			  const API_AUTH   = 'http://104.43.89.154:8085';
+			  const API_NOTIF  = 'http://104.43.89.154:8088';
+			
+			  function getQueryParam(key){
+				const urlParams = new URLSearchParams(window.location.search);
+				return urlParams.get(key);
+			  }
+			
+			  // ====== NOTIFIKASI (tanpa token) ======
+			  document.addEventListener("DOMContentLoaded", function () {
+				fetch(`${API_NOTIF}/notifications?role=Taruna`)
+				  .then(res => res.json())
+				  .then(data => {
 					const ul = document.getElementById("notif-list");
-					ul.innerHTML = ""; // Kosongkan
-
-					if (data.length === 0) {
-						ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
-						return;
+					if (!ul) return;
+					ul.innerHTML = "";
+			
+					if (!Array.isArray(data) || data.length === 0) {
+					  ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
+					  return;
 					}
-
+			
 					data.forEach(item => {
-						const li = document.createElement("li");
-						li.innerHTML = `
-							<a href="/taruna/detailinformasitaruna?id=${item.ID}">
-								<img src="vendors/images/logo.png" alt="" />
-								<h3>${item.Judul}</h3>
-								<p>${item.Deskripsi.length > 50 ? item.Deskripsi.substring(0, 50) + "..." : item.Deskripsi}</p>
-							</a>`;
-						ul.appendChild(li);
+					  const li = document.createElement("li");
+					  li.innerHTML = `
+						<a href="/taruna/detailinformasitaruna?id=${item.ID}">
+						  <img src="vendors/images/logo.png" alt="" />
+						  <h3>${item.Judul}</h3>
+						  <p>${(item.Deskripsi || '').length > 50 ? item.Deskripsi.substring(0, 50) + "..." : (item.Deskripsi || '')}</p>
+						</a>`;
+					  ul.appendChild(li);
 					});
-
-					document.querySelector(".notification-active").style.display = "inline-block";
-				})
-				.catch(err => {
+			
+					const notifActive = document.querySelector(".notification-active");
+					if (notifActive) notifActive.style.display = "inline-block";
+				  })
+				  .catch(err => {
 					console.error("Gagal mengambil notifikasi:", err);
-				});
-		});
-
-		function redirectToProfile() {
-			window.location.href = '/taruna/profile';
-		}
-
-		// Fungsi untuk logout
-		async function logout() {
-			try {
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				
-				const response = await fetch('http://104.43.89.154:8085/logout', {
-					method: 'POST',
-					headers: {
-						'Authorization': token ? `Bearer ${token}` : '',
-						'Content-Type': 'application/json'
-					},
-					credentials: 'include'
-				});
-
-				const data = await response.json();
-				
-				if (response.ok && data.status === 'success') {
-					// Clear localStorage
-					localStorage.clear();
-					
-					// Clear sessionStorage
-					sessionStorage.clear();
-					
-					// Clear all cookies for all possible paths
-					const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
-					const cookies = document.cookie.split(';');
-					
-					for (let cookie of cookies) {
-						const eqPos = cookie.indexOf('=');
-						const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-						
-						// Hapus cookie untuk setiap path
-						paths.forEach(path => {
-							document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
-						});
-					}
-					
-					// Clear cache if browser supports it
-					if (window.caches) {
-						caches.keys().then(names => {
-							names.forEach(name => {
-								caches.delete(name);
-							});
-						});
-					}
-
-					// Clear application cache
-					if (window.applicationCache) {
-						window.applicationCache.abort();
-					}
-
-					// Clear service workers if any
-					if (navigator.serviceWorker) {
-						navigator.serviceWorker.getRegistrations().then(registrations => {
-							registrations.forEach(registration => {
-								registration.unregister();
-							});
-						});
-					}
-					
-					console.log('Logout berhasil');
-					
-					// Force reload halaman login untuk membersihkan cache
-					window.location.href = '/loginusers';
-					window.location.reload(true);
+				  });
+			  });
+			
+			  // ====== PROFIL & DASHBOARD TARUNA (tanpa token) ======
+			  document.addEventListener('DOMContentLoaded', function () {
+				// Ambil userId dari localStorage atau URL (?user_id=...)
+				let userId = localStorage.getItem('userId') || getQueryParam('user_id');
+			
+				// ---- Profil User (opsional) ----
+				if (userId) {
+				  fetch(`${API_USER}/users?id=${encodeURIComponent(userId)}`)
+					.then(resp => resp.ok ? resp.json() : Promise.reject(resp))
+					.then(user => {
+					  const usernameElement = document.getElementById('username');
+					  if (usernameElement) {
+						usernameElement.textContent = user?.username || user?.nama_lengkap || 'User';
+					  }
+					})
+					.catch(() => {
+					  const usernameElement = document.getElementById('username');
+					  if (usernameElement) usernameElement.textContent = 'User';
+					});
 				} else {
-					throw new Error(data.message || 'Gagal logout');
+				  const usernameElement = document.getElementById('username');
+				  if (usernameElement) usernameElement.textContent = 'User';
 				}
-			} catch (error) {
-				console.error('Error during logout:', error);
-				alert('Gagal logout. Silakan coba lagi.');
-			}
-		}
-
-		// Modify the existing DOMContentLoaded event listener
-		document.addEventListener('DOMContentLoaded', function () {
-			const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-			if (!token) {
-				window.location.replace('/loginusers');
-				return;
-			}
-
-			const userId = localStorage.getItem('userId');
-			if (!userId) {
-				window.location.replace('/loginusers');
-				return;
-			}
-
-			// Ambil data user untuk profile
-			fetch(`http://104.43.89.154:8086/users?id=${userId}`, {
-				headers: {
-					'Authorization': `Bearer ${token}`
-				}
-			})
-				.then(response => response.json())
-				.then(user => {
-					const usernameElement = document.getElementById('username');
-					if (usernameElement) {
-						usernameElement.textContent = user.username || user.nama_lengkap || 'User';
-					}
-				})
-				.catch(() => {
-					const usernameElement = document.getElementById('username');
-					if (usernameElement) {
-						usernameElement.textContent = 'User';
-					}
-				});
-
-			// Fetch data dashboard taruna
-			fetch(`http://104.43.89.154:8086/taruna/dashboard?user_id=${userId}`, {
-				headers: {
-					'Authorization': `Bearer ${token}`
-				}
-			})
-				.then(response => response.json())
-				.then(result => {
-					if (result.status === 'success' && result.data) {
+			
+				// ---- Dashboard Taruna (opsional) ----
+				if (userId) {
+				  fetch(`${API_USER}/taruna/dashboard?user_id=${encodeURIComponent(userId)}`)
+					.then(response => response.ok ? response.json() : Promise.reject(response))
+					.then(result => {
+					  if (result.status === 'success' && result.data) {
 						const data = result.data;
-
+			
 						// Identitas taruna
-						document.getElementById('nama-taruna').textContent = data.nama_lengkap || '-';
-						document.getElementById('nama-taruna-header').textContent = data.nama_lengkap || 'Taruna';
-						document.getElementById('npm-taruna').textContent = data.npm || '-';
-						document.getElementById('jurusan').textContent = data.jurusan || '-';
-						document.getElementById('kelas').textContent = data.kelas || '-';
-
+						const nama = data.nama_lengkap || '-';
+						const npm  = data.npm || '-';
+						const jur  = data.jurusan || '-';
+						const kls  = data.kelas || '-';
+			
+						const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+						setText('nama-taruna', nama);
+						setText('nama-taruna-header', nama === '-' ? 'Taruna' : nama);
+						setText('npm-taruna', npm);
+						setText('jurusan', jur);
+						setText('kelas', kls);
+			
 						// ICP
-						const icpList = data.icp_list || [];
+						const icpList = Array.isArray(data.icp_list) ? data.icp_list : [];
 						const statusIcpElem = document.getElementById('status-icp');
-						if (icpList.length === 0) {
+						if (statusIcpElem) {
+						  if (icpList.length === 0) {
 							statusIcpElem.innerHTML = '<span class="badge bg-secondary">Belum mengumpulkan ICP</span>';
-						} else {
+						  } else {
 							let html = '<ul class="icp-list" style="padding-left: 1.2em;">';
 							icpList.forEach(icp => {
-								let badgeClass = 'badge bg-secondary';
-								if (icp.status?.toLowerCase() === 'pending') badgeClass = 'badge bg-warning text-dark';
-								if (icp.status?.toLowerCase() === 'approved') badgeClass = 'badge bg-success';
-								if (icp.status?.toLowerCase() === 'rejected') badgeClass = 'badge bg-danger';
-								html += `<li><b>${icp.topik_penelitian || '-'}</b> &mdash; <span class="${badgeClass}">${icp.status || '-'}</span></li>`;
+							  const s = (icp.status || '').toLowerCase();
+							  let badgeClass = 'badge bg-secondary';
+							  if (s === 'pending')  badgeClass = 'badge bg-warning text-dark';
+							  if (s === 'approved') badgeClass = 'badge bg-success';
+							  if (s === 'rejected') badgeClass = 'badge bg-danger';
+							  html += `<li><b>${icp.topik_penelitian || '-'}</b> &mdash; <span class="${badgeClass}">${icp.status || '-'}</span></li>`;
 							});
 							html += '</ul>';
 							statusIcpElem.innerHTML = html;
+						  }
 						}
-
+			
 						// Dosen pembimbing
-						const dosenPembimbing = data.dosen_pembimbing;
-						document.getElementById('dosen-pembimbing').textContent =
-							(!dosenPembimbing || dosenPembimbing === '-') ? 'Anda belum memiliki dosen pembimbing' : dosenPembimbing;
-
+						const dp = data.dosen_pembimbing;
+						const dpEl = document.getElementById('dosen-pembimbing');
+						if (dpEl) dpEl.textContent = (!dp || dp === '-') ? 'Anda belum memiliki dosen pembimbing' : dp;
+			
+						// Helper badge
+						const badge = (status) => {
+						  const s = (status || '').toLowerCase();
+						  if (s === 'pending')  return 'badge bg-warning text-dark';
+						  if (s === 'approved') return 'badge bg-success';
+						  if (s === 'rejected') return 'badge bg-danger';
+						  if (s === 'belum submit') return 'badge bg-secondary';
+						  return 'badge bg-secondary';
+						};
+			
 						// Proposal
 						const proposal = data.proposal || {};
 						const statusProposal = proposal.status || 'Menunggu';
 						const statusBadge = document.getElementById('status-proposal-badge');
-						let badgeClass = 'badge bg-secondary';
-						if (statusProposal.toLowerCase() === 'pending') badgeClass = 'badge bg-warning text-dark';
-						if (statusProposal.toLowerCase() === 'approved') badgeClass = 'badge bg-success';
-						if (statusProposal.toLowerCase() === 'rejected') badgeClass = 'badge bg-danger';
-						statusBadge.innerHTML = `<span class="${badgeClass}">${statusProposal}</span>`;
-						document.getElementById('penguji-ketua-proposal').textContent = proposal.penguji_ketua || '-';
-						document.getElementById('penguji-1-proposal').textContent = proposal.penguji_1 || '-';
-						document.getElementById('penguji-2-proposal').textContent = proposal.penguji_2 || '-';
-
+						if (statusBadge) statusBadge.innerHTML = `<span class="${badge(statusProposal)}">${statusProposal}</span>`;
+						setText('penguji-ketua-proposal', proposal.penguji_ketua || '-');
+						setText('penguji-1-proposal',     proposal.penguji_1 || '-');
+						setText('penguji-2-proposal',     proposal.penguji_2 || '-');
+			
 						// Laporan 70%
-						const laporan70 = data.laporan_70 || {};
-						const laporan70Status = laporan70.status || 'Belum Submit';
+						const l70 = data.laporan_70 || {};
+						const l70Status = l70.status || 'Belum Submit';
 						const statusTa70Elem = document.getElementById('status-ta70');
-
-						let ta70BadgeClass = 'badge bg-secondary';
-						const statusLower = laporan70Status.toLowerCase();
-						if (statusLower === 'pending') ta70BadgeClass = 'badge bg-warning text-dark';
-						if (statusLower === 'approved') ta70BadgeClass = 'badge bg-success';
-						if (statusLower === 'rejected') ta70BadgeClass = 'badge bg-danger';
-						if (statusLower === 'belum submit') ta70BadgeClass = 'badge bg-secondary';
-
-						statusTa70Elem.innerHTML = `<span class="${ta70BadgeClass}">${laporan70Status}</span>`;
-
-						document.getElementById('penguji-1-laporan70').textContent = laporan70.penguji_1 || '-';
-						document.getElementById('penguji-2-laporan70').textContent = laporan70.penguji_2 || '-';
-
+						if (statusTa70Elem) statusTa70Elem.innerHTML = `<span class="${badge(l70Status)}">${l70Status}</span>`;
+						setText('penguji-1-laporan70', l70.penguji_1 || '-');
+						setText('penguji-2-laporan70', l70.penguji_2 || '-');
+			
 						// Laporan 100%
-						const laporan100 = data.laporan_100 || {};
-						const laporan100Status = laporan100.status || 'Belum Submit';
+						const l100 = data.laporan_100 || {};
+						const l100Status = l100.status || 'Belum Submit';
 						const statusTa100Elem = document.getElementById('status-ta100');
-
-						let ta100BadgeClass = 'badge bg-secondary';
-						const status100Lower = laporan100Status.toLowerCase();
-						if (status100Lower === 'pending') ta100BadgeClass = 'badge bg-warning text-dark';
-						if (status100Lower === 'approved') ta100BadgeClass = 'badge bg-success';
-						if (status100Lower === 'rejected') ta100BadgeClass = 'badge bg-danger';
-						if (status100Lower === 'belum submit') ta100BadgeClass = 'badge bg-secondary';
-
-						statusTa100Elem.innerHTML = `<span class="${ta100BadgeClass}">${laporan100Status}</span>`;
-
-						document.getElementById('penguji-ketua-laporan100').textContent = laporan100.penguji_ketua || '-';
-						document.getElementById('penguji-1-laporan100').textContent = laporan100.penguji_1 || '-';
-						document.getElementById('penguji-2-laporan100').textContent = laporan100.penguji_2 || '-';
-
-					} else {
-						// Fallback tampilan kosong
-						document.getElementById('nama-taruna').textContent = '-';
-						document.getElementById('nama-taruna-header').textContent = 'Taruna';
-						document.getElementById('npm-taruna').textContent = '-';
-						document.getElementById('jurusan').textContent = '-';
-						document.getElementById('kelas').textContent = '-';
-						document.getElementById('status-icp').innerHTML = 'Belum mengumpulkan ICP';
-						document.getElementById('dosen-pembimbing').textContent = 'Anda belum memiliki dosen pembimbing';
-						document.getElementById('status-proposal-badge').innerHTML = '<span class="badge bg-secondary">-</span>';
-						document.getElementById('penguji-ketua-proposal').textContent = '-';
-						document.getElementById('penguji-1-proposal').textContent = '-';
-						document.getElementById('penguji-2-proposal').textContent = '-';
-						document.getElementById('status-ta70').textContent = 'Belum Submit';
-						document.getElementById('penguji-1-laporan70').textContent = '-';
-						document.getElementById('penguji-2-laporan70').textContent = '-';
-						document.getElementById('status-ta100').textContent = 'Belum Submit';
-						document.getElementById('penguji-ketua-laporan100').textContent = '-';
-						document.getElementById('penguji-1-laporan100').textContent = '-';
-						document.getElementById('penguji-2-laporan100').textContent = '-';
-					}
-				})
-				.catch(() => {
-					document.getElementById('nama-taruna').textContent = '-';
-					document.getElementById('nama-taruna-header').textContent = 'Taruna';
-					document.getElementById('npm-taruna').textContent = '-';
-					document.getElementById('jurusan').textContent = '-';
-					document.getElementById('kelas').textContent = '-';
-					document.getElementById('status-icp').innerHTML = 'Belum mengumpulkan ICP';
-					document.getElementById('dosen-pembimbing').textContent = 'Anda belum memiliki dosen pembimbing';
-					document.getElementById('status-proposal-badge').innerHTML = '<span class="badge bg-secondary">-</span>';
-					document.getElementById('penguji-ketua-proposal').textContent = '-';
-					document.getElementById('penguji-1-proposal').textContent = '-';
-					document.getElementById('penguji-2-proposal').textContent = '-';
-					document.getElementById('status-ta70').textContent = 'Belum Submit';
-					document.getElementById('penguji-1-laporan70').textContent = '-';
-					document.getElementById('penguji-2-laporan70').textContent = '-';
-					document.getElementById('status-ta100').textContent = 'Belum Submit';
-					document.getElementById('penguji-ketua-laporan100').textContent = '-';
-					document.getElementById('penguji-1-laporan100').textContent = '-';
-					document.getElementById('penguji-2-laporan100').textContent = '-';
-				});
-		});
-
-		// Event listener untuk tombol logout
-		document.addEventListener('DOMContentLoaded', function() {
-			const logoutButton = document.querySelector('a[onclick="logout()"]');
-			if (logoutButton) {
-				logoutButton.addEventListener('click', function(e) {
+						if (statusTa100Elem) statusTa100Elem.innerHTML = `<span class="${badge(l100Status)}">${l100Status}</span>`;
+						setText('penguji-ketua-laporan100', l100.penguji_ketua || '-');
+						setText('penguji-1-laporan100',     l100.penguji_1 || '-');
+						setText('penguji-2-laporan100',     l100.penguji_2 || '-');
+			
+					  } else {
+						setDashboardDefault();
+					  }
+					})
+					.catch(() => setDashboardDefault());
+				} else {
+				  // Tanpa userId, tampilkan default saja
+				  setDashboardDefault();
+				}
+			
+				function setDashboardDefault(){
+				  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+				  setText('nama-taruna', '-');
+				  setText('nama-taruna-header', 'Taruna');
+				  setText('npm-taruna', '-');
+				  setText('jurusan', '-');
+				  setText('kelas', '-');
+			
+				  const icp = document.getElementById('status-icp');
+				  if (icp) icp.innerHTML = 'Belum mengumpulkan ICP';
+			
+				  const sp = document.getElementById('status-proposal-badge');
+				  if (sp) sp.innerHTML = '<span class="badge bg-secondary">-</span>';
+			
+				  setText('penguji-ketua-proposal', '-');
+				  setText('penguji-1-proposal', '-');
+				  setText('penguji-2-proposal', '-');
+			
+				  setText('status-ta70', 'Belum Submit');
+				  setText('penguji-1-laporan70', '-');
+				  setText('penguji-2-laporan70', '-');
+			
+				  setText('status-ta100', 'Belum Submit');
+				  setText('penguji-ketua-laporan100', '-');
+				  setText('penguji-1-laporan100', '-');
+				  setText('penguji-2-laporan100', '-');
+				}
+			  });
+			
+			  // ====== Redirect ke profil (opsional) ======
+			  window.redirectToProfile = function(){
+				window.location.href = '/taruna/profile';
+			  };
+			
+			  // ====== LOGOUT (tanpa token; tetap berfungsi membersihkan sesi lokal) ======
+			  async function logout() {
+				try {
+				  const token = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
+				  // Panggil endpoint logout jika ingin, tapi Authorization opsional
+				  const response = await fetch(`${API_AUTH}/logout`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					credentials: 'include'
+				  }).catch(() => null);
+			
+				  // Bersihkan storage & cache lokal apa pun hasil responsnya
+				  localStorage.clear();
+				  sessionStorage.clear();
+			
+				  const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
+				  const cookies = document.cookie.split(';');
+				  for (let cookie of cookies) {
+					const eqPos = cookie.indexOf('=');
+					const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+					paths.forEach(path => {
+					  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+					});
+				  }
+			
+				  if (window.caches) {
+					const names = await caches.keys();
+					await Promise.all(names.map(n => caches.delete(n)));
+				  }
+			
+				  if (window.applicationCache) {
+					try { window.applicationCache.abort(); } catch(e){}
+				  }
+			
+				  if (navigator.serviceWorker) {
+					const regs = await navigator.serviceWorker.getRegistrations();
+					await Promise.all(regs.map(r => r.unregister()));
+				  }
+			
+				  window.location.href = '/loginusers';
+				  window.location.reload(true);
+				} catch (error) {
+				  console.error('Error during logout:', error);
+				  alert('Gagal logout. Silakan coba lagi.');
+				}
+			  }
+			  window.logout = logout;
+			
+			  // Pasang event logout pada anchor yang punya onclick="logout()"
+			  document.addEventListener('DOMContentLoaded', function() {
+				const logoutButton = document.querySelector('a[onclick="logout()"]');
+				if (logoutButton) {
+				  logoutButton.addEventListener('click', function(e) {
 					e.preventDefault();
 					logout();
-				});
-			}
-		});
-		</script>
+				  });
+				}
+			  });
+			})();
+			</script>
+			
 
 	</body>
 </html>
