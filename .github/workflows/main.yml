@@ -314,38 +314,44 @@ jobs:
           tags: ${{ matrix.service.name }}:scan
           load: true
 
-      - name: Trivy Image scan (SARIF)
-        id: trivy
-        uses: aquasecurity/trivy-action@0.24.0
-        with:
-          image-ref: ${{ matrix.service.name }}:scan
-          format: 'sarif'
-          output: ${{ matrix.service.name }}-image.sarif
-          vuln-type: 'os,library'
-          ignore-unfixed: true
-          severity: 'CRITICAL'   # hanya CRITICAL
-          exit-code: '1'
-          hide-progress: true
-          timeout: 10m
-
-      - name: Trivy Image scan (debug table)
-        if: failure()
+      # --- GATE: FAIL kalau ada CRITICAL, tampilkan tabel di log ---
+      - name: Trivy Image Gate (table)
         uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: ${{ matrix.service.name }}:scan
           format: 'table'
+          scanners: 'vuln'           # hanya vulnerability
           vuln-type: 'os,library'
           ignore-unfixed: true
-          severity: 'CRITICAL'   # hanya CRITICAL
-          exit-code: '0'
+          severity: 'CRITICAL'       # hanya CRITICAL
+          exit-code: '1'             # bikin job merah kalau ada CRITICAL
           hide-progress: true
           timeout: 10m
 
+      # --- Buat SARIF untuk Code Scanning (tidak bikin fail) ---
+      - name: Trivy Image SARIF (for upload)
+        if: always()
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: ${{ matrix.service.name }}:scan
+          format: 'sarif'
+          scanners: 'vuln'
+          vuln-type: 'os,library'
+          ignore-unfixed: true
+          severity: 'CRITICAL'
+          limit-severities-for-sarif: 'CRITICAL'  # hanya CRITICAL di SARIF
+          exit-code: '0'             # JANGAN fail di step ini
+          hide-progress: true
+          timeout: 10m
+          output: ${{ matrix.service.name }}-image.sarif
+
+      # --- Upload SARIF apapun hasilnya ---
       - name: Upload SARIF (Image)
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ matrix.service.name }}-image.sarif
+
 
 
 
