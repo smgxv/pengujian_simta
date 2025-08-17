@@ -388,6 +388,7 @@ jobs:
           mkdir -p zap-out
           docker run --rm --name zaprun \
             -v "$PWD/zap-out:/zap/wrk" \
+            -w /zap/wrk \
             ghcr.io/zaproxy/zaproxy:stable \
               /zap/zap-baseline.py \
                 -t "http://104.43.89.154:8085/taruna/dashboard" \
