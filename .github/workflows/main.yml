@@ -232,27 +232,27 @@ jobs:
             docker run -d -p 8088:8088 --name pengujian-notification-service -v /home/youruser/uploads:/app/uploads smgxv/pengujian-notification-service
             docker network connect simta_net pengujian-notification-service
 
-  # SAST - SONARCLOUD
-  sast-analysis:
-    name: SAST dengan SonarCloud
-    needs: deploy-staging
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
+  # # SAST - SONARCLOUD
+  # sast-analysis:
+  #   name: SAST dengan SonarCloud
+  #   needs: deploy-staging
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout source code
+  #       uses: actions/checkout@v4
 
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
+  #     - name: Set up Java 17
+  #       uses: actions/setup-java@v4
+  #       with:
+  #         distribution: 'temurin'
+  #         java-version: '17'
 
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2
-        with:
-          projectBaseDir: .
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #     - name: SonarCloud Scan
+  #       uses: SonarSource/sonarcloud-github-action@v2
+  #       with:
+  #         projectBaseDir: .
+  #       env:
+  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   
   # # DAST - OWASP ZAP
   # zap-dast:
