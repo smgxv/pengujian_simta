@@ -5,54 +5,52 @@ import (
 	"log"
 	"net/http"
 	"user_service/handlers"
-	"user_service/middleware"
 )
 
-// ... existing code ...
 func main() {
-	http.HandleFunc("/users", middleware.AuthMiddleware(handlers.UserHandler))
-	http.HandleFunc("/users/add", middleware.AuthMiddleware(handlers.AddUser))
-	http.HandleFunc("/users/edit", middleware.AuthMiddleware(handlers.EditUser))
-	http.HandleFunc("/users/detail", middleware.AuthMiddleware(handlers.GetUserDetail))
-	http.HandleFunc("/users/delete", middleware.AuthMiddleware(handlers.DeleteUser))
+	// USERS
+	http.HandleFunc("/users", handlers.UserHandler)
+	http.HandleFunc("/users/add", handlers.AddUser)
+	http.HandleFunc("/users/edit", handlers.EditUser)
+	http.HandleFunc("/users/detail", handlers.GetUserDetail)
+	http.HandleFunc("/users/delete", handlers.DeleteUser)
 
-	http.HandleFunc("/dosen", middleware.AuthMiddleware(handlers.GetAllDosen))
-	http.HandleFunc("/taruna", middleware.AuthMiddleware(handlers.GetAllTaruna))
-	http.HandleFunc("/taruna/edituser", middleware.AuthMiddleware(handlers.EditUserTaruna))
-	http.HandleFunc("/dosen/edituser", middleware.AuthMiddleware(handlers.EditUserDosen))
-	http.HandleFunc("/taruna/topik", middleware.AuthMiddleware(handlers.GetTarunaWithTopik))
+	// DOSEN & TARUNA (listing / edit)
+	http.HandleFunc("/dosen", handlers.GetAllDosen)
+	http.HandleFunc("/taruna", handlers.GetAllTaruna)
+	http.HandleFunc("/taruna/edituser", handlers.EditUserTaruna)
+	http.HandleFunc("/dosen/edituser", handlers.EditUserDosen)
+	http.HandleFunc("/taruna/topik", handlers.GetTarunaWithTopik)
 
-	http.HandleFunc("/dosbing_proposal", middleware.AuthMiddleware(handlers.AssignDosbingProposal))
-	http.HandleFunc("/penguji_proposal", middleware.AuthMiddleware(handlers.AssignPengujiProposal))
-	http.HandleFunc("/final_proposal", middleware.AuthMiddleware(handlers.GetFinalProposalByTarunaIDHandler))
+	// Penugasan / Final Proposal
+	http.HandleFunc("/dosbing_proposal", handlers.AssignDosbingProposal)
+	http.HandleFunc("/penguji_proposal", handlers.AssignPengujiProposal)
+	http.HandleFunc("/final_proposal", handlers.GetFinalProposalByTarunaIDHandler)
 
-	http.HandleFunc("/dosen/dashboard", middleware.AuthMiddleware(handlers.DosenDashboardHandler))
-	http.HandleFunc("/dosen/dashboard/icp", middleware.AuthMiddleware(handlers.ICPDitelaahHandler))
-	http.HandleFunc("/dosen/dashboard/bimbingan", middleware.AuthMiddleware(handlers.GetBimbinganByDosenHandler))
-	http.HandleFunc("/dosen/dashboard/pengujianproposal", middleware.AuthMiddleware(handlers.GetPengujianProposalHandler))
-	http.HandleFunc("/dosen/dashboard/pengujianlaporan70", middleware.AuthMiddleware(handlers.GetPengujianLaporan70Handler))
-	http.HandleFunc("/dosen/dashboard/pengujianlaporan100", middleware.AuthMiddleware(handlers.GetPengujianLaporan100Handler))
+	// Dashboard Dosen
+	http.HandleFunc("/dosen/dashboard", handlers.DosenDashboardHandler)
+	http.HandleFunc("/dosen/dashboard/icp", handlers.ICPDitelaahHandler)
+	http.HandleFunc("/dosen/dashboard/bimbingan", handlers.GetBimbinganByDosenHandler)
+	http.HandleFunc("/dosen/dashboard/pengujianproposal", handlers.GetPengujianProposalHandler)
+	http.HandleFunc("/dosen/dashboard/pengujianlaporan70", handlers.GetPengujianLaporan70Handler)
+	http.HandleFunc("/dosen/dashboard/pengujianlaporan100", handlers.GetPengujianLaporan100Handler)
 
 	// TARUNA ROUTE
-	http.HandleFunc("/taruna/dosbing", middleware.AuthMiddleware(handlers.GetTarunaWithDosbing))
-	http.HandleFunc("/taruna/pengujiproposal", middleware.AuthMiddleware(handlers.GetTarunaWithPengujiProposal))
+	http.HandleFunc("/taruna/dosbing", handlers.GetTarunaWithDosbing)
+	http.HandleFunc("/taruna/pengujiproposal", handlers.GetTarunaWithPengujiProposal)
+	http.HandleFunc("/taruna/dashboard", handlers.TarunaDashboardHandler)
+	http.HandleFunc("/taruna/dashboard/icp", handlers.TarunaDashboardHandler)
+	http.HandleFunc("/taruna/dashboard/dosen", handlers.TarunaDashboardHandler)
+	http.HandleFunc("/taruna/pengujilaporan70", handlers.GetTarunaWithPengujiLaporan70)
+	http.HandleFunc("/final_laporan70", handlers.GetFinalLaporan70ByTarunaIDHandler)
+	http.HandleFunc("/penguji_laporan70", handlers.AssignPengujiLaporan70)
+	http.HandleFunc("/taruna/pengujilaporan100", handlers.GetTarunaWithPengujiLaporan100)
+	http.HandleFunc("/final_laporan100", handlers.GetFinalLaporan100ByTarunaIDHandler)
+	http.HandleFunc("/penguji_laporan100", handlers.AssignPengujiLaporan100)
+	http.HandleFunc("/taruna/penelaahicp", handlers.GetTarunaWithPenelaahICP)
+	http.HandleFunc("/penelaah_icp", handlers.AssignPenelaahICP)
+	http.HandleFunc("/final_icp", handlers.GetFinalICPByTarunaIDHandler)
 
-	http.HandleFunc("/taruna/dashboard", middleware.AuthMiddleware(handlers.TarunaDashboardHandler))
-	http.HandleFunc("/taruna/dashboard/icp", middleware.AuthMiddleware(handlers.TarunaDashboardHandler))
-	http.HandleFunc("/taruna/dashboard/dosen", middleware.AuthMiddleware(handlers.TarunaDashboardHandler))
-
-	http.HandleFunc("/taruna/pengujilaporan70", middleware.AuthMiddleware(handlers.GetTarunaWithPengujiLaporan70))
-	http.HandleFunc("/final_laporan70", middleware.AuthMiddleware(handlers.GetFinalLaporan70ByTarunaIDHandler))
-	http.HandleFunc("/penguji_laporan70", middleware.AuthMiddleware(handlers.AssignPengujiLaporan70))
-
-	http.HandleFunc("/taruna/pengujilaporan100", middleware.AuthMiddleware(handlers.GetTarunaWithPengujiLaporan100))
-	http.HandleFunc("/final_laporan100", middleware.AuthMiddleware(handlers.GetFinalLaporan100ByTarunaIDHandler))
-	http.HandleFunc("/penguji_laporan100", middleware.AuthMiddleware(handlers.AssignPengujiLaporan100))
-
-	http.HandleFunc("/taruna/penelaahicp", middleware.AuthMiddleware(handlers.GetTarunaWithPenelaahICP))
-	http.HandleFunc("/penelaah_icp", middleware.AuthMiddleware(handlers.AssignPenelaahICP))
-	http.HandleFunc("/final_icp", middleware.AuthMiddleware(handlers.GetFinalICPByTarunaIDHandler))
-
-	fmt.Println("API Server running on port 8086...")
+	fmt.Println("API Server running on port 8086... (tanpa AuthMiddleware)")
 	log.Fatal(http.ListenAndServe(":8086", nil))
 }
