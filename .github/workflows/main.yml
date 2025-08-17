@@ -371,18 +371,46 @@ jobs:
   #           docker run -d -p 8088:8088 --name pengujian-notification-service -v /home/youruser/uploads:/app/uploads smgxv/pengujian-notification-service
   #           docker network connect simta_net pengujian-notification-service
 
-  zap_scan:
+  zap-baseline-taruna:
     runs-on: ubuntu-latest
-    name: Scan the webapplication
     steps:
-      - name: Checkout
+      - name: Checkout (optional, untuk simpan laporan di artifact saja tidak wajib)
         uses: actions/checkout@v4
+
+      - name: Run ZAP Baseline Scan
+        run: |
+          mkdir -p zap-reports
+          docker run --rm \
+            -v "$(pwd)/zap-reports:/zap/wrk" \
+            owasp/zap2docker-stable zap-baseline.py \
+              -t "http://104.43.89.154:8085/taruna/dashboard" \
+              -r "zap-taruna-dashboard.html" \
+              -J "zap-taruna-dashboard.json" \
+              -m 5 \
+              -I \
+              -z "-config spider.maxDuration=3 -config spider.parseComments=true -config spider.parseRobotsTxt=true -config ajaxSpider.browserId=firefox" \
+              --hook=/zap/wrk/zap-hook.py \
+              -d
+        # Penjelasan opsi:
+        # -t : target URL (mulai dari /taruna/dashboard)
+        # -r / -J : output HTML & JSON
+        # -m 5 : maksimum spider 5 menit (baseline pasif)
+        # -I : ignore ZAP exit code > 0 (biar job tetap sukses; bisa dihapus untuk fail build)
+        # -z : setelan extra ZAP (spider/parse)
+        # -d : debug mode (log lebih detail)
+        # --hook : opsional (placeholder kalau nanti mau custom), file tidak wajib ada
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
         with:
-          ref: master
-      - name: ZAP Scan
-        uses: zaproxy/action-full-scan@v0.12.0
+          name: zap-taruna-dashboard-html
+          path: zap-reports/zap-taruna-dashboard.html
+
+      - name: Upload JSON report
+        uses: actions/upload-artifact@v4
         with:
-          target: 'http://104.43.89.154:8085/taruna/dashboard'
+          name: zap-taruna-dashboard-json
+          path: zap-reports/zap-taruna-dashboard.json
 
 
 # name: ZAP API Scan
