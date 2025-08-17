@@ -263,7 +263,7 @@ jobs:
             docker system prune -af
             docker pull smgxv/pengujian-ta-service
             docker run -d -p 8085:8085 --name pengujian-ta-service smgxv/pengujian-ta-service
-            docker network connect pengujian_simta_net pengujian-ta-service
+            docker network connect simta_net pengujian-ta-service
 
 
   build-pengujian-user-service:
@@ -299,7 +299,7 @@ jobs:
             docker system prune -af
             docker pull smgxv/pengujian-user-service
             docker run -d -p 8086:8086 --name pengujian-user-service smgxv/pengujian-user-service
-            docker network connect pengujian_simta_net pengujian-user-service
+            docker network connect simta_net pengujian-user-service
 
   build-pengujian-document-service:
     # needs: running-tests
@@ -334,7 +334,7 @@ jobs:
             docker system prune -af
             docker pull smgxv/pengujian-document-service
             docker run -d -p 8087:8087 --name pengujian-document-service smgxv/pengujian-document-service
-            docker network connect pengujian_simta_net pengujian-document-service
+            docker network connect simta_net pengujian-document-service
 
   build-pengujian-notification-service:
     # needs: running-tests
@@ -369,7 +369,7 @@ jobs:
             docker system prune -af
             docker pull smgxv/pengujian-notification-service
             docker run -d -p 8088:8088 --name pengujian-notification-service -v /home/youruser/uploads:/app/uploads smgxv/pengujian-notification-service
-            docker network connect pengujian_simta_net pengujian-notification-service
+            docker network connect simta_net pengujian-notification-service
 
 # name: ZAP API Scan
 
