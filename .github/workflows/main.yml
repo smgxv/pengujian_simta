@@ -295,6 +295,7 @@ jobs:
           - { name: pengujian-user-service,         path: pengujian_user_service }
           - { name: pengujian-document-service,     path: pengujian_document_service }
           - { name: pengujian-notification-service, path: pengujian_notification_service }
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -313,7 +314,6 @@ jobs:
           tags: ${{ matrix.service.name }}:scan
           load: true
 
-      # --- Scan image & fail jika ada CRITICAL ---
       - name: Trivy Image scan (SARIF)
         id: trivy
         uses: aquasecurity/trivy-action@0.24.0
@@ -323,31 +323,30 @@ jobs:
           output: ${{ matrix.service.name }}-image.sarif
           vuln-type: 'os,library'
           ignore-unfixed: true
-          severity: 'CRITICAL'
-          exit-code: '1'          # FAIL jika ada CRITICAL
+          severity: 'CRITICAL'   # hanya CRITICAL
+          exit-code: '1'
           hide-progress: true
           timeout: 10m
 
-      # --- Jika gagal, tampilkan tabel CVE di log untuk debugging ---
       - name: Trivy Image scan (debug table)
-        if: failure()        # hanya jalan kalau step di atas gagal
+        if: failure()
         uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: ${{ matrix.service.name }}:scan
           format: 'table'
           vuln-type: 'os,library'
           ignore-unfixed: true
-          severity: 'HIGH,CRITICAL'
+          severity: 'CRITICAL'   # hanya CRITICAL
           exit-code: '0'
           hide-progress: true
           timeout: 10m
 
-      # --- Upload hasil ke Code Scanning apapun hasilnya ---
       - name: Upload SARIF (Image)
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ matrix.service.name }}-image.sarif
+
 
 
 
