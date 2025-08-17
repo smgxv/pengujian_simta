@@ -220,7 +220,8 @@ on:
 
 permissions:
   contents: read
-  issues: write
+  actions: write   # penting untuk upload artifact
+  issues: write    # diperlukan jika allow_issue_writing: true
 
 jobs:
 #   # running-tests:
@@ -375,7 +376,7 @@ jobs:
   #           docker run -d -p 8088:8088 --name pengujian-notification-service -v /home/youruser/uploads:/app/uploads smgxv/pengujian-notification-service
   #           docker network connect simta_net pengujian-notification-service
 
-  zap-dast:
+   zap-dast:
     runs-on: ubuntu-latest
     steps:
       - name: ZAP Baseline Scan
@@ -386,8 +387,8 @@ jobs:
           fail_action: false
           allow_issue_writing: true
           issue_title: 'ZAP Scan Baseline Report'
-          # gunakan nama artifact unik per-run untuk menghindari konflik
-          artifact_name: 'zap-dast-reports-${{ github.run_id }}'
+          # ganti dengan nama alfanumerik saja
+          artifact_name: ZAPTaruna${{ github.run_number }}
           cmd_options: >-
             -m 5
             -d
