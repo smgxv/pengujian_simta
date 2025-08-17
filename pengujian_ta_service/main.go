@@ -7,7 +7,6 @@ import (
 
 	"ta_service/controllers"
 	"ta_service/handlers"
-	"ta_service/middleware"
 
 	"github.com/gorilla/mux"
 )
@@ -61,7 +60,7 @@ func main() {
 
 	// ✅ ADMIN ROUTES
 	admin := router.PathPrefix("/admin").Subrouter()
-	admin.Use(middleware.RoleRedirectMiddleware)
+	// admin.Use(middleware.RoleRedirectMiddleware)
 
 	admin.HandleFunc("/dashboard", controllers.AdminDashboard).Methods("GET", "OPTIONS")
 	admin.HandleFunc("/calendar", controllers.Calendar).Methods("GET")
@@ -93,7 +92,7 @@ func main() {
 
 	// ✅ TARUNA ROUTES
 	taruna := router.PathPrefix("/taruna").Subrouter()
-	taruna.Use(middleware.RoleRedirectMiddleware)
+	// taruna.Use(middleware.RoleRedirectMiddleware)
 
 	taruna.HandleFunc("/dashboard", controllers.TarunaDashboard).Methods("GET", "OPTIONS")
 	taruna.HandleFunc("/icp", controllers.ICP).Methods("GET", "OPTIONS")
@@ -108,7 +107,7 @@ func main() {
 
 	// ✅ DOSEN ROUTES
 	dosen := router.PathPrefix("/dosen").Subrouter()
-	dosen.Use(middleware.RoleRedirectMiddleware)
+	// dosen.Use(middleware.RoleRedirectMiddleware)
 
 	dosen.HandleFunc("/dashboard", controllers.DosenDashboard).Methods("GET", "OPTIONS")
 	dosen.HandleFunc("/bimbingan_icp", controllers.ReviewICP).Methods("GET", "OPTIONS")
