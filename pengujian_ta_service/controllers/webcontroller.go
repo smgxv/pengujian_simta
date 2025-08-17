@@ -813,25 +813,6 @@ func Proposal(w http.ResponseWriter, r *http.Request) {
 	// Set header content type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// Ambil token dari cookie atau header
-	var tokenString string
-	cookie, err := r.Cookie("token")
-	if err == nil {
-		tokenString = cookie.Value
-	} else {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader != "" {
-			tokenString = strings.Replace(authHeader, "Bearer ", "", 1)
-		}
-	}
-
-	// Validasi token
-	claims, err := utils.ParseJWT(tokenString)
-	if err != nil || strings.ToLower(claims.Role) != "taruna" { // Ubah dari "admin" menjadi "taruna"
-		http.Redirect(w, r, "/loginusers", http.StatusSeeOther)
-		return
-	}
-
 	// Serve the Proposal HTML file
 	http.ServeFile(w, r, "static/taruna/proposal.html")
 }
@@ -840,25 +821,6 @@ func Proposal(w http.ResponseWriter, r *http.Request) {
 func Laporan70(w http.ResponseWriter, r *http.Request) {
 	// Set header content type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	// Ambil token dari cookie atau header
-	var tokenString string
-	cookie, err := r.Cookie("token")
-	if err == nil {
-		tokenString = cookie.Value
-	} else {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader != "" {
-			tokenString = strings.Replace(authHeader, "Bearer ", "", 1)
-		}
-	}
-
-	// Validasi token
-	claims, err := utils.ParseJWT(tokenString)
-	if err != nil || strings.ToLower(claims.Role) != "taruna" { // Ubah dari "admin" menjadi "taruna"
-		http.Redirect(w, r, "/loginusers", http.StatusSeeOther)
-		return
-	}
 
 	// Serve the Proposal HTML file
 	http.ServeFile(w, r, "static/taruna/laporan70.html")
@@ -869,50 +831,12 @@ func ProfileTaruna(w http.ResponseWriter, r *http.Request) {
 	// Set header content type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// Ambil token dari cookie atau header
-	var tokenString string
-	cookie, err := r.Cookie("token")
-	if err == nil {
-		tokenString = cookie.Value
-	} else {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader != "" {
-			tokenString = strings.Replace(authHeader, "Bearer ", "", 1)
-		}
-	}
-
-	// Validasi token
-	claims, err := utils.ParseJWT(tokenString)
-	if err != nil || strings.ToLower(claims.Role) != "taruna" {
-		http.Redirect(w, r, "/loginusers", http.StatusSeeOther)
-		return
-	}
-
 	http.ServeFile(w, r, "static/taruna/profile_taruna.html")
 }
 
 // Handler untuk halaman edit profile taruna
 func EditProfileTaruna(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	// Ambil token dari cookie atau header
-	var tokenString string
-	cookie, err := r.Cookie("token")
-	if err == nil {
-		tokenString = cookie.Value
-	} else {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader != "" {
-			tokenString = strings.Replace(authHeader, "Bearer ", "", 1)
-		}
-	}
-
-	// Validasi token
-	claims, err := utils.ParseJWT(tokenString)
-	if err != nil || strings.ToLower(claims.Role) != "taruna" {
-		http.Redirect(w, r, "/loginusers", http.StatusSeeOther)
-		return
-	}
 
 	http.ServeFile(w, r, "static/taruna/edituser_taruna.html")
 }
@@ -948,25 +872,6 @@ func ViewICPTaruna(w http.ResponseWriter, r *http.Request) {
 func Laporan100(w http.ResponseWriter, r *http.Request) {
 	// Set header content type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	// Ambil token dari cookie atau header
-	var tokenString string
-	cookie, err := r.Cookie("token")
-	if err == nil {
-		tokenString = cookie.Value
-	} else {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader != "" {
-			tokenString = strings.Replace(authHeader, "Bearer ", "", 1)
-		}
-	}
-
-	// Validasi token
-	claims, err := utils.ParseJWT(tokenString)
-	if err != nil || strings.ToLower(claims.Role) != "taruna" { // Ubah dari "admin" menjadi "taruna"
-		http.Redirect(w, r, "/loginusers", http.StatusSeeOther)
-		return
-	}
 
 	// Serve the Proposal HTML file
 	http.ServeFile(w, r, "static/taruna/laporan100.html")

@@ -582,261 +582,229 @@
         <script src="src/plugins/bootstrap-select/bootstrap-select.min.js"></script>
 
 		<script>
-			// JS notifikasi
-			document.addEventListener("DOMContentLoaded", function () {
-				fetch("http://104.43.89.154:8088/notifications?role=Taruna")
-					.then(res => res.json())
-					.then(data => {
-						const ul = document.getElementById("notif-list");
-						ul.innerHTML = ""; // Kosongkan
-
-						if (data.length === 0) {
-							ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
-							return;
-						}
-
-						data.forEach(item => {
-							const li = document.createElement("li");
-							li.innerHTML = `
-								<a href="/taruna/detailinformasitaruna?id=${item.ID}">
-									<img src="vendors/images/logo.png" alt="" />
-									<h3>${item.Judul}</h3>
-									<p>${item.Deskripsi.length > 50 ? item.Deskripsi.substring(0, 50) + "..." : item.Deskripsi}</p>
-								</a>`;
-							ul.appendChild(li);
-						});
-
-						document.querySelector(".notification-active").style.display = "inline-block";
-					})
-					.catch(err => {
-						console.error("Gagal mengambil notifikasi:", err);
-					});
-			});
-
-			
-			// JS profile
-			document.addEventListener("DOMContentLoaded", function() {
-				// Ambil token dari storage
-				const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-				if (!token) {
-					window.location.replace("/loginusers");
-					return;
-				}
-
-				// Ambil userId dari URL, jika tidak ada ambil dari localStorage/sessionStorage
-				const urlParams = new URLSearchParams(window.location.search);
-				let userId = urlParams.get('id');
-				if (!userId) {
-					userId = localStorage.getItem('userId') || sessionStorage.getItem('userId');
-				}
-
-				if (userId) {
-					fetch(`http://104.43.89.154:8086/users?id=${userId}`, {
-						headers: {
-							"Authorization": `Bearer ${token}`
-						}
-					})
-					.then(response => {
-						if (!response.ok) {
-							throw new Error("Gagal mengambil data user");
-						}
-						return response.json();
-					})
-					.then(user => {
-						// Update informasi profile dengan pengecekan data kosong
-						const updateElement = (elementId, value) => {
-							const element = document.getElementById(elementId);
-							if (element) {
-								element.textContent = value || '-';
-							}
-						};
-
-						updateElement("fullName", user.nama_lengkap);
-						updateElement("role", user.role);
-						updateElement("username", user.username);
-						updateElement("npm", user.npm);
-						updateElement("email", user.email);
-						updateElement("jurusan", user.jurusan);
-						updateElement("kelas", user.kelas);
-						updateElement("roleInfo", user.role);
-					})
-					.catch(error => {
-						console.error("Error:", error);
-						if (error.message !== "Gagal mengambil data user") {
-							alert("Terjadi kesalahan saat mengakses server");
-						}
-					});
-				} else {
-					console.log("ID user tidak ditemukan");
-					// Optional: redirect ke halaman lain
-					// window.location.replace("/admin/listuser");
-				}
-			});
-
-			// JS logout
-			async function logout() {
-				try {
-					// Ambil token dari localStorage dan sessionStorage
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					
-					// Kirim request logout ke server
-					const response = await fetch('http://104.43.89.154:8085/logout', {
-						method: 'POST',
-						headers: {
-							'Authorization': token ? `Bearer ${token}` : '',
-							'Content-Type': 'application/json'
-						},
-						credentials: 'include'
-					});
-
-					const data = await response.json();
-					
-					if (response.ok && data.status === 'success') {
-						// Hapus semua data storage
-						localStorage.clear();
-						sessionStorage.clear();
-						
-						// Hapus semua cookies
-						const cookies = document.cookie.split(';');
-						for (let cookie of cookies) {
-							const eqPos = cookie.indexOf('=');
-							const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-							document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
-							document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/admin';
-						}
-						
-						console.log('Logout berhasil');
-						
-						// Force reload halaman login untuk membersihkan cache
-						window.location.replace('/loginusers');
-					} else {
-						throw new Error(data.message || 'Gagal logout');
-					}
-				} catch (error) {
-					console.error('Error during logout:', error);
-					alert('Gagal logout. Silakan coba lagi.');
-				}
+			/* ================= Helpers ================= */
+			function getUserId() {
+			  const p = new URLSearchParams(location.search);
+			  return (
+				p.get('id') ||
+				p.get('user_id') ||
+				localStorage.getItem('userId') ||
+				sessionStorage.getItem('userId') ||
+				''
+			  );
 			}
-
-			// Tambahkan pengecekan autentikasi saat halaman dimuat
-			document.addEventListener('DOMContentLoaded', function() {
-				// Cek token
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				if (!token) {
-					window.location.replace('/loginusers');
+			const setText = (id, val) => {
+			  const el = document.getElementById(id);
+			  if (el) el.textContent = val || '-';
+			};
+		  
+			/* ================= Notifikasi (tanpa auth) ================= */
+			document.addEventListener("DOMContentLoaded", function () {
+			  fetch("http://104.43.89.154:8088/notifications?role=Taruna")
+				.then(res => res.json())
+				.then(data => {
+				  const ul = document.getElementById("notif-list");
+				  if (!ul) return;
+				  ul.innerHTML = "";
+		  
+				  if (!Array.isArray(data) || data.length === 0) {
+					ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
 					return;
-				}
-
-				// Validasi token dengan server
-				fetch('http://104.43.89.154:8085/admin/dashboard', {
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				}).catch(() => {
-					// Jika ada error, redirect ke login
-					window.location.replace('/loginusers');
+				  }
+		  
+				  data.forEach(item => {
+					const li = document.createElement("li");
+					const ringkas = item.Deskripsi
+					  ? (item.Deskripsi.length > 50 ? item.Deskripsi.substring(0, 50) + "..." : item.Deskripsi)
+					  : "";
+					li.innerHTML = `
+					  <a href="/taruna/detailinformasitaruna?id=${item.ID}">
+						<img src="vendors/images/logo.png" alt="" />
+						<h3>${item.Judul || '-'}</h3>
+						<p>${ringkas}</p>
+					  </a>`;
+					ul.appendChild(li);
+				  });
+		  
+				  const badge = document.querySelector(".notification-active");
+				  if (badge) badge.style.display = "inline-block";
+				})
+				.catch(err => {
+				  console.error("Gagal mengambil notifikasi:", err);
 				});
 			});
-
-			// Pastikan event listener untuk tombol logout terpasang dengan benar
-			document.addEventListener('DOMContentLoaded', function() {
-				const logoutButton = document.querySelector('a[onclick="logout()"]');
-				if (logoutButton) {
-					logoutButton.addEventListener('click', function(e) {
-						e.preventDefault();
-						logout();
-					});
-				}
+		  
+			/* ================= Profile (tanpa auth) ================= */
+			document.addEventListener("DOMContentLoaded", function () {
+			  const userId = getUserId();
+			  if (!userId) {
+				console.log("ID user tidak ditemukan");
+				return;
+			  }
+		  
+			  fetch(`http://104.43.89.154:8086/users?id=${encodeURIComponent(userId)}`)
+				.then(response => {
+				  if (!response.ok) throw new Error("Gagal mengambil data user");
+				  return response.json();
+				})
+				.then(user => {
+				  setText("fullName", user.nama_lengkap);
+				  setText("role", user.role);
+				  setText("username", user.username);
+				  setText("npm", user.npm);
+				  setText("email", user.email);
+				  setText("jurusan", user.jurusan);
+				  setText("kelas", user.kelas);
+				  setText("roleInfo", user.role);
+				})
+				.catch(error => {
+				  console.error("Error:", error);
+				  alert("Terjadi kesalahan saat mengakses server");
+				});
 			});
-
-			// Kelas per jurusan
-			const kelasPerJurusan = {
-				'Keamanan Siber': [
-					'IV Rekayasa Keamanan Siber Echo',
-					'IV Rekayasa Keamanan Siber Trace',
-					'IV Rekayasa Keamanan Siber Route'
-				],
-				'Kriptografi': [
-					'IV Rekayasa Perangkat Lunak Kripto',
-					'IV Rekayasa Perangkat Keras Kriptografi',
-					'IV Rekayasa Sistem Kriptografi'
-				]
-			};
-
-			// Dinamis update kelas saat jurusan berubah di modal
-			function updateKelasEditModal() {
-				const jurusan = document.getElementById('edit_jurusan').value;
-				const kelasSelect = document.getElementById('edit_kelas');
-				kelasSelect.innerHTML = '';
-				if (kelasPerJurusan[jurusan]) {
-					kelasPerJurusan[jurusan].forEach(kelas => {
-						const option = document.createElement('option');
-						option.value = kelas;
-						option.textContent = kelas;
-						kelasSelect.appendChild(option);
-					});
+		  
+			/* ================= Logout (tanpa auth header) ================= */
+			async function logout() {
+			  try {
+				await fetch('http://104.43.89.154:8085/logout', {
+				  method: 'POST',
+				  headers: { 'Content-Type': 'application/json' },
+				  credentials: 'include'
+				}).catch(() => {});
+		  
+				// Bersihkan storage & cookie
+				localStorage.clear();
+				sessionStorage.clear();
+				const cookies = document.cookie.split(';');
+				for (let cookie of cookies) {
+				  const eqPos = cookie.indexOf('=');
+				  const name = (eqPos > -1 ? cookie.substr(0, eqPos) : cookie).trim();
+				  if (!name) continue;
+				  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+				  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/admin`;
 				}
+		  
+				console.log('Logout berhasil');
+				window.location.replace('/loginusers');
+			  } catch (error) {
+				console.error('Error during logout:', error);
+				alert('Gagal logout. Silakan coba lagi.');
+			  }
 			}
-			document.getElementById('edit_jurusan').addEventListener('change', updateKelasEditModal);
-
-			// Tampilkan modal dan isi data
+		  
+			/* Pasang event untuk tombol logout */
+			document.addEventListener('DOMContentLoaded', function () {
+			  const logoutButton = document.querySelector('a[onclick="logout()"]');
+			  if (logoutButton) {
+				logoutButton.addEventListener('click', function (e) {
+				  e.preventDefault();
+				  logout();
+				});
+			  }
+			});
+		  
+			/* ================= Kelas per jurusan ================= */
+			const kelasPerJurusan = {
+			  'Keamanan Siber': [
+				'IV Rekayasa Keamanan Siber Echo',
+				'IV Rekayasa Keamanan Siber Trace',
+				'IV Rekayasa Keamanan Siber Route'
+			  ],
+			  'Kriptografi': [
+				'IV Rekayasa Perangkat Lunak Kripto',
+				'IV Rekayasa Perangkat Keras Kriptografi',
+				'IV Rekayasa Sistem Kriptografi'
+			  ]
+			};
+		  
+			function updateKelasEditModal() {
+			  const jurusanEl = document.getElementById('edit_jurusan');
+			  const kelasSelect = document.getElementById('edit_kelas');
+			  if (!jurusanEl || !kelasSelect) return;
+		  
+			  const jurusan = jurusanEl.value;
+			  kelasSelect.innerHTML = '';
+			  if (kelasPerJurusan[jurusan]) {
+				kelasPerJurusan[jurusan].forEach(kelas => {
+				  const option = document.createElement('option');
+				  option.value = kelas;
+				  option.textContent = kelas;
+				  kelasSelect.appendChild(option);
+				});
+			  }
+			}
+			const jurEl = document.getElementById('edit_jurusan');
+			if (jurEl) jurEl.addEventListener('change', updateKelasEditModal);
+		  
+			/* ================= Modal Edit Profile ================= */
 			const editProfileBtn = document.getElementById('editProfileBtn');
 			if (editProfileBtn) {
-				editProfileBtn.addEventListener('click', function() {
-					document.getElementById('edit_nama_lengkap').value = document.getElementById('fullName').textContent;
-					document.getElementById('edit_email').value = document.getElementById('email').textContent;
-					document.getElementById('edit_username').value = document.getElementById('username').textContent;
-					document.getElementById('edit_npm').value = document.getElementById('npm').textContent;
-					document.getElementById('edit_jurusan').value = document.getElementById('jurusan').textContent;
-					updateKelasEditModal();
-					document.getElementById('edit_kelas').value = document.getElementById('kelas').textContent;
-					if (window.jQuery && $('#editProfileModal').modal) {
-						$('#editProfileModal').modal('show');
-					} else {
-						document.getElementById('editProfileModal').style.display = 'block';
-					}
-				});
+			  editProfileBtn.addEventListener('click', function () {
+				const g = id => document.getElementById(id);
+				if (g('edit_nama_lengkap')) g('edit_nama_lengkap').value = (g('fullName')?.textContent || '').trim();
+				if (g('edit_email')) g('edit_email').value = (g('email')?.textContent || '').trim();
+				if (g('edit_username')) g('edit_username').value = (g('username')?.textContent || '').trim();
+				if (g('edit_npm')) g('edit_npm').value = (g('npm')?.textContent || '').trim();
+				if (g('edit_jurusan')) g('edit_jurusan').value = (g('jurusan')?.textContent || '').trim();
+				updateKelasEditModal();
+				if (g('edit_kelas')) g('edit_kelas').value = (g('kelas')?.textContent || '').trim();
+		  
+				if (window.jQuery && $('#editProfileModal').modal) {
+				  $('#editProfileModal').modal('show');
+				} else {
+				  const modal = document.getElementById('editProfileModal');
+				  if (modal) modal.style.display = 'block';
+				}
+			  });
 			}
-
-			// Handle submit edit profile
+		  
+			/* ================= Submit Edit Profile (tanpa auth) ================= */
 			const editProfileForm = document.getElementById('editProfileForm');
 			if (editProfileForm) {
-				editProfileForm.addEventListener('submit', function(e) {
-					e.preventDefault();
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					const userId = localStorage.getItem('userId') || sessionStorage.getItem('userId');
-					const data = {
-						id: parseInt(userId),
-						nama_lengkap: document.getElementById('edit_nama_lengkap').value,
-						email: document.getElementById('edit_email').value,
-						username: document.getElementById('edit_username').value,
-						npm: document.getElementById('edit_npm').value,
-						jurusan: document.getElementById('edit_jurusan').value,
-						kelas: document.getElementById('edit_kelas').value,
-						role: 'taruna'
-					};
-					fetch('http://104.43.89.154:8086/users/edit', {
-						method: 'PUT',
-						headers: {
-							'Content-Type': 'application/json',
-							'Authorization': `Bearer ${token}`
-						},
-						body: JSON.stringify(data)
-					})
-					.then(response => {
-						if (!response.ok) throw new Error('Gagal update profile');
-						return response.json();
-					})
-					.then(res => {
-						alert('Profile berhasil diupdate');
-						location.reload();
-					})
-					.catch(err => {
-						alert('Gagal update profile: ' + err.message);
-					});
-				});
+			  editProfileForm.addEventListener('submit', function (e) {
+				e.preventDefault();
+				const userId = getUserId();
+				if (!userId) {
+				  alert('ID user tidak ditemukan');
+				  return;
+				}
+				const data = {
+				  id: parseInt(userId, 10),
+				  nama_lengkap: document.getElementById('edit_nama_lengkap')?.value || '',
+				  email: document.getElementById('edit_email')?.value || '',
+				  username: document.getElementById('edit_username')?.value || '',
+				  npm: document.getElementById('edit_npm')?.value || '',
+				  jurusan: document.getElementById('edit_jurusan')?.value || '',
+				  kelas: document.getElementById('edit_kelas')?.value || '',
+				  role: 'taruna'
+				};
+		  
+				fetch('http://104.43.89.154:8086/users/edit', {
+				  method: 'PUT',
+				  headers: { 'Content-Type': 'application/json' },
+				  body: JSON.stringify(data)
+				})
+				  .then(response => {
+					if (!response.ok) throw new Error('Gagal update profile');
+					return response.json();
+				  })
+				  .then(() => {
+					alert('Profile berhasil diupdate');
+					location.reload();
+				  })
+				  .catch(err => {
+					alert('Gagal update profile: ' + err.message);
+				  });
+			  });
 			}
-		</script>
+		  
+			/* ============== Catatan ==============
+			   - Semua cek & header Authorization DIHILANGKAN.
+			   - Tidak ada redirect ke /loginusers saat tidak ada token.
+			   - Endpoint tetap sama; backend harus mengizinkan akses tanpa token.
+			====================================== */
+		  </script>
+		  
 		
 		<!-- Google Tag Manager (noscript) -->	
 		<noscript
