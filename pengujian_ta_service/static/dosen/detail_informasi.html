@@ -520,245 +520,196 @@
 
 
 		<script>
-			// JS notifikasi
+			/* ================= Notifikasi (role Dosen) ================= */
 			document.addEventListener("DOMContentLoaded", function () {
-				fetch("http://104.43.89.154:8088/notifications?role=Dosen")
-					.then(res => res.json())
-					.then(data => {
-						const ul = document.getElementById("notif-list");
-						ul.innerHTML = ""; // Kosongkan
-
-						if (data.length === 0) {
-							ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
-							return;
-						}
-
-						data.forEach(item => {
-							const li = document.createElement("li");
-							li.innerHTML = `
-								<a href="/dosen/detailinformasidosen?id=${item.ID}">
-									<img src="vendors/images/logo.png" alt="" />
-									<h3>${item.Judul}</h3>
-									<p>${item.Deskripsi.length > 50 ? item.Deskripsi.substring(0, 50) + "..." : item.Deskripsi}</p>
-								</a>`;
-							ul.appendChild(li);
-						});
-
-						document.querySelector(".notification-active").style.display = "inline-block";
-					})
-					.catch(err => {
-						console.error("Gagal mengambil notifikasi:", err);
-					});
+			  fetch("http://104.43.89.154:8088/notifications?role=Dosen")
+				.then(res => res.json())
+				.then(data => {
+				  const ul = document.getElementById("notif-list");
+				  if (!ul) return;
+				  ul.innerHTML = "";
+		  
+				  if (!Array.isArray(data) || data.length === 0) {
+					ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
+					return;
+				  }
+		  
+				  data.forEach(item => {
+					const li = document.createElement("li");
+					const ringkas = item.Deskripsi
+					  ? (item.Deskripsi.length > 50 ? item.Deskripsi.substring(0, 50) + "..." : item.Deskripsi)
+					  : "";
+					li.innerHTML = `
+					  <a href="/dosen/detailinformasidosen?id=${item.ID}">
+						<img src="vendors/images/logo.png" alt="" />
+						<h3>${item.Judul || '-'}</h3>
+						<p>${ringkas}</p>
+					  </a>`;
+					ul.appendChild(li);
+				  });
+		  
+				  const badge = document.querySelector(".notification-active");
+				  if (badge) badge.style.display = "inline-block";
+				})
+				.catch(err => console.error("Gagal mengambil notifikasi:", err));
 			});
-
-		// JS untuk menampilkan informasi
-		document.addEventListener("DOMContentLoaded", function () {
-			const urlParams = new URLSearchParams(window.location.search);
-			const id = urlParams.get("id");
-			const role = "Dosen";
-
-			// helper: aman terhadap double-encoding
-			function safeEncodePathSegment(s) {
+		  
+			/* ================= Detail Notifikasi ================= */
+			document.addEventListener("DOMContentLoaded", function () {
+			  const urlParams = new URLSearchParams(window.location.search);
+			  const id = urlParams.get("id");
+			  const role = "Dosen";
+		  
+			  function safeEncodePathSegment(s) {
 				try { s = decodeURIComponent(s); } catch (_) {}
 				return encodeURIComponent(s);
-			}
-
-			fetch(`http://104.43.89.154:8088/notification/${id}?role=${encodeURIComponent(role)}`)
+			  }
+		  
+			  if (!id) return;
+			  fetch(`http://104.43.89.154:8088/notification/${id}?role=${encodeURIComponent(role)}`)
 				.then(res => {
-				if (!res.ok) throw new Error("Notifikasi tidak ditemukan");
-				return res.json();
+				  if (!res.ok) throw new Error("Notifikasi tidak ditemukan");
+				  return res.json();
 				})
 				.then(notif => {
-				document.getElementById("judul-notif").textContent = notif.Judul || "-";
-				document.getElementById("tanggal-notif").textContent =
-					notif.CreatedAt
+				  const el = (id) => document.getElementById(id);
+				  const judul = el("judul-notif");
+				  const tgl = el("tanggal-notif");
+				  const desk = el("deskripsi-notif");
+				  const container = el("file-links");
+		  
+				  if (judul) judul.textContent = notif.Judul || "-";
+				  if (tgl) tgl.textContent = notif.CreatedAt
 					? new Date(notif.CreatedAt).toLocaleString("id-ID", { dateStyle: "full", timeStyle: "short" })
 					: "-";
-				document.getElementById("deskripsi-notif").textContent = notif.Deskripsi || "-";
-
-				const container = document.getElementById("file-links");
-				container.innerHTML = "";
-
-				if (!notif.FileURLs) return;
-
-				let files = [];
-				try {
-					// backend Anda mengirim JSON string (array URL) → parse
-					files = JSON.parse(notif.FileURLs);
-				} catch {
-					// fallback: jika ternyata backend mengirim string biasa, jadikan array 1 elemen
-					files = [notif.FileURLs];
-				}
-
-				files.filter(Boolean).forEach(rawUrl => {
-					// Ambil nama file dari URL sumber (bisa full URL atau path)
+				  if (desk) desk.textContent = notif.Deskripsi || "-";
+				  if (!container) return;
+		  
+				  container.innerHTML = "";
+				  if (!notif.FileURLs) return;
+		  
+				  let files = [];
+				  try { files = JSON.parse(notif.FileURLs); }
+				  catch { files = [notif.FileURLs]; }
+		  
+				  files.filter(Boolean).forEach(rawUrl => {
 					let fileName = "";
 					try {
-					// gunakan URL parser agar aman saat ada query/fragment
-					const u = rawUrl.startsWith("http") ? new URL(rawUrl) : new URL(rawUrl, location.origin);
-					fileName = u.pathname.split("/").pop() || "";
+					  const u = rawUrl.startsWith("http") ? new URL(rawUrl) : new URL(rawUrl, location.origin);
+					  fileName = u.pathname.split("/").pop() || "";
 					} catch {
-					// fallback regex sederhana
-					fileName = String(rawUrl).split("?")[0].split("#")[0].split("/").pop() || "";
+					  fileName = String(rawUrl).split("?")[0].split("#")[0].split("/").pop() || "";
 					}
-
 					if (!fileName) return;
-
-					// Encode hanya segmen nama file
+		  
 					const encoded = safeEncodePathSegment(fileName);
-
 					const link = document.createElement("a");
 					link.href = `http://104.43.89.154:8088/download/${encoded}`;
-					link.textContent = `📎 ${fileName}`; // tampilkan nama aslinya
+					link.textContent = `📎 ${fileName}`;
 					link.className = "btn btn-outline-primary d-block mb-2 text-left";
 					link.target = "_blank";
 					link.rel = "noopener";
 					container.appendChild(link);
-				});
+				  });
 				})
 				.catch(err => {
-				document.getElementById("judul-notif").textContent = "Notifikasi tidak ditemukan.";
-				console.error(err);
-			});
-		});
-
-
-		function redirectToProfile() {
-			window.location.href = '/dosen/profile';
-		}
-
-		// Fungsi untuk logout
-		async function logout() {
-			try {
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				
-				const response = await fetch('http://104.43.89.154:8085/logout', {
-					method: 'POST',
-					headers: {
-						'Authorization': token ? `Bearer ${token}` : '',
-						'Content-Type': 'application/json'
-					},
-					credentials: 'include'
+				  const judul = document.getElementById("judul-notif");
+				  if (judul) judul.textContent = "Notifikasi tidak ditemukan.";
+				  console.error(err);
 				});
-
-				const data = await response.json();
-				
-				if (response.ok && data.status === 'success') {
-					// Clear localStorage
-					localStorage.clear();
-					
-					// Clear sessionStorage
-					sessionStorage.clear();
-					
-					// Clear all cookies for all possible paths
-					const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
-					const cookies = document.cookie.split(';');
-					
-					for (let cookie of cookies) {
-						const eqPos = cookie.indexOf('=');
-						const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-						
-						// Hapus cookie untuk setiap path
-						paths.forEach(path => {
-							document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
-						});
-					}
-					
-					// Clear cache if browser supports it
-					if (window.caches) {
-						caches.keys().then(names => {
-							names.forEach(name => {
-								caches.delete(name);
-							});
-						});
-					}
-
-					// Clear application cache
-					if (window.applicationCache) {
-						window.applicationCache.abort();
-					}
-
-					// Clear service workers if any
-					if (navigator.serviceWorker) {
-						navigator.serviceWorker.getRegistrations().then(registrations => {
-							registrations.forEach(registration => {
-								registration.unregister();
-							});
-						});
-					}
-					
-					console.log('Logout berhasil');
-					
-					// Force reload halaman login untuk membersihkan cache
-					window.location.href = '/loginusers';
-					window.location.reload(true);
-				} else {
-					throw new Error(data.message || 'Gagal logout');
+			});
+		  
+			function redirectToProfile() {
+			  window.location.href = '/dosen/profile';
+			}
+		  
+			/* ================= Logout (tanpa Authorization) ================= */
+			async function logout() {
+			  try {
+				await fetch('http://104.43.89.154:8085/logout', {
+				  method: 'POST',
+				  headers: { 'Content-Type': 'application/json' },
+				  credentials: 'include'
+				}).catch(() => {});
+		  
+				// Bersihkan storage
+				localStorage.clear();
+				sessionStorage.clear();
+		  
+				// Hapus cookies di beberapa path umum
+				const paths = ['/', '/admin', '/dosen', '/admin/', '/dosen/'];
+				(document.cookie.split(';') || []).forEach(cookie => {
+				  const eqPos = cookie.indexOf('=');
+				  const name = (eqPos > -1 ? cookie.substr(0, eqPos) : cookie).trim();
+				  if (!name) return;
+				  paths.forEach(path => {
+					document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+				  });
+				});
+		  
+				// Bersihkan cache & service worker
+				if (window.caches) {
+				  caches.keys().then(names => names.forEach(n => caches.delete(n)));
 				}
-			} catch (error) {
+				if (navigator.serviceWorker) {
+				  navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+				}
+		  
+				console.log('Logout berhasil');
+				window.location.href = '/loginusers';
+				window.location.reload(true);
+			  } catch (error) {
 				console.error('Error during logout:', error);
 				alert('Gagal logout. Silakan coba lagi.');
+			  }
 			}
-		}
-
-			// JS untuk data user
-			// Tambahkan pengecekan autentikasi dan mapping dosenID saat halaman dimuat
-			document.addEventListener('DOMContentLoaded', function() {
-				console.log('DOM Content Loaded'); // Debug log
-				
-				// Cek token dan ambil dosenID
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				if (!token) {
-					console.warn('No token found');
-					window.location.replace('/loginusers');
-					return;
-				}
-
-				const userId = localStorage.getItem('userId');
-				console.log('UserID:', userId); // Debug log
-
-				// Ambil data dosen dan set dosenID
-					fetch('http://104.43.89.154:8086/dosen', {
-						headers: {
-							'Authorization': `Bearer ${token}`
-						}
-					})
-					.then(response => response.json())
-					.then(data => {
-						if (data.status === 'success' && Array.isArray(data.data)) {
-							const dosen = data.data.find(d => String(d.user_id) === String(userId));
-							if (dosen) {
-							localStorage.setItem('dosenID', dosen.id);
-							localStorage.setItem('dosenName', dosen.nama_lengkap);
-							// fetchTarunaTopics(dosen.id);
-							console.log('DosenID set:', dosen.id); // Debug log
-							
-							// Update nama dosen di header
-					const usernameElement = document.getElementById('username');
-					if (usernameElement) {
-								usernameElement.textContent = dosen.nama_lengkap;
-							}
-						} else {
-							console.warn('Dosen with user_id', userId, 'not found');
-						}
+		  
+			/* ================= Data User Dosen (tanpa auth) ================= */
+			document.addEventListener('DOMContentLoaded', function () {
+			  // Ambil userId dari query/local/session (tanpa cek token)
+			  const params = new URLSearchParams(location.search);
+			  const userId =
+				params.get('userId') ||
+				params.get('id') ||
+				localStorage.getItem('userId') ||
+				sessionStorage.getItem('userId');
+		  
+			  if (!userId) {
+				console.warn('UserID tidak ditemukan (tidak redirect).');
+				return;
+			  }
+		  
+			  // Pemetaan dosen (tanpa Authorization)
+			  fetch('http://104.43.89.154:8086/dosen')
+				.then(r => r.json())
+				.then(data => {
+				  if (data.status === 'success' && Array.isArray(data.data)) {
+					const dosen = data.data.find(d => String(d.user_id) === String(userId));
+					if (dosen) {
+					  localStorage.setItem('dosenID', dosen.id);
+					  localStorage.setItem('dosenName', dosen.nama_lengkap);
+					  const usernameElement = document.getElementById('username');
+					  if (usernameElement) usernameElement.textContent = dosen.nama_lengkap || 'User';
+					} else {
+					  console.warn('Dosen dengan user_id tersebut tidak ditemukan.');
 					}
+				  }
 				})
-				.catch(error => {
-					console.error('Failed to fetch dosen data:', error);
-				});
+				.catch(err => console.error('Failed to fetch dosen data:', err));
 			});
-			
-		// Event listener untuk tombol logout
-		document.addEventListener('DOMContentLoaded', function() {
-			const logoutButton = document.querySelector('a[onclick="logout()"]');
-			if (logoutButton) {
-				logoutButton.addEventListener('click', function(e) {
-					e.preventDefault();
-					logout();
+		  
+			/* ================= Event tombol logout ================= */
+			document.addEventListener('DOMContentLoaded', function () {
+			  const logoutButton = document.querySelector('a[onclick="logout()"]');
+			  if (logoutButton) {
+				logoutButton.addEventListener('click', function (e) {
+				  e.preventDefault();
+				  logout();
 				});
-			}
-		});
-		</script>
+			  }
+			});
+		  </script>
+		  
 
 	</body>
 </html>

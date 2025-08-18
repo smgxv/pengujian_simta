@@ -596,173 +596,153 @@
 
 
 		<script>
-		// JS notifikasi
-		document.addEventListener("DOMContentLoaded", function () {
-			fetch("http://104.43.89.154:8088/notifications?role=Dosen")
+			/* ========= Helper ========= */
+			function getUserId() {
+			  const p = new URLSearchParams(location.search);
+			  return (
+				p.get('id') ||
+				p.get('userId') ||
+				localStorage.getItem('userId') ||
+				sessionStorage.getItem('userId') ||
+				''
+			  );
+			}
+		  
+			/* ========= Notifikasi (role Dosen) ========= */
+			document.addEventListener("DOMContentLoaded", function () {
+			  fetch("http://104.43.89.154:8088/notifications?role=Dosen")
 				.then(res => res.json())
 				.then(data => {
-					const ul = document.getElementById("notif-list");
-					ul.innerHTML = ""; // Kosongkan
-
-					if (data.length === 0) {
-						ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
-						return;
-					}
-
-					data.forEach(item => {
-						const li = document.createElement("li");
-						li.innerHTML = `
-							<a href="/dosen/detailinformasidosen?id=${item.ID}">
-								<img src="vendors/images/logo.png" alt="" />
-								<h3>${item.Judul}</h3>
-								<p>${item.Deskripsi.length > 50 ? item.Deskripsi.substring(0, 50) + "..." : item.Deskripsi}</p>
-							</a>`;
-						ul.appendChild(li);
-					});
-
-					document.querySelector(".notification-active").style.display = "inline-block";
+				  const ul = document.getElementById("notif-list");
+				  if (!ul) return;
+				  ul.innerHTML = "";
+		  
+				  if (!Array.isArray(data) || data.length === 0) {
+					ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
+					return;
+				  }
+		  
+				  data.forEach(item => {
+					const li = document.createElement("li");
+					const ringkas = item.Deskripsi
+					  ? (item.Deskripsi.length > 50 ? item.Deskripsi.substring(0, 50) + "..." : item.Deskripsi)
+					  : "";
+					li.innerHTML = `
+					  <a href="/dosen/detailinformasidosen?id=${item.ID}">
+						<img src="vendors/images/logo.png" alt="" />
+						<h3>${item.Judul || '-'}</h3>
+						<p>${ringkas}</p>
+					  </a>`;
+					ul.appendChild(li);
+				  });
+		  
+				  const badge = document.querySelector(".notification-active");
+				  if (badge) badge.style.display = "inline-block";
 				})
 				.catch(err => {
-					console.error("Gagal mengambil notifikasi:", err);
+				  console.error("Gagal mengambil notifikasi:", err);
 				});
-		});
-
-		function redirectToProfile() {
-			window.location.href = '/dosen/profile';
-		}
-
-		// Fungsi untuk logout
-		async function logout() {
-			try {
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				
-				const response = await fetch('http://104.43.89.154:8085/logout', {
-					method: 'POST',
-					headers: {
-						'Authorization': token ? `Bearer ${token}` : '',
-						'Content-Type': 'application/json'
-					},
-					credentials: 'include'
+			});
+		  
+			function redirectToProfile() {
+			  window.location.href = '/dosen/profile';
+			}
+		  
+			/* ========= Logout (tanpa Authorization) ========= */
+			async function logout() {
+			  try {
+				await fetch('http://104.43.89.154:8085/logout', {
+				  method: 'POST',
+				  headers: { 'Content-Type': 'application/json' },
+				  credentials: 'include'
+				}).catch(() => {});
+		  
+				// Bersihkan storage
+				localStorage.clear();
+				sessionStorage.clear();
+		  
+				// Hapus cookies di beberapa path umum
+				const paths = ['/', '/admin', '/dosen', '/admin/', '/dosen/'];
+				(document.cookie.split(';') || []).forEach(cookie => {
+				  const eqPos = cookie.indexOf('=');
+				  const name = (eqPos > -1 ? cookie.substr(0, eqPos) : cookie).trim();
+				  if (!name) return;
+				  paths.forEach(path => {
+					document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+				  });
 				});
-
-				const data = await response.json();
-				
-				if (response.ok && data.status === 'success') {
-					// Clear localStorage
-					localStorage.clear();
-					
-					// Clear sessionStorage
-					sessionStorage.clear();
-					
-					// Clear all cookies for all possible paths
-					const paths = ['/', '/admin', '/dosen', '/admin/', '/dosen/'];
-					const cookies = document.cookie.split(';');
-					
-					for (let cookie of cookies) {
-						const eqPos = cookie.indexOf('=');
-						const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-						
-						// Hapus cookie untuk setiap path
-						paths.forEach(path => {
-							document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
-						});
-					}
-					
-					// Clear cache if browser supports it
-					if (window.caches) {
-						caches.keys().then(names => {
-							names.forEach(name => {
-								caches.delete(name);
-							});
-						});
-					}
-
-					// Clear application cache
-					if (window.applicationCache) {
-						window.applicationCache.abort();
-					}
-
-					// Clear service workers if any
-					if (navigator.serviceWorker) {
-						navigator.serviceWorker.getRegistrations().then(registrations => {
-							registrations.forEach(registration => {
-								registration.unregister();
-							});
-						});
-					}
-					
-					console.log('Logout berhasil');
-					
-					// Force reload halaman login untuk membersihkan cache
-					window.location.href = '/loginusers';
-					window.location.reload(true);
-				} else {
-					throw new Error(data.message || 'Gagal logout');
+		  
+				// Bersihkan cache/sw
+				if (window.caches) {
+				  caches.keys().then(names => names.forEach(n => caches.delete(n)));
 				}
-			} catch (error) {
+				if (navigator.serviceWorker) {
+				  navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+				}
+		  
+				console.log('Logout berhasil');
+				window.location.href = '/loginusers';
+				window.location.reload(true);
+			  } catch (error) {
 				console.error('Error during logout:', error);
 				alert('Gagal logout. Silakan coba lagi.');
+			  }
 			}
-		}
-
-		// JS untuk data user
-		document.addEventListener('DOMContentLoaded', function () {
-			const token = localStorage.getItem('token');
-			const userId = localStorage.getItem('userId');
-
-			if (!token || !userId) {
-				window.location.replace('/loginusers');
+		  
+			/* ========= Muat data dashboard dosen (tanpa auth) ========= */
+			document.addEventListener('DOMContentLoaded', function () {
+			  const userId = getUserId();
+			  if (!userId) {
+				console.log('User ID tidak ditemukan');
+				// Tidak redirect, hanya hentikan proses
 				return;
-			}
-
-			// Fetch data dashboard utama (nama, jurusan, icp)
-			fetch(`http://104.43.89.154:8086/dosen/dashboard?userId=${userId}`, {
-				headers: {
-					'Authorization': `Bearer ${token}`
-				}
-			})
-			.then(response => {
-				if (!response.ok) throw new Error('Gagal mengambil data dosen');
-				return response.json();
-			})
-			.then(data => {
-				document.getElementById('nama-dosen-header').textContent = data.nama_lengkap || 'Dosen';
-				document.getElementById('nama-dosen').textContent = data.nama_lengkap || '-';
-				document.getElementById('jurusan').textContent = data.jurusan || '-';
-
-				const usernameElement = document.getElementById('username');
-				if (usernameElement) {
-					usernameElement.textContent = data.nama_lengkap || 'User';
-				}
-
-				// Tampilkan ICP Ditelaah
-				const icpListElement = document.getElementById('icp-list');
-				icpListElement.innerHTML = '';
-
-				if (Array.isArray(data.icp_ditelaah) && data.icp_ditelaah.length > 0) {
+			  }
+		  
+			  // Elemen helper agar tidak error saat null
+			  const setText = (id, val) => {
+				const el = document.getElementById(id);
+				if (el) el.textContent = val ?? '-';
+			  };
+		  
+			  /* --- Dashboard utama --- */
+			  fetch(`http://104.43.89.154:8086/dosen/dashboard?userId=${encodeURIComponent(userId)}`)
+				.then(r => { if (!r.ok) throw new Error('Gagal mengambil data dosen'); return r.json(); })
+				.then(data => {
+				  setText('nama-dosen-header', data.nama_lengkap || 'Dosen');
+				  setText('nama-dosen', data.nama_lengkap || '-');
+				  setText('jurusan', data.jurusan || '-');
+		  
+				  const usernameEl = document.getElementById('username');
+				  if (usernameEl) usernameEl.textContent = data.nama_lengkap || 'User';
+		  
+				  const icpListElement = document.getElementById('icp-list');
+				  if (!icpListElement) return;
+				  icpListElement.innerHTML = '';
+		  
+				  if (Array.isArray(data.icp_ditelaah) && data.icp_ditelaah.length > 0) {
 					data.icp_ditelaah.forEach(icp => {
-						const row = document.createElement('tr');
-
-						const namaCell = document.createElement('td');
-						namaCell.textContent = icp.nama_taruna || '-';
-
-						const topikCell = document.createElement('td');
-						topikCell.textContent = icp.topik_penelitian || '-';
-
-						const statusCell = document.createElement('td');
-						statusCell.textContent = icp.status || '-';
-						if (icp.status === "Sudah Ditelaah") {
-							statusCell.classList.add("text-success", "fw-bold");
-						} else {
-							statusCell.classList.add("text-danger", "fw-bold");
-						}
-
-						row.appendChild(namaCell);
-						row.appendChild(topikCell);
-						row.appendChild(statusCell);
-						icpListElement.appendChild(row);
+					  const row = document.createElement('tr');
+		  
+					  const namaCell = document.createElement('td');
+					  namaCell.textContent = icp.nama_taruna || '-';
+		  
+					  const topikCell = document.createElement('td');
+					  topikCell.textContent = icp.topik_penelitian || '-';
+		  
+					  const statusCell = document.createElement('td');
+					  statusCell.textContent = icp.status || '-';
+					  if (icp.status === "Sudah Ditelaah") {
+						statusCell.classList.add("text-success", "fw-bold");
+					  } else {
+						statusCell.classList.add("text-danger", "fw-bold");
+					  }
+		  
+					  row.appendChild(namaCell);
+					  row.appendChild(topikCell);
+					  row.appendChild(statusCell);
+					  icpListElement.appendChild(row);
 					});
-				} else {
+				  } else {
 					const row = document.createElement('tr');
 					const cell = document.createElement('td');
 					cell.colSpan = 3;
@@ -770,43 +750,37 @@
 					cell.classList.add('text-center');
 					row.appendChild(cell);
 					icpListElement.appendChild(row);
-				}
-			})
-			.catch(err => {
-				console.error('Gagal memuat data dosen:', err);
-				document.getElementById('nama-dosen').textContent = '-';
-				document.getElementById('jurusan').textContent = '-';
-			});
-
-			// Fetch Mahasiswa Bimbingan
-			const bimbinganListElement = document.getElementById('bimbingan-list');
-			bimbinganListElement.innerHTML = '';
-
-			fetch(`http://104.43.89.154:8086/dosen/dashboard/bimbingan?userId=${userId}`, {
-				headers: {
-					'Authorization': `Bearer ${token}`
-				}
-			})
-			.then(response => {
-				if (!response.ok) throw new Error('Gagal mengambil data bimbingan');
-				return response.json();
-			})
-			.then(data => {
-				if (Array.isArray(data) && data.length > 0) {
+				  }
+				})
+				.catch(err => {
+				  console.error('Gagal memuat data dosen:', err);
+				  setText('nama-dosen', '-');
+				  setText('jurusan', '-');
+				});
+		  
+			  /* --- Mahasiswa Bimbingan --- */
+			  const bimbinganListElement = document.getElementById('bimbingan-list');
+			  if (bimbinganListElement) bimbinganListElement.innerHTML = '';
+		  
+			  fetch(`http://104.43.89.154:8086/dosen/dashboard/bimbingan?userId=${encodeURIComponent(userId)}`)
+				.then(r => { if (!r.ok) throw new Error('Gagal mengambil data bimbingan'); return r.json(); })
+				.then(data => {
+				  if (!bimbinganListElement) return;
+				  if (Array.isArray(data) && data.length > 0) {
 					data.forEach(item => {
-						const row = document.createElement('tr');
-
-						const namaCell = document.createElement('td');
-						namaCell.textContent = item.nama_taruna || '-';
-
-						const jurusanCell = document.createElement('td');
-						jurusanCell.textContent = item.jurusan || '-';
-
-						row.appendChild(namaCell);
-						row.appendChild(jurusanCell);
-						bimbinganListElement.appendChild(row);
+					  const row = document.createElement('tr');
+		  
+					  const namaCell = document.createElement('td');
+					  namaCell.textContent = item.nama_taruna || '-';
+		  
+					  const jurusanCell = document.createElement('td');
+					  jurusanCell.textContent = item.jurusan || '-';
+		  
+					  row.appendChild(namaCell);
+					  row.appendChild(jurusanCell);
+					  bimbinganListElement.appendChild(row);
 					});
-				} else {
+				  } else {
 					const row = document.createElement('tr');
 					const cell = document.createElement('td');
 					cell.colSpan = 2;
@@ -814,61 +788,58 @@
 					cell.classList.add('text-center');
 					row.appendChild(cell);
 					bimbinganListElement.appendChild(row);
-				}
-			})
-			.catch(err => {
-				console.error('Gagal memuat data bimbingan:', err);
-				const row = document.createElement('tr');
-				const cell = document.createElement('td');
-				cell.colSpan = 4;
-				cell.textContent = 'Gagal memuat data';
-				cell.classList.add('text-center', 'text-danger');
-				row.appendChild(cell);
-				bimbinganListElement.appendChild(row);
-			});
-
-			const pengujianListElement = document.getElementById('pengujian-list');
-			pengujianListElement.innerHTML = '';
-
-			fetch(`http://104.43.89.154:8086/dosen/dashboard/pengujianproposal?userId=${userId}`, {
-				headers: {
-					'Authorization': `Bearer ${token}`
-				}
-			})
-			.then(response => {
-				if (!response.ok) throw new Error('Gagal mengambil data pengujian proposal');
-				return response.json();
-			})
-			.then(data => {
-				if (Array.isArray(data) && data.length > 0) {
+				  }
+				})
+				.catch(err => {
+				  console.error('Gagal memuat data bimbingan:', err);
+				  if (bimbinganListElement) {
+					const row = document.createElement('tr');
+					const cell = document.createElement('td');
+					cell.colSpan = 2;
+					cell.textContent = 'Gagal memuat data';
+					cell.classList.add('text-center', 'text-danger');
+					row.appendChild(cell);
+					bimbinganListElement.appendChild(row);
+				  }
+				});
+		  
+			  /* --- Pengujian Proposal --- */
+			  const pengujianListElement = document.getElementById('pengujian-list');
+			  if (pengujianListElement) pengujianListElement.innerHTML = '';
+		  
+			  fetch(`http://104.43.89.154:8086/dosen/dashboard/pengujianproposal?userId=${encodeURIComponent(userId)}`)
+				.then(r => { if (!r.ok) throw new Error('Gagal mengambil data pengujian proposal'); return r.json(); })
+				.then(data => {
+				  if (!pengujianListElement) return;
+				  if (Array.isArray(data) && data.length > 0) {
 					data.forEach(item => {
-						const row = document.createElement('tr');
-
-						const namaCell = document.createElement('td');
-						namaCell.textContent = item.nama_taruna || '-';
-
-						const topikCell = document.createElement('td');
-						topikCell.textContent = item.topik || '-';
-
-						const pengujiKeCell = document.createElement('td');
-						pengujiKeCell.textContent = item.penguji_ke || '-';
-
-						const statusCell = document.createElement('td');
-						statusCell.textContent = item.status_pengumpulan || '-';
-						if (item.status_pengumpulan === 'sudah') {
-							statusCell.classList.add('text-success', 'fw-bold');
-						} else {
-							statusCell.classList.add('text-danger', 'fw-bold');
-						}
-
-						row.appendChild(namaCell);
-						row.appendChild(topikCell);
-						row.appendChild(pengujiKeCell);
-						row.appendChild(statusCell);
-
-						pengujianListElement.appendChild(row);
+					  const row = document.createElement('tr');
+		  
+					  const namaCell = document.createElement('td');
+					  namaCell.textContent = item.nama_taruna || '-';
+		  
+					  const topikCell = document.createElement('td');
+					  topikCell.textContent = item.topik || '-';
+		  
+					  const pengujiKeCell = document.createElement('td');
+					  pengujiKeCell.textContent = item.penguji_ke || '-';
+		  
+					  const statusCell = document.createElement('td');
+					  statusCell.textContent = item.status_pengumpulan || '-';
+					  if (item.status_pengumpulan === 'sudah') {
+						statusCell.classList.add('text-success', 'fw-bold');
+					  } else {
+						statusCell.classList.add('text-danger', 'fw-bold');
+					  }
+		  
+					  row.appendChild(namaCell);
+					  row.appendChild(topikCell);
+					  row.appendChild(pengujiKeCell);
+					  row.appendChild(statusCell);
+		  
+					  pengujianListElement.appendChild(row);
 					});
-				} else {
+				  } else {
 					const row = document.createElement('tr');
 					const cell = document.createElement('td');
 					cell.colSpan = 4;
@@ -876,62 +847,57 @@
 					cell.classList.add('text-center');
 					row.appendChild(cell);
 					pengujianListElement.appendChild(row);
-				}
-			})
-			.catch(err => {
-				console.error('Gagal memuat data pengujian proposal:', err);
-				const row = document.createElement('tr');
-				const cell = document.createElement('td');
-				cell.colSpan = 4;
-				cell.textContent = 'Gagal memuat data';
-				cell.classList.add('text-center', 'text-danger');
-				row.appendChild(cell);
-				pengujianListElement.appendChild(row);
-			});
-
-			// Fetch Pengujian Laporan 70%
-			const ta70ListElement = document.getElementById('ta70-list');
-			ta70ListElement.innerHTML = '';
-
-			fetch(`http://104.43.89.154:8086/dosen/dashboard/pengujianlaporan70?userId=${userId}`, {
-				headers: {
-					'Authorization': `Bearer ${token}`
-				}
-			})
-			.then(response => {
-				if (!response.ok) throw new Error('Gagal mengambil data pengujian laporan 70%');
-				return response.json();
-			})
-			.then(data => {
-				if (Array.isArray(data) && data.length > 0) {
+				  }
+				})
+				.catch(err => {
+				  console.error('Gagal memuat data pengujian proposal:', err);
+				  if (pengujianListElement) {
+					const row = document.createElement('tr');
+					const cell = document.createElement('td');
+					cell.colSpan = 4;
+					cell.textContent = 'Gagal memuat data';
+					cell.classList.add('text-center', 'text-danger');
+					row.appendChild(cell);
+					pengujianListElement.appendChild(row);
+				  }
+				});
+		  
+			  /* --- Pengujian Laporan 70% --- */
+			  const ta70ListElement = document.getElementById('ta70-list');
+			  if (ta70ListElement) ta70ListElement.innerHTML = '';
+		  
+			  fetch(`http://104.43.89.154:8086/dosen/dashboard/pengujianlaporan70?userId=${encodeURIComponent(userId)}`)
+				.then(r => { if (!r.ok) throw new Error('Gagal mengambil data pengujian laporan 70%'); return r.json(); })
+				.then(data => {
+				  if (!ta70ListElement) return;
+				  if (Array.isArray(data) && data.length > 0) {
 					data.forEach(item => {
-						const row = document.createElement('tr');
-
-						const namaCell = document.createElement('td');
-						namaCell.textContent = item.nama_taruna || '-';
-
-						const topikCell = document.createElement('td');
-						topikCell.textContent = item.topik || '-';
-
-						const pengujiKeCell = document.createElement('td');
-						pengujiKeCell.textContent = item.penguji_ke || '-';
-
-						const statusCell = document.createElement('td');
-						statusCell.textContent = item.status_pengumpulan || '-';
-
-						if (item.status_pengumpulan === 'sudah') {
-							statusCell.classList.add('text-success', 'fw-bold');
-						} else {
-							statusCell.classList.add('text-danger', 'fw-bold');
-						}
-
-						row.appendChild(namaCell);
-						row.appendChild(topikCell);
-						row.appendChild(pengujiKeCell);
-						row.appendChild(statusCell);
-						ta70ListElement.appendChild(row);
+					  const row = document.createElement('tr');
+		  
+					  const namaCell = document.createElement('td');
+					  namaCell.textContent = item.nama_taruna || '-';
+		  
+					  const topikCell = document.createElement('td');
+					  topikCell.textContent = item.topik || '-';
+		  
+					  const pengujiKeCell = document.createElement('td');
+					  pengujiKeCell.textContent = item.penguji_ke || '-';
+		  
+					  const statusCell = document.createElement('td');
+					  statusCell.textContent = item.status_pengumpulan || '-';
+					  if (item.status_pengumpulan === 'sudah') {
+						statusCell.classList.add('text-success', 'fw-bold');
+					  } else {
+						statusCell.classList.add('text-danger', 'fw-bold');
+					  }
+		  
+					  row.appendChild(namaCell);
+					  row.appendChild(topikCell);
+					  row.appendChild(pengujiKeCell);
+					  row.appendChild(statusCell);
+					  ta70ListElement.appendChild(row);
 					});
-				} else {
+				  } else {
 					const row = document.createElement('tr');
 					const cell = document.createElement('td');
 					cell.colSpan = 4;
@@ -939,63 +905,57 @@
 					cell.classList.add('text-center');
 					row.appendChild(cell);
 					ta70ListElement.appendChild(row);
-				}
-			})
-			.catch(err => {
-				console.error('Gagal memuat data pengujian laporan 70%:', err);
-				const row = document.createElement('tr');
-				const cell = document.createElement('td');
-				cell.colSpan = 4;
-				cell.textContent = 'Gagal memuat data';
-				cell.classList.add('text-center', 'text-danger');
-				row.appendChild(cell);
-				ta70ListElement.appendChild(row);
-			});
-
-
-			// Fetch Review Laporan 100%
-			const ta100ListElement = document.getElementById('ta100-list');
-			ta100ListElement.innerHTML = '';
-
-			fetch(`http://104.43.89.154:8086/dosen/dashboard/pengujianlaporan100?userId=${userId}`, {
-				headers: {
-					'Authorization': `Bearer ${token}`
-				}
-			})
-			.then(response => {
-				if (!response.ok) throw new Error('Gagal mengambil data laporan 100%');
-				return response.json();
-			})
-			.then(data => {
-				if (Array.isArray(data) && data.length > 0) {
+				  }
+				})
+				.catch(err => {
+				  console.error('Gagal memuat data pengujian laporan 70%:', err);
+				  if (ta70ListElement) {
+					const row = document.createElement('tr');
+					const cell = document.createElement('td');
+					cell.colSpan = 4;
+					cell.textContent = 'Gagal memuat data';
+					cell.classList.add('text-center', 'text-danger');
+					row.appendChild(cell);
+					ta70ListElement.appendChild(row);
+				  }
+				});
+		  
+			  /* --- Laporan 100% --- */
+			  const ta100ListElement = document.getElementById('ta100-list');
+			  if (ta100ListElement) ta100ListElement.innerHTML = '';
+		  
+			  fetch(`http://104.43.89.154:8086/dosen/dashboard/pengujianlaporan100?userId=${encodeURIComponent(userId)}`)
+				.then(r => { if (!r.ok) throw new Error('Gagal mengambil data laporan 100%'); return r.json(); })
+				.then(data => {
+				  if (!ta100ListElement) return;
+				  if (Array.isArray(data) && data.length > 0) {
 					data.forEach(item => {
-						const row = document.createElement('tr');
-
-						const namaCell = document.createElement('td');
-						namaCell.textContent = item.nama_taruna || '-';
-
-						const topikCell = document.createElement('td');
-						topikCell.textContent = item.topik || '-';
-
-						const pengujiKeCell = document.createElement('td');
-						pengujiKeCell.textContent = item.penguji_ke || '-';
-
-						const statusCell = document.createElement('td');
-						statusCell.textContent = item.status || '-';
-
-						if (item.status === 'sudah') {
-							statusCell.classList.add('text-success', 'fw-bold');
-						} else {
-							statusCell.classList.add('text-danger', 'fw-bold');
-						}
-
-						row.appendChild(namaCell);
-						row.appendChild(topikCell);
-						row.appendChild(pengujiKeCell);
-						row.appendChild(statusCell);
-						ta100ListElement.appendChild(row);
+					  const row = document.createElement('tr');
+		  
+					  const namaCell = document.createElement('td');
+					  namaCell.textContent = item.nama_taruna || '-';
+		  
+					  const topikCell = document.createElement('td');
+					  topikCell.textContent = item.topik || '-';
+		  
+					  const pengujiKeCell = document.createElement('td');
+					  pengujiKeCell.textContent = item.penguji_ke || '-';
+		  
+					  const statusCell = document.createElement('td');
+					  statusCell.textContent = item.status || '-';
+					  if (item.status === 'sudah') {
+						statusCell.classList.add('text-success', 'fw-bold');
+					  } else {
+						statusCell.classList.add('text-danger', 'fw-bold');
+					  }
+		  
+					  row.appendChild(namaCell);
+					  row.appendChild(topikCell);
+					  row.appendChild(pengujiKeCell);
+					  row.appendChild(statusCell);
+					  ta100ListElement.appendChild(row);
 					});
-				} else {
+				  } else {
 					const row = document.createElement('tr');
 					const cell = document.createElement('td');
 					cell.colSpan = 4;
@@ -1003,33 +963,34 @@
 					cell.classList.add('text-center');
 					row.appendChild(cell);
 					ta100ListElement.appendChild(row);
-				}
-			})
-			.catch(err => {
-				console.error('Gagal memuat data laporan 100%:', err);
-				const row = document.createElement('tr');
-				const cell = document.createElement('td');
-				cell.colSpan = 4;
-				cell.textContent = 'Gagal memuat data';
-				cell.classList.add('text-center', 'text-danger');
-				row.appendChild(cell);
-				ta100ListElement.appendChild(row);
-			});
-
-		});
-
-		// Event listener untuk tombol logout
-		document.addEventListener('DOMContentLoaded', function() {
-			const logoutButton = document.querySelector('a[onclick="logout()"]');
-			if (logoutButton) {
-				logoutButton.addEventListener('click', function(e) {
-					e.preventDefault();
-					logout();
+				  }
+				})
+				.catch(err => {
+				  console.error('Gagal memuat data laporan 100%:', err);
+				  if (ta100ListElement) {
+					const row = document.createElement('tr');
+					const cell = document.createElement('td');
+					cell.colSpan = 4;
+					cell.textContent = 'Gagal memuat data';
+					cell.classList.add('text-center', 'text-danger');
+					row.appendChild(cell);
+					ta100ListElement.appendChild(row);
+				  }
 				});
-			}
-		});
-
-		</script>
+			});
+		  
+			/* ========= Pasang event tombol logout ========= */
+			document.addEventListener('DOMContentLoaded', function () {
+			  const logoutButton = document.querySelector('a[onclick="logout()"]');
+			  if (logoutButton) {
+				logoutButton.addEventListener('click', function (e) {
+				  e.preventDefault();
+				  logout();
+				});
+			  }
+			});
+		  </script>
+		  
 
 	</body>
 </html>

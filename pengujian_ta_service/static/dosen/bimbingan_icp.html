@@ -574,545 +574,422 @@
 		</div>
 
 		<script>
-			// JS notifikasi
+			// ========== Notifikasi (tanpa auth) ==========
 			document.addEventListener("DOMContentLoaded", function () {
-				fetch("http://104.43.89.154:8088/notifications?role=Dosen")
-					.then(res => res.json())
-					.then(data => {
-						const ul = document.getElementById("notif-list");
-						ul.innerHTML = ""; // Kosongkan
-
-						if (data.length === 0) {
-							ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
-							return;
-						}
-
-						data.forEach(item => {
-							const li = document.createElement("li");
-							li.innerHTML = `
-								<a href="/dosen/detailinformasidosen?id=${item.ID}">
-									<img src="vendors/images/logo.png" alt="" />
-									<h3>${item.Judul}</h3>
-									<p>${item.Deskripsi.length > 50 ? item.Deskripsi.substring(0, 50) + "..." : item.Deskripsi}</p>
-								</a>`;
-							ul.appendChild(li);
-						});
-
-						document.querySelector(".notification-active").style.display = "inline-block";
-					})
-					.catch(err => {
-						console.error("Gagal mengambil notifikasi:", err);
-					});
-			});
-
-			// Fungsi untuk redirect ke halaman profile
-			function redirectToProfile() {
-				window.location.href = '/dosen/profile';
-			}
-			
-			let icpDataGlobal = [];
-
-			// Fungsi untuk menampilkan list ICP yang masuk ke dosen
-			async function loadICPData() {
-				const dosenID = localStorage.getItem('dosenID');
-				console.log('Memuat ICP untuk dosenID:', dosenID); // Debug
-				if (!dosenID) return;
-				try {
-					const response = await fetch(`http://104.43.89.154:8087/reviewicp?dosen_id=${dosenID}`);
-					const data = await response.json();
-					
-					if (data.status === 'success') {
-						const tbody = document.querySelector('.data-table tbody');
-						tbody.innerHTML = '';
-						
-						// First, display all ICPs immediately
-						data.data.forEach(icp => {
-							const statusClass = {
-								'pending': 'badge badge-warning',
-								'approved': 'badge badge-success',
-								'rejected': 'badge badge-danger',
-								'on review': 'badge badge-secondary'
-							}[icp.status] || 'badge badge-secondary';
-
-							// Create a unique ID for this row to update later
-							const rowId = `icp-row-${icp.id}`;
-
-							tbody.innerHTML += `
-								<tr id="${rowId}">
-									<td>${icp.topik_penelitian}</td>
-									<td>${icp.nama_taruna || 'Nama tidak tersedia'}</td>
-									<td><span class="${statusClass}">${icp.status}</span></td>
-									<td>
-										<div class="dropdown">
-											<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
-											href="#" role="button" data-toggle="dropdown">
-												<i class="dw dw-more"></i>
-											</a>
-											<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
-												<a class="dropdown-item" href="#" onclick="openUploadReviewModalICP('${icp.topik_penelitian}', ${icp.id}, ${icp.user_id})">
-													<i class="dw dw-upload"></i> Upload Review
-												</a>
-												<a class="dropdown-item accept-icp-btn" href="#" data-id="${icp.id}">
-													<i class="dw dw-edit2"></i> Accept
-												</a>
-												<a class="dropdown-item reject-icp-btn" href="#" data-id="${icp.id}">
-													<i class="dw dw-delete-3"></i> Reject
-												</a>
-												<a class="dropdown-item" href="http://104.43.89.154:8087/icp/download?filename=${icp.file_path.replace('uploads/icp/', '')}" download>
-													<i class="dw dw-download"></i> Download
-												</a>
-											</div>
-										</div>
-									</td>
-								</tr>
-							`;
-						});
-
-						// Remove the old event listeners setup since we're now using onclick
-						
-					}
-				} catch (error) {
-					console.error('Error:', error);
-					showAlert('Gagal memuat data ICP', 'danger');
-				}
-			}
-			
-			// Fungsi Logout
-			async function logout() {
-				try {
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					
-					const response = await fetch('http://104.43.89.154:8085/logout', {
-						method: 'POST',
-						headers: {
-							'Authorization': token ? `Bearer ${token}` : '',
-							'Content-Type': 'application/json'
-						},
-						credentials: 'include'
-					});
-
-					const data = await response.json();
-					
-					if (response.ok && data.status === 'success') {
-						// Clear localStorage
-						localStorage.clear();
-						
-						// Clear sessionStorage
-						sessionStorage.clear();
-						
-						// Clear all cookies for all possible paths
-						const paths = ['/', '/admin', '/dosen', '/admin/', '/dosen/'];
-						const cookies = document.cookie.split(';');
-						
-						for (let cookie of cookies) {
-							const eqPos = cookie.indexOf('=');
-							const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-							
-							// Hapus cookie untuk setiap path
-							paths.forEach(path => {
-								document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
-							});
-						}
-						
-						// Clear cache if browser supports it
-						if (window.caches) {
-							caches.keys().then(names => {
-								names.forEach(name => {
-									caches.delete(name);
-								});
-							});
-						}
-
-						// Clear application cache
-						if (window.applicationCache) {
-							window.applicationCache.abort();
-						}
-
-						// Clear service workers if any
-						if (navigator.serviceWorker) {
-							navigator.serviceWorker.getRegistrations().then(registrations => {
-								registrations.forEach(registration => {
-									registration.unregister();
-								});
-							});
-						}
-						
-						console.log('Logout berhasil');
-						
-						// Force reload halaman login untuk membersihkan cache
-						window.location.href = '/loginusers';
-						window.location.reload(true);
-					} else {
-						throw new Error(data.message || 'Gagal logout');
-					}
-				} catch (error) {
-					console.error('Error during logout:', error);
-					alert('Gagal logout. Silakan coba lagi.');
-				}
-			}
-
-			// Tambahkan pengecekan autentikasi dan mapping dosenID saat halaman dimuat
-			document.addEventListener('DOMContentLoaded', function() {
-				console.log('DOM Content Loaded'); // Debug log
-				
-				// Cek token dan ambil dosenID
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				if (!token) {
-					console.warn('No token found');
-					window.location.replace('/loginusers');
+			  fetch("http://104.43.89.154:8088/notifications?role=Dosen")
+				.then(res => res.json())
+				.then(data => {
+				  const ul = document.getElementById("notif-list");
+				  if (!ul) return;
+				  ul.innerHTML = "";
+		  
+				  if (!Array.isArray(data) || data.length === 0) {
+					ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
 					return;
-				}
-
-				const userId = localStorage.getItem('userId');
-				console.log('UserID:', userId); // Debug log
-
-				// Ambil data dosen dan set dosenID
-					fetch('http://104.43.89.154:8086/dosen', {
-						headers: {
-							'Authorization': `Bearer ${token}`
-						}
-					})
-					.then(response => response.json())
-					.then(data => {
-						if (data.status === 'success' && Array.isArray(data.data)) {
-							const dosen = data.data.find(d => String(d.user_id) === String(userId));
-							if (dosen) {
-							localStorage.setItem('dosenID', dosen.id);
-							localStorage.setItem('dosenName', dosen.nama_lengkap);
-							// fetchTarunaTopics(dosen.id);
-							console.log('DosenID set:', dosen.id); // Debug log
-							
-							// Update nama dosen di header
-					const usernameElement = document.getElementById('username');
-					if (usernameElement) {
-								usernameElement.textContent = dosen.nama_lengkap;
-							}
-							
-							// Setelah dosenID tersedia, panggil fungsi-fungsi yang membutuhkannya
-							// fetchTarunaTopics(dosen.id);
-							loadICPData();
-							loadICPReviewData();
-						} else {
-							console.warn('Dosen with user_id', userId, 'not found');
-						}
-					}
+				  }
+		  
+				  data.forEach(item => {
+					const li = document.createElement("li");
+					li.innerHTML = `
+					  <a href="/dosen/detailinformasidosen?id=${item.ID}">
+						<img src="vendors/images/logo.png" alt="" />
+						<h3>${item.Judul}</h3>
+						<p>${item.Deskripsi && item.Deskripsi.length > 50 ? item.Deskripsi.substring(0, 50) + "..." : (item.Deskripsi || "")}</p>
+					  </a>`;
+					ul.appendChild(li);
+				  });
+		  
+				  const act = document.querySelector(".notification-active");
+				  if (act) act.style.display = "inline-block";
 				})
-				.catch(error => {
-					console.error('Failed to fetch dosen data:', error);
+				.catch(err => console.error("Gagal mengambil notifikasi:", err));
+			});
+		  
+			// ========== Redirect profil ==========
+			function redirectToProfile() {
+			  window.location.href = '/dosen/profile';
+			}
+		  
+			let icpDataGlobal = [];
+		  
+			// ========== List ICP untuk Dosen (tanpa auth) ==========
+			async function loadICPData() {
+			  const dosenID = localStorage.getItem('dosenID');
+			  if (!dosenID) return;
+		  
+			  try {
+				const response = await fetch(`http://104.43.89.154:8087/reviewicp?dosen_id=${encodeURIComponent(dosenID)}`);
+				const data = await response.json();
+		  
+				if (data.status === 'success') {
+				  const tbody = document.querySelector('.data-table tbody');
+				  if (!tbody) return;
+				  tbody.innerHTML = '';
+		  
+				  (data.data || []).forEach(icp => {
+					const statusClass = ({
+					  'pending': 'badge badge-warning',
+					  'approved': 'badge badge-success',
+					  'rejected': 'badge badge-danger',
+					  'on review': 'badge badge-secondary'
+					}[icp.status]) || 'badge badge-secondary';
+		  
+					const rowId = `icp-row-${icp.id}`;
+		  
+					tbody.insertAdjacentHTML('beforeend', `
+					  <tr id="${rowId}">
+						<td>${icp.topik_penelitian || '-'}</td>
+						<td>${icp.nama_taruna || 'Nama tidak tersedia'}</td>
+						<td><span class="${statusClass}">${icp.status || '-'}</span></td>
+						<td>
+						  <div class="dropdown">
+							<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
+								href="#" role="button" data-toggle="dropdown">
+							  <i class="dw dw-more"></i>
+							</a>
+							<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+							  <a class="dropdown-item" href="#" onclick="openUploadReviewModalICP('${(icp.topik_penelitian || '').replace(/'/g, "\\'")}', ${icp.id}, ${icp.user_id})">
+								<i class="dw dw-upload"></i> Upload Review
+							  </a>
+							  <a class="dropdown-item accept-icp-btn" href="#" data-id="${icp.id}">
+								<i class="dw dw-edit2"></i> Accept
+							  </a>
+							  <a class="dropdown-item reject-icp-btn" href="#" data-id="${icp.id}">
+								<i class="dw dw-delete-3"></i> Reject
+							  </a>
+							  <a class="dropdown-item" href="http://104.43.89.154:8087/icp/download?filename=${encodeURIComponent((icp.file_path || '').replace('uploads/icp/', ''))}" download>
+								<i class="dw dw-download"></i> Download
+							  </a>
+							</div>
+						  </div>
+						</td>
+					  </tr>
+					`);
+				  });
+				}
+			  } catch (error) {
+				console.error('Error:', error);
+				showAlert('Gagal memuat data ICP', 'danger');
+			  }
+			}
+		  
+			// ========== Logout (tanpa Authorization & tanpa cookies) ==========
+			async function logout() {
+			  try {
+				const response = await fetch('http://104.43.89.154:8085/logout', {
+				  method: 'POST',
+				  headers: { 'Content-Type': 'application/json' }
+				  // credentials dihapus agar tidak kirim cookie
+				});
+		  
+				const data = await response.json().catch(() => ({}));
+		  
+				if (response.ok && data.status === 'success') {
+				  localStorage.clear();
+				  sessionStorage.clear();
+		  
+				  // Hapus cookies umum
+				  const paths = ['/', '/admin', '/dosen', '/admin/', '/dosen/'];
+				  const cookies = document.cookie.split(';');
+				  for (let cookie of cookies) {
+					const eqPos = cookie.indexOf('=');
+					const name = (eqPos > -1 ? cookie.substr(0, eqPos) : cookie).trim();
+					paths.forEach(path => {
+					  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+					});
+				  }
+		  
+				  if (window.caches) {
+					caches.keys().then(names => names.forEach(n => caches.delete(n)));
+				  }
+				  if (navigator.serviceWorker) {
+					navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+				  }
+		  
+				  window.location.href = '/loginusers';
+				  window.location.reload(true);
+				} else {
+				  throw new Error((data && data.message) || 'Gagal logout');
+				}
+			  } catch (error) {
+				console.error('Error during logout:', error);
+				alert('Gagal logout. Silakan coba lagi.');
+			  }
+			}
+		  
+			// ========== Mapping dosenID (tanpa auth; tidak memaksa login) ==========
+			document.addEventListener('DOMContentLoaded', function () {
+			  const userId = localStorage.getItem('userId');
+			  // Ambil daftar dosen publik, cari yang user_id cocok, set dosenID
+			  fetch('http://104.43.89.154:8086/dosen')
+				.then(r => r.json())
+				.then(data => {
+				  if (data.status === 'success' && Array.isArray(data.data)) {
+					const dosen = data.data.find(d => String(d.user_id) === String(userId));
+					if (dosen) {
+					  localStorage.setItem('dosenID', dosen.id);
+					  localStorage.setItem('dosenName', dosen.nama_lengkap || '');
+					  const usernameElement = document.getElementById('username');
+					  if (usernameElement) usernameElement.textContent = dosen.nama_lengkap || 'Dosen';
+					}
+				  }
+				})
+				.catch(err => console.warn('Gagal memuat data dosen:', err))
+				.finally(() => {
+				  // Setelah (atau meski gagal) mapping, coba muat data
+				  loadICPData();
+				  loadICPReviewData();
 				});
 			});
-
-			// Panggil loadICPData saat halaman dimuat
+		  
+			// (opsional) juga panggil saat DOM siap — aman meski dipanggil dua kali
 			document.addEventListener('DOMContentLoaded', loadICPData);
-
-			// Event delegation untuk tombol Accept dan Reject
-			document.addEventListener('click', async function(e) {
-				if (e.target.closest('.accept-icp-btn')) {
-					e.preventDefault();
-					const btn = e.target.closest('.accept-icp-btn');
-					const icpId = btn.getAttribute('data-id');
-					if (!icpId) return;
-
-					if (!confirm('Yakin ingin meng-approve ICP ini?')) return;
-
-					try {
-						const response = await fetch(`http://104.43.89.154:8087/updateicpstatus?id=${icpId}&status=approved`, {
-							method: 'POST',
-							headers: { 'Content-Type': 'application/json' }
-						});
-						const data = await response.json();
-						if (data.status === 'success') {
-							showAlert('ICP berhasil di-approve', 'success');
-							loadICPData(); // Refresh tabel
-							loadICPReviewData(); // Tambahkan ini
-						} else {
-							showAlert(data.message || 'Gagal meng-approve ICP', 'danger');
-						}
-					} catch (error) {
-						showAlert('Terjadi kesalahan pada server', 'danger');
-					}
+		  
+			// ========== Event delegation Accept/Reject (tanpa auth) ==========
+			document.addEventListener('click', async function (e) {
+			  if (e.target.closest('.accept-icp-btn')) {
+				e.preventDefault();
+				const icpId = e.target.closest('.accept-icp-btn').getAttribute('data-id');
+				if (!icpId) return;
+				if (!confirm('Yakin ingin meng-approve ICP ini?')) return;
+		  
+				try {
+				  const response = await fetch(`http://104.43.89.154:8087/updateicpstatus?id=${encodeURIComponent(icpId)}&status=approved`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' }
+				  });
+				  const data = await response.json();
+				  if (data.status === 'success') {
+					showAlert('ICP berhasil di-approve', 'success');
+					loadICPData();
+					loadICPReviewData();
+				  } else {
+					showAlert(data.message || 'Gagal meng-approve ICP', 'danger');
+				  }
+				} catch {
+				  showAlert('Terjadi kesalahan pada server', 'danger');
 				}
-
-				if (e.target.closest('.reject-icp-btn')) {
-					e.preventDefault();
-					const btn = e.target.closest('.reject-icp-btn');
-					const icpId = btn.getAttribute('data-id');
-					if (!icpId) return;
-
-					if (!confirm('Yakin ingin menolak ICP ini?')) return;
-
-					try {
-						const response = await fetch(`http://104.43.89.154:8087/updateicpstatus?id=${icpId}&status=rejected`, {
-							method: 'POST',
-							headers: { 'Content-Type': 'application/json' }
-						});
-						const data = await response.json();
-						if (data.status === 'success') {
-							showAlert('ICP berhasil di-reject', 'success');
-							loadICPData(); // Refresh tabel
-							loadICPReviewData(); // Tambahkan ini
-						} else {
-							showAlert(data.message || 'Gagal menolak ICP', 'danger');
-						}
-					} catch (error) {
-						showAlert('Terjadi kesalahan pada server', 'danger');
-					}
+			  }
+		  
+			  if (e.target.closest('.reject-icp-btn')) {
+				e.preventDefault();
+				const icpId = e.target.closest('.reject-icp-btn').getAttribute('data-id');
+				if (!icpId) return;
+				if (!confirm('Yakin ingin menolak ICP ini?')) return;
+		  
+				try {
+				  const response = await fetch(`http://104.43.89.154:8087/updateicpstatus?id=${encodeURIComponent(icpId)}&status=rejected`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' }
+				  });
+				  const data = await response.json();
+				  if (data.status === 'success') {
+					showAlert('ICP berhasil di-reject', 'success');
+					loadICPData();
+					loadICPReviewData();
+				  } else {
+					showAlert(data.message || 'Gagal menolak ICP', 'danger');
+				  }
+				} catch {
+				  showAlert('Terjadi kesalahan pada server', 'danger');
 				}
+			  }
 			});
-
-			// Pastikan event listener untuk tombol logout terpasang dengan benar
-			document.addEventListener('DOMContentLoaded', function() {
-				const logoutButton = document.querySelector('a[onclick="logout()"]');
-				if (logoutButton) {
-					logoutButton.addEventListener('click', function(e) {
-						e.preventDefault();
-						logout();
-					});
-				}
+		  
+			// ========== Pasang listener tombol logout ==========
+			document.addEventListener('DOMContentLoaded', function () {
+			  const logoutButton = document.querySelector('a[onclick="logout()"]');
+			  if (logoutButton) {
+				logoutButton.addEventListener('click', function (e) {
+				  e.preventDefault();
+				  logout();
+				});
+			  }
 			});
-
-			// Fungsi untuk menampilkan alert
+		  
+			// ========== Alert helper ==========
 			function showAlert(message, type) {
-				const alertContainer = document.getElementById('alertContainer');
-				const alertMessage = document.getElementById('alertMessage');
-				
-				alertMessage.className = `alert alert-${type}`;
-				alertMessage.textContent = message;
-				alertContainer.style.display = 'block';
-				
-				// Sembunyikan alert setelah 5 detik
-				setTimeout(() => {
-					alertContainer.style.display = 'none';
-				}, 5000);
+			  const alertContainer = document.getElementById('alertContainer');
+			  const alertMessage = document.getElementById('alertMessage');
+			  if (!alertContainer || !alertMessage) return;
+			  alertMessage.className = `alert alert-${type}`;
+			  alertMessage.textContent = message;
+			  alertContainer.style.display = 'block';
+			  setTimeout(() => { alertContainer.style.display = 'none'; }, 5000);
 			}
-
-			// Fungsi untuk memuat data revisi ICP
+		  
+			// ========== Revisi ICP list (tanpa auth) ==========
 			async function loadICPReviewData() {
-				console.log('loadICPReviewData function called');
-				const dosenID = localStorage.getItem('dosenID');
-				console.log('Loading review data for dosenID:', dosenID);
-				if (!dosenID) {
-					console.warn('DosenID not found in localStorage');
-					return;
+			  const dosenID = localStorage.getItem('dosenID');
+			  if (!dosenID) return;
+		  
+			  try {
+				const response = await fetch(`http://104.43.89.154:8087/reviewicp/taruna/list?dosen_id=${encodeURIComponent(dosenID)}`);
+				const data = await response.json();
+		  
+				if (data.status === 'success') {
+				  const tbody = document.querySelector('#revisiTable tbody');
+				  if (!tbody) return;
+				  tbody.innerHTML = '';
+		  
+				  if (Array.isArray(data.data) && data.data.length > 0) {
+					data.data.forEach(review => {
+					  tbody.insertAdjacentHTML('beforeend', `
+						<tr>
+						  <td>${review.topik_penelitian || '-'}</td>
+						  <td>${review.taruna_nama || '-'}</td>
+						  <td>${review.cycle_number || 1}</td>
+						  <td>${review.keterangan || '-'}</td>
+						  <td>
+							<div class="dropdown">
+							  <a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
+								 href="#" role="button" data-toggle="dropdown">
+								<i class="dw dw-more"></i>
+							  </a>
+							  <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+								<a class="dropdown-item" href="http://104.43.89.154:8087/download/reviewicp/taruna?path=${encodeURIComponent(review.file_path || '')}" download>
+								  <i class="dw dw-download"></i> Download Revisi
+								</a>
+								<a class="dropdown-item" href="#" onclick="openUploadReviewModal('${(review.topik_penelitian || '').replace(/'/g, "\\'")}', ${review.taruna_id}, ${review.icp_id}, ${review.cycle_number || 0})">
+								  <i class="dw dw-upload"></i> Upload Review Baru
+								</a>
+								<a class="dropdown-item" href="#" onclick="updateICPStatus(${review.icp_id}, 'approved')">
+								  <i class="dw dw-check"></i> Approve ICP
+								</a>
+							  </div>
+							</div>
+						  </td>
+						</tr>
+					  `);
+					});
+				  } else {
+					tbody.innerHTML = `
+					  <tr>
+						<td colspan="5" class="text-center">Tidak ada data revisi</td>
+					  </tr>`;
+				  }
+				} else {
+				  showAlert('Gagal memuat data revisi: ' + (data.message || 'Unknown error'), 'danger');
 				}
-				
-				try {
-					const url = `http://104.43.89.154:8087/reviewicp/taruna/list?dosen_id=${dosenID}`;
-					console.log('Fetching from URL:', url);
-					
-					const response = await fetch(url);
-					const data = await response.json();
-					console.log('Review data received:', data);
-					
-					if (data.status === 'success') {
-						const tbody = document.querySelector('#revisiTable tbody');
-						console.log('Found tbody:', tbody);
-						
-						if (!tbody) {
-							console.error('Table body not found');
-							return;
-						}
-						tbody.innerHTML = '';
-						
-						if (data.data && data.data.length > 0) {
-							console.log('Processing', data.data.length, 'reviews');
-							data.data.forEach(review => {
-								tbody.innerHTML += `
-									<tr>
-										<td>${review.topik_penelitian || '-'}</td>
-										<td>${review.taruna_nama || '-'}</td>
-										<td>${review.cycle_number || 1}</td>
-										<td>${review.keterangan || '-'}</td>
-										<td>
-											<div class="dropdown">
-												<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
-												href="#" role="button" data-toggle="dropdown">
-													<i class="dw dw-more"></i>
-												</a>
-												<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
-													<a class="dropdown-item" href="http://104.43.89.154:8087/download/reviewicp/taruna?path=${review.file_path}" download>
-														<i class="dw dw-download"></i> Download Revisi
-													</a>
-													<a class="dropdown-item" href="#" onclick="openUploadReviewModal('${review.topik_penelitian}', ${review.taruna_id}, ${review.icp_id}, ${review.cycle_number || 0})">
-														<i class="dw dw-upload"></i> Upload Review Baru
-													</a>
-													<a class="dropdown-item" href="#" onclick="updateICPStatus(${review.icp_id}, 'approved')">
-														<i class="dw dw-check"></i> Approve ICP
-													</a>
-												</div>
-											</div>
-										</td>
-									</tr>
-								`;
-							});
-							console.log('Table rows added');
-						} else {
-							console.log('No review data found');
-							tbody.innerHTML = `
-								<tr>
-									<td colspan="5" class="text-center">Tidak ada data revisi</td>
-								</tr>
-							`;
-						}
-					} else {
-						showAlert('Gagal memuat data revisi: ' + (data.message || 'Unknown error'), 'danger');
-					}
-				} catch (error) {
-					console.error('Error:', error);
-					showAlert('Gagal memuat data revisi', 'danger');
-				}
+			  } catch (error) {
+				console.error('Error:', error);
+				showAlert('Gagal memuat data revisi', 'danger');
+			  }
 			}
-
-			// Fungsi untuk membuka modal upload review pada tabel hasil revisi 
+		  
+			// ========== Modal upload review (tanpa auth) ==========
 			function openUploadReviewModal(topikPenelitian, tarunaId, icpId, currentCycle) {
-				console.log('Opening modal with:', { topikPenelitian, tarunaId, icpId, currentCycle });
-				document.getElementById('reviewTopikPenelitian').value = topikPenelitian;
-				document.getElementById('reviewTarunaId').value = tarunaId;
-				document.getElementById('reviewIcpId').value = icpId;
-				document.getElementById('reviewCycleNumber').value = currentCycle + 1;
+			  document.getElementById('reviewTopikPenelitian').value = topikPenelitian || '';
+			  document.getElementById('reviewTarunaId').value = tarunaId || '';
+			  document.getElementById('reviewIcpId').value = icpId || '';
+			  document.getElementById('reviewCycleNumber').value = (currentCycle || 0) + 1;
+			  if (window.jQuery && $('#uploadReviewModal').modal) {
 				$('#uploadReviewModal').modal('show');
+			  }
 			}
-
-			// Fungsi untuk membuka modal upload review pada tabel list ICP
+		  
+			// Ambil taruna_id dari user_id (tanpa auth)
 			async function openUploadReviewModalICP(topikPenelitian, icpId, userId) {
-				console.log('Opening modal with:', { topikPenelitian, icpId, userId });
-				document.getElementById('reviewTopikPenelitian').value = topikPenelitian;
-				document.getElementById('reviewIcpId').value = icpId;
-				document.getElementById('reviewUserId').value = userId;
-				document.getElementById('reviewCycleNumber').value = 1;
-				
-				try {
-					// Get token from localStorage or sessionStorage
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					if (!token) {
-						showAlert('Token tidak ditemukan. Silakan login ulang.', 'danger');
-						return;
-					}
-
-					// Get taruna_id from user_id
-					const response = await fetch(`http://104.43.89.154:8086/taruna?user_id=${userId}`, {
-						headers: {
-							'Authorization': `Bearer ${token}`,
-							'Content-Type': 'application/json'
-						}
-					});
-
-					const data = await response.json();
-					console.log('Taruna data:', data);
-
-					if (data.status === 'success' && data.data && data.data.length > 0) {
-						// Find taruna with matching user_id
-						const taruna = data.data.find(t => t.user_id === parseInt(userId));
-						if (taruna) {
-							document.getElementById('reviewTarunaId').value = taruna.id;
-							$('#uploadReviewModal').modal('show');
-						} else {
-							showAlert('Data taruna tidak ditemukan untuk user_id ini', 'danger');
-						}
-					} else {
-						showAlert('Data taruna tidak ditemukan', 'danger');
-					}
-				} catch (error) {
-					console.error('Error:', error);
-					showAlert('Gagal mengambil data taruna', 'danger');
+			  document.getElementById('reviewTopikPenelitian').value = topikPenelitian || '';
+			  document.getElementById('reviewIcpId').value = icpId || '';
+			  document.getElementById('reviewUserId').value = userId || '';
+			  document.getElementById('reviewCycleNumber').value = 1;
+		  
+			  try {
+				const response = await fetch(`http://104.43.89.154:8086/taruna?user_id=${encodeURIComponent(userId)}`);
+				const data = await response.json();
+		  
+				if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
+				  const taruna = data.data.find(t => String(t.user_id) === String(userId)) || data.data[0];
+				  if (taruna) {
+					document.getElementById('reviewTarunaId').value = taruna.id;
+					if (window.jQuery && $('#uploadReviewModal').modal) $('#uploadReviewModal').modal('show');
+				  } else {
+					showAlert('Data taruna tidak ditemukan untuk user_id ini', 'danger');
+				  }
+				} else {
+				  showAlert('Data taruna tidak ditemukan', 'danger');
 				}
+			  } catch (error) {
+				console.error('Error:', error);
+				showAlert('Gagal mengambil data taruna', 'danger');
+			  }
 			}
-
-			// Function to update ICP status (approve/reject)
+		  
+			// ========== Ubah status ICP (tanpa auth) ==========
 			async function updateICPStatus(icpId, status) {
-				try {
-					const response = await fetch(`http://104.43.89.154:8087/updateicpstatus?id=${icpId}&status=${status}`, {
-						method: 'POST'
-					});
-					
-					const data = await response.json();
-					
-					if (data.status === 'success') {
-						showAlert(`ICP berhasil di-${status}`, 'success');
-						await loadICPReviewData();
-					} else {
-						showAlert(data.message || `Gagal mengubah status ICP ke ${status}`, 'danger');
-					}
-				} catch (error) {
-					console.error('Error:', error);
-					showAlert('Terjadi kesalahan saat mengubah status ICP', 'danger');
+			  try {
+				const response = await fetch(`http://104.43.89.154:8087/updateicpstatus?id=${encodeURIComponent(icpId)}&status=${encodeURIComponent(status)}`, {
+				  method: 'POST'
+				});
+				const data = await response.json();
+				if (data.status === 'success') {
+				  showAlert(`ICP berhasil di-${status}`, 'success');
+				  await loadICPReviewData();
+				} else {
+				  showAlert(data.message || `Gagal mengubah status ICP ke ${status}`, 'danger');
 				}
+			  } catch (error) {
+				console.error('Error:', error);
+				showAlert('Terjadi kesalahan saat mengubah status ICP', 'danger');
+			  }
 			}
-
-			// Function to submit new review
+		  
+			// ========== Submit review (tanpa auth) ==========
 			async function submitReview() {
-				const form = document.getElementById('reviewForm');
-				const formData = new FormData(form);
-				
-				try {
-					const dosenId = localStorage.getItem('dosenID');
-					if (!dosenId) {
-						showAlert('Dosen ID tidak ditemukan. Silakan login ulang.', 'danger');
-						return;
-					}
-
-					// Debug log untuk melihat data yang akan dikirim
-					const submissionData = {
-						dosenId: dosenId,
-						icpId: formData.get('icp_id'),
-						tarunaId: formData.get('taruna_id'),
-						topikPenelitian: formData.get('topik_penelitian'),
-						keterangan: formData.get('keterangan'),
-						fileName: formData.get('file').name
-					};
-					console.log('Form data before submission:', submissionData);
-
-					formData.append('dosen_id', dosenId);
-					formData.append('user_id', formData.get('user_id'));
-					
-					// Update status ICP menjadi "on review"
-					const statusResponse = await fetch(`http://104.43.89.154:8087/updateicpstatus?id=${formData.get('icp_id')}&status=on review`, {
-						method: 'POST'
-					});
-
-					if (!statusResponse.ok) {
-						throw new Error('Failed to update ICP status');
-					}
-
-					// Kirim request untuk upload review
-					const response = await fetch('http://104.43.89.154:8087/upload/reviewicp/dosen', {
-						method: 'POST',
-						body: formData
-					});
-					
-					const data = await response.json();
-					console.log('Upload response:', data); // Debug log untuk response
-
-					if (data.status === 'success') {
-						showAlert('Review berhasil diunggah', 'success');
-						$('#uploadReviewModal').modal('hide');
-						form.reset();
-						await loadICPData();
-						await loadICPReviewData();
-					} else {
-						showAlert(data.message || 'Gagal mengunggah review', 'danger');
-					}
-				} catch (error) {
-					console.error('Error details:', error); // Debug log untuk error
-					showAlert('Terjadi kesalahan: ' + error.message, 'danger');
+			  const form = document.getElementById('reviewForm');
+			  const formData = new FormData(form);
+		  
+			  try {
+				const dosenId = localStorage.getItem('dosenID');
+				if (!dosenId) {
+				  showAlert('Dosen ID tidak ditemukan.', 'danger');
+				  return;
 				}
+		  
+				formData.append('dosen_id', dosenId);
+				formData.append('user_id', formData.get('user_id'));
+		  
+				// Update status ke "on review"
+				await fetch(`http://104.43.89.154:8087/updateicpstatus?id=${encodeURIComponent(formData.get('icp_id'))}&status=${encodeURIComponent('on review')}`, {
+				  method: 'POST'
+				});
+		  
+				const response = await fetch('http://104.43.89.154:8087/upload/reviewicp/dosen', {
+				  method: 'POST',
+				  body: formData
+				});
+				const data = await response.json();
+		  
+				if (data.status === 'success') {
+				  showAlert('Review berhasil diunggah', 'success');
+				  if (window.jQuery && $('#uploadReviewModal').modal) $('#uploadReviewModal').modal('hide');
+				  form.reset();
+				  await loadICPData();
+				  await loadICPReviewData();
+				} else {
+				  showAlert(data.message || 'Gagal mengunggah review', 'danger');
+				}
+			  } catch (error) {
+				console.error('Error details:', error);
+				showAlert('Terjadi kesalahan: ' + error.message, 'danger');
+			  }
 			}
-
-			// Fungsi untuk melihat detail revisi
-			function viewRevisiDetail(revisiId, icpId) {
-				window.location.href = `/dosen/viewicp_revisi?id=${revisiId}&icp_id=${icpId}`;
-			}
-
-			// Event delegation untuk tombol view ICP
-			document.querySelector('.data-table tbody').addEventListener('click', function(e) {
+		  
+			// ========== View detail ICP ==========
+			(function attachViewICPHandler() {
+			  const tableBody = document.querySelector('.data-table tbody');
+			  if (!tableBody) return;
+			  tableBody.addEventListener('click', function (e) {
 				const btn = e.target.closest('.view-icp-btn');
-				if (btn) {
-					e.preventDefault();
-					const icpId = btn.getAttribute('data-icp-id');
-					window.location.href = `/dosen/viewicp?id=${icpId}`;
-				}
-			});
-		</script>
+				if (!btn) return;
+				e.preventDefault();
+				const icpId = btn.getAttribute('data-icp-id');
+				if (icpId) window.location.href = `/dosen/viewicp?id=${icpId}`;
+			  });
+			})();
+		  </script>
+		  
 
 		<style>
 		.badge {

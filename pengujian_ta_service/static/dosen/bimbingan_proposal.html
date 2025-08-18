@@ -573,540 +573,420 @@
 		</div>
 
 		<script>
-			// JS notifikasi
+			// ================= Notifikasi (tanpa auth) =================
 			document.addEventListener("DOMContentLoaded", function () {
-				fetch("http://104.43.89.154:8088/notifications?role=Dosen")
-					.then(res => res.json())
-					.then(data => {
-						const ul = document.getElementById("notif-list");
-						ul.innerHTML = ""; // Kosongkan
-
-						if (data.length === 0) {
-							ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
-							return;
-						}
-
-						data.forEach(item => {
-							const li = document.createElement("li");
-							li.innerHTML = `
-								<a href="/dosen/detailinformasidosen?id=${item.ID}">
-									<img src="vendors/images/logo.png" alt="" />
-									<h3>${item.Judul}</h3>
-									<p>${item.Deskripsi.length > 50 ? item.Deskripsi.substring(0, 50) + "..." : item.Deskripsi}</p>
-								</a>`;
-							ul.appendChild(li);
-						});
-
-						document.querySelector(".notification-active").style.display = "inline-block";
-					})
-					.catch(err => {
-						console.error("Gagal mengambil notifikasi:", err);
-					});
-			});
-
-			function redirectToProfile() {
-				window.location.href = '/dosen/profile';
-			}
-			
-			let proposalDataGlobal = [];
-
-			// Fungsi untuk menampilkan list Proposal yang masuk ke dosen
-			async function loadProposalData() {
-				const dosenID = localStorage.getItem('dosenID');
-				console.log('Memuat Proposal untuk dosenID:', dosenID); // Debug
-				if (!dosenID) return;
-				try {
-					const response = await fetch(`http://104.43.89.154:8087/reviewproposal?dosen_id=${dosenID}`);
-					const data = await response.json();
-					
-					if (data.status === 'success') {
-						const tbody = document.querySelector('.data-table tbody');
-						tbody.innerHTML = '';
-						
-						// First, display all Proposals immediately
-						data.data.forEach(proposal => {
-							const statusClass = {
-								'pending': 'badge badge-warning',
-								'approved': 'badge badge-success',
-								'rejected': 'badge badge-danger',
-								'on review': 'badge badge-secondary'
-							}[proposal.status] || 'badge badge-secondary';
-
-							// Create a unique ID for this row to update later
-							const rowId = `proposal-row-${proposal.id}`;
-
-							tbody.innerHTML += `
-								<tr id="${rowId}">
-									<td>${proposal.topik_penelitian}</td>
-									<td>${proposal.nama_taruna || 'Nama tidak tersedia'}</td>
-									<td><span class="${statusClass}">${proposal.status}</span></td>
-									<td>
-										<div class="dropdown">
-											<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
-											href="#" role="button" data-toggle="dropdown">
-												<i class="dw dw-more"></i>
-											</a>
-											<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
-												<a class="dropdown-item" href="#" onclick="openUploadReviewModalProposal('${proposal.topik_penelitian}', ${proposal.id}, ${proposal.user_id})">
-													<i class="dw dw-upload"></i> Upload Review
-												</a>
-												<a class="dropdown-item accept-proposal-btn" href="#" data-id="${proposal.id}">
-													<i class="dw dw-edit2"></i> Accept
-												</a>
-												<a class="dropdown-item" href="http://104.43.89.154:8087/download/proposal?path=${proposal.file_path}" download>
-													<i class="dw dw-download"></i> Download
-												</a>
-											</div>
-										</div>
-									</td>
-								</tr>
-							`;
-						});
-
-						// Remove the old event listeners setup since we're now using onclick
-						
-					}
-				} catch (error) {
-					console.error('Error:', error);
-					showAlert('Gagal memuat data Proposal', 'danger');
-				}
-			}
-			
-			// Fungsi Logout
-			async function logout() {
-				try {
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					
-					const response = await fetch('http://104.43.89.154:8085/logout', {
-						method: 'POST',
-						headers: {
-							'Authorization': token ? `Bearer ${token}` : '',
-							'Content-Type': 'application/json'
-						},
-						credentials: 'include'
-					});
-
-					const data = await response.json();
-					
-					if (response.ok && data.status === 'success') {
-						// Clear localStorage
-						localStorage.clear();
-						
-						// Clear sessionStorage
-						sessionStorage.clear();
-						
-						// Clear all cookies for all possible paths
-						const paths = ['/', '/admin', '/dosen', '/admin/', '/dosen/'];
-						const cookies = document.cookie.split(';');
-						
-						for (let cookie of cookies) {
-							const eqPos = cookie.indexOf('=');
-							const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-							
-							// Hapus cookie untuk setiap path
-							paths.forEach(path => {
-								document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
-							});
-						}
-						
-						// Clear cache if browser supports it
-						if (window.caches) {
-							caches.keys().then(names => {
-								names.forEach(name => {
-									caches.delete(name);
-								});
-							});
-						}
-
-						// Clear application cache
-						if (window.applicationCache) {
-							window.applicationCache.abort();
-						}
-
-						// Clear service workers if any
-						if (navigator.serviceWorker) {
-							navigator.serviceWorker.getRegistrations().then(registrations => {
-								registrations.forEach(registration => {
-									registration.unregister();
-								});
-							});
-						}
-						
-						console.log('Logout berhasil');
-						
-						// Force reload halaman login untuk membersihkan cache
-						window.location.href = '/loginusers';
-						window.location.reload(true);
-					} else {
-						throw new Error(data.message || 'Gagal logout');
-					}
-				} catch (error) {
-					console.error('Error during logout:', error);
-					alert('Gagal logout. Silakan coba lagi.');
-				}
-			}
-
-			// Tambahkan pengecekan autentikasi dan mapping dosenID saat halaman dimuat
-			document.addEventListener('DOMContentLoaded', function() {
-				console.log('DOM Content Loaded'); // Debug log
-				
-				// Cek token dan ambil dosenID
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				if (!token) {
-					console.warn('No token found');
-					window.location.replace('/loginusers');
+			  fetch("http://104.43.89.154:8088/notifications?role=Dosen")
+				.then(res => res.json())
+				.then(data => {
+				  const ul = document.getElementById("notif-list");
+				  if (!ul) return;
+				  ul.innerHTML = "";
+		  
+				  if (!Array.isArray(data) || data.length === 0) {
+					ul.innerHTML = "<li><a><p class='text-center'>Tidak ada notifikasi.</p></a></li>";
 					return;
+				  }
+		  
+				  data.forEach(item => {
+					const li = document.createElement("li");
+					li.innerHTML = `
+					  <a href="/dosen/detailinformasidosen?id=${item.ID}">
+						<img src="vendors/images/logo.png" alt="" />
+						<h3>${item.Judul}</h3>
+						<p>${item.Deskripsi && item.Deskripsi.length > 50 ? item.Deskripsi.substring(0, 50) + "..." : (item.Deskripsi || "")}</p>
+					  </a>`;
+					ul.appendChild(li);
+				  });
+		  
+				  const act = document.querySelector(".notification-active");
+				  if (act) act.style.display = "inline-block";
+				})
+				.catch(err => console.error("Gagal mengambil notifikasi:", err));
+			});
+		  
+			function redirectToProfile() {
+			  window.location.href = '/dosen/profile';
+			}
+		  
+			let proposalDataGlobal = [];
+		  
+			// ================= List Proposal (tanpa auth) =================
+			async function loadProposalData() {
+			  const dosenID = localStorage.getItem('dosenID');
+			  if (!dosenID) return;
+			  try {
+				const response = await fetch(`http://104.43.89.154:8087/reviewproposal?dosen_id=${encodeURIComponent(dosenID)}`);
+				const data = await response.json();
+		  
+				if (data.status === 'success') {
+				  const tbody = document.querySelector('.data-table tbody');
+				  if (!tbody) return;
+				  tbody.innerHTML = '';
+		  
+				  (data.data || []).forEach(proposal => {
+					const statusClass = ({
+					  'pending': 'badge badge-warning',
+					  'approved': 'badge badge-success',
+					  'rejected': 'badge badge-danger',
+					  'on review': 'badge badge-secondary'
+					}[proposal.status]) || 'badge badge-secondary';
+		  
+					const rowId = `proposal-row-${proposal.id}`;
+		  
+					tbody.insertAdjacentHTML('beforeend', `
+					  <tr id="${rowId}">
+						<td>${proposal.topik_penelitian || '-'}</td>
+						<td>${proposal.nama_taruna || 'Nama tidak tersedia'}</td>
+						<td><span class="${statusClass}">${proposal.status || '-'}</span></td>
+						<td>
+						  <div class="dropdown">
+							<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
+							   href="#" role="button" data-toggle="dropdown">
+							  <i class="dw dw-more"></i>
+							</a>
+							<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+							  <a class="dropdown-item" href="#" onclick="openUploadReviewModalProposal('${(proposal.topik_penelitian || '').replace(/'/g,"\\'")}', ${proposal.id}, ${proposal.user_id})">
+								<i class="dw dw-upload"></i> Upload Review
+							  </a>
+							  <a class="dropdown-item accept-proposal-btn" href="#" data-id="${proposal.id}">
+								<i class="dw dw-edit2"></i> Accept
+							  </a>
+							  <a class="dropdown-item" href="http://104.43.89.154:8087/download/proposal?path=${encodeURIComponent(proposal.file_path || '')}" download>
+								<i class="dw dw-download"></i> Download
+							  </a>
+							</div>
+						  </div>
+						</td>
+					  </tr>
+					`);
+				  });
 				}
-
-				const userId = localStorage.getItem('userId');
-				console.log('UserID:', userId); // Debug log
-
-				// Ambil data dosen dan set dosenID
-					fetch('http://104.43.89.154:8086/dosen', {
-						headers: {
-							'Authorization': `Bearer ${token}`
-						}
-					})
-					.then(response => response.json())
-					.then(data => {
-						if (data.status === 'success' && Array.isArray(data.data)) {
-							const dosen = data.data.find(d => String(d.user_id) === String(userId));
-							if (dosen) {
-							localStorage.setItem('dosenID', dosen.id);
-							localStorage.setItem('dosenName', dosen.nama_lengkap);
-							console.log('DosenID set:', dosen.id); // Debug log
-							
-							// Update nama dosen di header
-					const usernameElement = document.getElementById('username');
-					if (usernameElement) {
-								usernameElement.textContent = dosen.nama_lengkap;
-							}
-							
-							// Setelah dosenID tersedia, panggil fungsi-fungsi yang membutuhkannya
-							loadProposalData();
-							loadProposalReviewData();
-						} else {
-							console.warn('Dosen with user_id', userId, 'not found');
-						}
+			  } catch (error) {
+				console.error('Error:', error);
+				showAlert('Gagal memuat data Proposal', 'danger');
+			  }
+			}
+		  
+			// ================= Logout (tanpa auth) =================
+			async function logout() {
+			  try {
+				const response = await fetch('http://104.43.89.154:8085/logout', {
+				  method: 'POST',
+				  headers: { 'Content-Type': 'application/json' }
+				  // credentials dihapus
+				});
+		  
+				const data = await response.json().catch(() => ({}));
+				if (response.ok && data.status === 'success') {
+				  localStorage.clear();
+				  sessionStorage.clear();
+		  
+				  const paths = ['/', '/admin', '/dosen', '/admin/', '/dosen/'];
+				  document.cookie.split(';').forEach(cookie => {
+					const eqPos = cookie.indexOf('=');
+					const name = (eqPos > -1 ? cookie.substr(0, eqPos) : cookie).trim();
+					paths.forEach(path => {
+					  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+					});
+				  });
+		  
+				  if (window.caches) {
+					caches.keys().then(names => names.forEach(n => caches.delete(n)));
+				  }
+				  if (navigator.serviceWorker) {
+					navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+				  }
+		  
+				  window.location.href = '/loginusers';
+				  window.location.reload(true);
+				} else {
+				  throw new Error((data && data.message) || 'Gagal logout');
+				}
+			  } catch (error) {
+				console.error('Error during logout:', error);
+				alert('Gagal logout. Silakan coba lagi.');
+			  }
+			}
+		  
+			// ================= Mapping dosenID (tanpa auth & tanpa redirect) =================
+			document.addEventListener('DOMContentLoaded', function () {
+			  const userId = localStorage.getItem('userId');
+		  
+			  fetch('http://104.43.89.154:8086/dosen')
+				.then(response => response.json())
+				.then(data => {
+				  if (data.status === 'success' && Array.isArray(data.data)) {
+					const dosen = data.data.find(d => String(d.user_id) === String(userId));
+					if (dosen) {
+					  localStorage.setItem('dosenID', dosen.id);
+					  localStorage.setItem('dosenName', dosen.nama_lengkap || '');
+					  const usernameElement = document.getElementById('username');
+					  if (usernameElement) usernameElement.textContent = dosen.nama_lengkap || 'Dosen';
+		  
+					  loadProposalData();
+					  loadProposalReviewData();
 					}
+				  }
 				})
 				.catch(error => {
-					console.error('Failed to fetch dosen data:', error);
+				  console.error('Failed to fetch dosen data:', error);
+				  // tetap coba load tanpa dosenID jika memang tidak ada
+				  loadProposalData();
+				  loadProposalReviewData();
 				});
 			});
-
-			// Panggil loadProposalData saat halaman dimuat
+		  
+			// (opsional) panggil juga saat DOM siap
 			document.addEventListener('DOMContentLoaded', loadProposalData);
-
-			// Event delegation untuk tombol Accept dan Reject
-			document.addEventListener('click', async function(e) {
-				if (e.target.closest('.accept-proposal-btn')) {
-					e.preventDefault();
-					const btn = e.target.closest('.accept-proposal-btn');
-					const proposalId = btn.getAttribute('data-id');
-					if (!proposalId) return;
-
-					if (!confirm('Yakin ingin meng-approve Proposal ini?')) return;
-
-					try {
-						const response = await fetch(`http://104.43.89.154:8087/updateproposalstatus?id=${proposalId}&status=approved`, {
-							method: 'POST',
-							headers: { 'Content-Type': 'application/json' }
-						});
-						const data = await response.json();
-						if (data.status === 'success') {
-							showAlert('Proposal berhasil di-approve', 'success');
-							loadProposalData(); // Refresh tabel
-							loadProposalReviewData(); // Tambahkan ini
-						} else {
-							showAlert(data.message || 'Gagal meng-approve Proposal', 'danger');
-						}
-					} catch (error) {
-						showAlert('Terjadi kesalahan pada server', 'danger');
-					}
+		  
+			// ================= Accept / Reject (tanpa auth) =================
+			document.addEventListener('click', async function (e) {
+			  if (e.target.closest('.accept-proposal-btn')) {
+				e.preventDefault();
+				const btn = e.target.closest('.accept-proposal-btn');
+				const proposalId = btn.getAttribute('data-id');
+				if (!proposalId) return;
+		  
+				if (!confirm('Yakin ingin meng-approve Proposal ini?')) return;
+		  
+				try {
+				  const response = await fetch(`http://104.43.89.154:8087/updateproposalstatus?id=${encodeURIComponent(proposalId)}&status=approved`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' }
+				  });
+				  const data = await response.json();
+				  if (data.status === 'success') {
+					showAlert('Proposal berhasil di-approve', 'success');
+					loadProposalData();
+					loadProposalReviewData();
+				  } else {
+					showAlert(data.message || 'Gagal meng-approve Proposal', 'danger');
+				  }
+				} catch {
+				  showAlert('Terjadi kesalahan pada server', 'danger');
 				}
-
-				if (e.target.closest('.reject-proposal-btn')) {
-					e.preventDefault();
-					const btn = e.target.closest('.reject-proposal-btn');
-					const proposalId = btn.getAttribute('data-id');
-					if (!proposalId) return;
-
-					if (!confirm('Yakin ingin menolak Proposal ini?')) return;
-
-					try {
-						const response = await fetch(`http://104.43.89.154:8087/updateproposalstatus?id=${proposalId}&status=rejected`, {
-							method: 'POST',
-							headers: { 'Content-Type': 'application/json' }
-						});
-						const data = await response.json();
-						if (data.status === 'success') {
-							showAlert('Proposal berhasil di-reject', 'success');
-							loadProposalData(); // Refresh tabel
-							loadProposalReviewData(); // Tambahkan ini
-						} else {
-							showAlert(data.message || 'Gagal menolak Proposal', 'danger');
-						}
-					} catch (error) {
-						showAlert('Terjadi kesalahan pada server', 'danger');
-					}
+			  }
+		  
+			  if (e.target.closest('.reject-proposal-btn')) {
+				e.preventDefault();
+				const btn = e.target.closest('.reject-proposal-btn');
+				const proposalId = btn.getAttribute('data-id');
+				if (!proposalId) return;
+		  
+				if (!confirm('Yakin ingin menolak Proposal ini?')) return;
+		  
+				try {
+				  const response = await fetch(`http://104.43.89.154:8087/updateproposalstatus?id=${encodeURIComponent(proposalId)}&status=rejected`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' }
+				  });
+				  const data = await response.json();
+				  if (data.status === 'success') {
+					showAlert('Proposal berhasil di-reject', 'success');
+					loadProposalData();
+					loadProposalReviewData();
+				  } else {
+					showAlert(data.message || 'Gagal menolak Proposal', 'danger');
+				  }
+				} catch {
+				  showAlert('Terjadi kesalahan pada server', 'danger');
 				}
+			  }
 			});
-
-			// Pastikan event listener untuk tombol logout terpasang dengan benar
-			document.addEventListener('DOMContentLoaded', function() {
-				const logoutButton = document.querySelector('a[onclick="logout()"]');
-				if (logoutButton) {
-					logoutButton.addEventListener('click', function(e) {
-						e.preventDefault();
-						logout();
-					});
-				}
+		  
+			// ================= Listener tombol logout =================
+			document.addEventListener('DOMContentLoaded', function () {
+			  const logoutButton = document.querySelector('a[onclick="logout()"]');
+			  if (logoutButton) {
+				logoutButton.addEventListener('click', function (e) {
+				  e.preventDefault();
+				  logout();
+				});
+			  }
 			});
-
-			// Fungsi untuk menampilkan alert
+		  
+			// ================= Alert helper =================
 			function showAlert(message, type) {
-				const alertContainer = document.getElementById('alertContainer');
-				const alertMessage = document.getElementById('alertMessage');
-				
-				alertMessage.className = `alert alert-${type}`;
-				alertMessage.textContent = message;
-				alertContainer.style.display = 'block';
-				
-				// Sembunyikan alert setelah 5 detik
-				setTimeout(() => {
-					alertContainer.style.display = 'none';
-				}, 5000);
+			  const alertContainer = document.getElementById('alertContainer');
+			  const alertMessage = document.getElementById('alertMessage');
+			  if (!alertContainer || !alertMessage) return;
+			  alertMessage.className = `alert alert-${type}`;
+			  alertMessage.textContent = message;
+			  alertContainer.style.display = 'block';
+			  setTimeout(() => { alertContainer.style.display = 'none'; }, 5000);
 			}
-
-			// Fungsi untuk memuat data revisi Proposal
+		  
+			// ================= Revisi Proposal (tanpa auth) =================
 			async function loadProposalReviewData() {
-				console.log('loadProposalReviewData function called');
-				const dosenID = localStorage.getItem('dosenID');
-				console.log('Loading review data for dosenID:', dosenID);
-				if (!dosenID) {
-					console.warn('DosenID not found in localStorage');
-					return;
+			  const dosenID = localStorage.getItem('dosenID');
+			  if (!dosenID) return;
+		  
+			  try {
+				const url = `http://104.43.89.154:8087/reviewproposal/taruna/list?dosen_id=${encodeURIComponent(dosenID)}`;
+				const response = await fetch(url);
+				const data = await response.json();
+		  
+				if (data.status === 'success') {
+				  const tbody = document.querySelector('#revisiTable tbody');
+				  if (!tbody) return;
+				  tbody.innerHTML = '';
+		  
+				  if (Array.isArray(data.data) && data.data.length > 0) {
+					data.data.forEach(review => {
+					  tbody.insertAdjacentHTML('beforeend', `
+						<tr>
+						  <td>${review.topik_penelitian || '-'}</td>
+						  <td>${review.taruna_nama || '-'}</td>
+						  <td>${review.cycle_number || 1}</td>
+						  <td>${review.keterangan || '-'}</td>
+						  <td>
+							<div class="dropdown">
+							  <a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
+								 href="#" role="button" data-toggle="dropdown">
+								<i class="dw dw-more"></i>
+							  </a>
+							  <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+								<a class="dropdown-item" href="http://104.43.89.154:8087/download/reviewproposal/taruna?path=${encodeURIComponent(review.file_path || '')}" download>
+								  <i class="dw dw-download"></i> Download Revisi
+								</a>
+								<a class="dropdown-item" href="#" onclick="openUploadReviewModal('${(review.topik_penelitian || '').replace(/'/g,"\\'")}', ${review.taruna_id}, ${review.proposal_id}, ${review.cycle_number || 0})">
+								  <i class="dw dw-upload"></i> Upload Review Baru
+								</a>
+								<a class="dropdown-item" href="#" onclick="updateProposalStatus(${review.proposal_id}, 'approved')">
+								  <i class="dw dw-check"></i> Approve Proposal
+								</a>
+							  </div>
+							</div>
+						  </td>
+						</tr>
+					  `);
+					});
+				  } else {
+					tbody.innerHTML = `
+					  <tr>
+						<td colspan="5" class="text-center">Tidak ada data revisi</td>
+					  </tr>`;
+				  }
+				} else {
+				  showAlert('Gagal memuat data revisi: ' + (data.message || 'Unknown error'), 'danger');
 				}
-				
-				try {
-					const url = `http://104.43.89.154:8087/reviewproposal/taruna/list?dosen_id=${dosenID}`;
-					console.log('Fetching from URL:', url);
-					
-					const response = await fetch(url);
-					const data = await response.json();
-					console.log('Review data received:', data);
-					
-					if (data.status === 'success') {
-						const tbody = document.querySelector('#revisiTable tbody');
-						console.log('Found tbody:', tbody);
-						
-						if (!tbody) {
-							console.error('Table body not found');
-							return;
-						}
-						tbody.innerHTML = '';
-						
-						if (data.data && data.data.length > 0) {
-							console.log('Processing', data.data.length, 'reviews');
-							data.data.forEach(review => {
-								tbody.innerHTML += `
-									<tr>
-										<td>${review.topik_penelitian || '-'}</td>
-										<td>${review.taruna_nama || '-'}</td>
-										<td>${review.cycle_number || 1}</td>
-										<td>${review.keterangan || '-'}</td>
-										<td>
-											<div class="dropdown">
-												<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
-												href="#" role="button" data-toggle="dropdown">
-													<i class="dw dw-more"></i>
-												</a>
-												<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
-													<a class="dropdown-item" href="http://104.43.89.154:8087/download/reviewproposal/taruna?path=${review.file_path}" download>
-														<i class="dw dw-download"></i> Download Revisi
-													</a>
-													<a class="dropdown-item" href="#" onclick="openUploadReviewModal('${review.topik_penelitian}', ${review.taruna_id}, ${review.proposal_id}, ${review.cycle_number || 0})">
-														<i class="dw dw-upload"></i> Upload Review Baru
-													</a>
-													<a class="dropdown-item" href="#" onclick="updateProposalStatus(${review.proposal_id}, 'approved')">
-														<i class="dw dw-check"></i> Approve Proposal
-													</a>
-												</div>
-											</div>
-										</td>
-									</tr>
-								`;
-							});
-							console.log('Table rows added');
-						} else {
-							console.log('No review data found');
-							tbody.innerHTML = `
-								<tr>
-									<td colspan="5" class="text-center">Tidak ada data revisi</td>
-								</tr>
-							`;
-						}
-					} else {
-						showAlert('Gagal memuat data revisi: ' + (data.message || 'Unknown error'), 'danger');
-					}
-				} catch (error) {
-					console.error('Error:', error);
-					showAlert('Gagal memuat data revisi', 'danger');
-				}
+			  } catch (error) {
+				console.error('Error:', error);
+				showAlert('Gagal memuat data revisi', 'danger');
+			  }
 			}
-
-			// Fungsi untuk membuka modal upload review pada tabel hasil revisi 
+		  
+			// ================= Modal Upload Review (tanpa auth) =================
 			function openUploadReviewModal(topikPenelitian, tarunaId, proposalId, currentCycle) {
-				console.log('Opening modal with:', { topikPenelitian, tarunaId, proposalId, currentCycle });
-				document.getElementById('reviewTopikPenelitian').value = topikPenelitian;
-				document.getElementById('reviewTarunaId').value = tarunaId;
-				document.getElementById('reviewProposalId').value = proposalId;
-				document.getElementById('reviewCycleNumber').value = currentCycle + 1;
-				$('#uploadReviewModal').modal('show');
+			  document.getElementById('reviewTopikPenelitian').value = topikPenelitian || '';
+			  document.getElementById('reviewTarunaId').value = tarunaId || '';
+			  document.getElementById('reviewProposalId').value = proposalId || '';
+			  document.getElementById('reviewCycleNumber').value = (currentCycle || 0) + 1;
+			  if (window.jQuery && $('#uploadReviewModal').modal) $('#uploadReviewModal').modal('show');
 			}
-
-			// Fungsi untuk membuka modal upload review pada tabel list Proposal
+		  
+			// Ambil taruna_id dari user_id (tanpa auth)
 			async function openUploadReviewModalProposal(topikPenelitian, proposalId, userId) {
-				console.log('Opening modal with:', { topikPenelitian, proposalId, userId });
-				document.getElementById('reviewTopikPenelitian').value = topikPenelitian;
-				document.getElementById('reviewProposalId').value = proposalId;
-				document.getElementById('reviewUserId').value = userId;
-				document.getElementById('reviewCycleNumber').value = 1;
-				
-				try {
-					// Get token from localStorage or sessionStorage
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					if (!token) {
-						showAlert('Token tidak ditemukan. Silakan login ulang.', 'danger');
-						return;
-					}
-
-					// Get taruna_id from user_id
-					const response = await fetch(`http://104.43.89.154:8086/taruna?user_id=${userId}`, {
-						headers: {
-							'Authorization': `Bearer ${token}`,
-							'Content-Type': 'application/json'
-						}
-					});
-
-					const data = await response.json();
-					console.log('Taruna data:', data);
-
-					if (data.status === 'success' && data.data && data.data.length > 0) {
-						// Find taruna with matching user_id
-						const taruna = data.data.find(t => t.user_id === parseInt(userId));
-						if (taruna) {
-							document.getElementById('reviewTarunaId').value = taruna.id;
-							$('#uploadReviewModal').modal('show');
-						} else {
-							showAlert('Data taruna tidak ditemukan untuk user_id ini', 'danger');
-						}
-					} else {
-						showAlert('Data taruna tidak ditemukan', 'danger');
-					}
-				} catch (error) {
-					console.error('Error:', error);
-					showAlert('Gagal mengambil data taruna', 'danger');
+			  document.getElementById('reviewTopikPenelitian').value = topikPenelitian || '';
+			  document.getElementById('reviewProposalId').value = proposalId || '';
+			  document.getElementById('reviewUserId').value = userId || '';
+			  document.getElementById('reviewCycleNumber').value = 1;
+		  
+			  try {
+				const response = await fetch(`http://104.43.89.154:8086/taruna?user_id=${encodeURIComponent(userId)}`);
+				const data = await response.json();
+		  
+				if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
+				  const taruna = data.data.find(t => String(t.user_id) === String(userId)) || data.data[0];
+				  if (taruna) {
+					document.getElementById('reviewTarunaId').value = taruna.id;
+					if (window.jQuery && $('#uploadReviewModal').modal) $('#uploadReviewModal').modal('show');
+				  } else {
+					showAlert('Data taruna tidak ditemukan untuk user_id ini', 'danger');
+				  }
+				} else {
+				  showAlert('Data taruna tidak ditemukan', 'danger');
 				}
+			  } catch (error) {
+				console.error('Error:', error);
+				showAlert('Gagal mengambil data taruna', 'danger');
+			  }
 			}
-
-			// Function to update Proposal status (approve/reject)
+		  
+			// ================= Update status Proposal (tanpa auth) =================
 			async function updateProposalStatus(proposalId, status) {
-				try {
-					const response = await fetch(`http://104.43.89.154:8087/updateproposalstatus?id=${proposalId}&status=${status}`, {
-						method: 'POST'
-					});
-					
-					const data = await response.json();
-					
-					if (data.status === 'success') {
-						showAlert(`Proposal berhasil di-${status}`, 'success');
-						await loadProposalReviewData();
-					} else {
-						showAlert(data.message || `Gagal mengubah status Proposal ke ${status}`, 'danger');
-					}
-				} catch (error) {
-					console.error('Error:', error);
-					showAlert('Terjadi kesalahan saat mengubah status Proposal', 'danger');
+			  try {
+				const response = await fetch(`http://104.43.89.154:8087/updateproposalstatus?id=${encodeURIComponent(proposalId)}&status=${encodeURIComponent(status)}`, {
+				  method: 'POST'
+				});
+				const data = await response.json();
+				if (data.status === 'success') {
+				  showAlert(`Proposal berhasil di-${status}`, 'success');
+				  await loadProposalReviewData();
+				} else {
+				  showAlert(data.message || `Gagal mengubah status Proposal ke ${status}`, 'danger');
 				}
+			  } catch (error) {
+				console.error('Error:', error);
+				showAlert('Terjadi kesalahan saat mengubah status Proposal', 'danger');
+			  }
 			}
-
-			// Function to submit new review
+		  
+			// ================= Submit review (tanpa auth) =================
 			async function submitReview() {
-				const form = document.getElementById('reviewForm');
-				const formData = new FormData(form);
-				
-				try {
-					const dosenId = localStorage.getItem('dosenID');
-					if (!dosenId) {
-						showAlert('Dosen ID tidak ditemukan. Silakan login ulang.', 'danger');
-						return;
-					}
-
-					// Debug log untuk melihat data yang akan dikirim
-					const submissionData = {
-						dosenId: dosenId,
-						proposalId: formData.get('proposal_id'),
-						tarunaId: formData.get('taruna_id'),
-						topikPenelitian: formData.get('topik_penelitian'),
-						keterangan: formData.get('keterangan'),
-						fileName: formData.get('file').name
-					};
-					console.log('Form data before submission:', submissionData);
-
-					formData.append('dosen_id', dosenId);
-					formData.append('user_id', formData.get('user_id'));
-					
-					// Update status Proposal menjadi "on review"
-					const statusResponse = await fetch(`http://104.43.89.154:8087/updateproposalstatus?id=${formData.get('proposal_id')}&status=on review`, {
-						method: 'POST'
-					});
-
-					if (!statusResponse.ok) {
-						throw new Error('Failed to update Proposal status');
-					}
-
-					// Kirim request untuk upload review
-					const response = await fetch('http://104.43.89.154:8087/upload/reviewproposal/dosen', {
-						method: 'POST',
-						body: formData
-					});
-					
-					const data = await response.json();
-					console.log('Upload response:', data); // Debug log untuk response
-
-					if (data.status === 'success') {
-						showAlert('Review berhasil diunggah', 'success');
-						$('#uploadReviewModal').modal('hide');
-						form.reset();
-						await loadProposalData();
-						await loadProposalReviewData();
-					} else {
-						showAlert(data.message || 'Gagal mengunggah review', 'danger');
-					}
-				} catch (error) {
-					console.error('Error details:', error); // Debug log untuk error
-					showAlert('Terjadi kesalahan: ' + error.message, 'danger');
+			  const form = document.getElementById('reviewForm');
+			  const formData = new FormData(form);
+		  
+			  try {
+				const dosenId = localStorage.getItem('dosenID');
+				if (!dosenId) {
+				  showAlert('Dosen ID tidak ditemukan.', 'danger');
+				  return;
 				}
+		  
+				formData.append('dosen_id', dosenId);
+				formData.append('user_id', formData.get('user_id'));
+		  
+				// set status "on review"
+				await fetch(`http://104.43.89.154:8087/updateproposalstatus?id=${encodeURIComponent(formData.get('proposal_id'))}&status=${encodeURIComponent('on review')}`, {
+				  method: 'POST'
+				});
+		  
+				const response = await fetch('http://104.43.89.154:8087/upload/reviewproposal/dosen', {
+				  method: 'POST',
+				  body: formData
+				});
+				const data = await response.json();
+		  
+				if (data.status === 'success') {
+				  showAlert('Review berhasil diunggah', 'success');
+				  if (window.jQuery && $('#uploadReviewModal').modal) $('#uploadReviewModal').modal('hide');
+				  form.reset();
+				  await loadProposalData();
+				  await loadProposalReviewData();
+				} else {
+				  showAlert(data.message || 'Gagal mengunggah review', 'danger');
+				}
+			  } catch (error) {
+				console.error('Error details:', error);
+				showAlert('Terjadi kesalahan: ' + error.message, 'danger');
+			  }
 			}
-
-			// Fungsi untuk melihat detail revisi
-			function viewRevisiDetail(revisiId, proposalId) {
-				window.location.href = `/dosen/viewproposal_revisi?id=${revisiId}&proposal_id=${proposalId}`;
-			}
-
-			// Event delegation untuk tombol view Proposal
-			document.querySelector('.data-table tbody').addEventListener('click', function(e) {
+		  
+			// ================= View detail Proposal =================
+			(function attachViewProposalHandler() {
+			  const body = document.querySelector('.data-table tbody');
+			  if (!body) return;
+			  body.addEventListener('click', function (e) {
 				const btn = e.target.closest('.view-proposal-btn');
-				if (btn) {
-					e.preventDefault();
-					const proposalId = btn.getAttribute('data-proposal-id');
-					window.location.href = `/dosen/viewproposal?id=${proposalId}`;
-				}
-			});
-
-		</script>
+				if (!btn) return;
+				e.preventDefault();
+				const proposalId = btn.getAttribute('data-proposal-id');
+				if (proposalId) window.location.href = `/dosen/viewproposal?id=${proposalId}`;
+			  });
+			})();
+		  </script>
+		  
 
 		<style>
 		.badge {
