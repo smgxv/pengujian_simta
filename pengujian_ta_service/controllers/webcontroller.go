@@ -126,21 +126,6 @@ func EditUser(w http.ResponseWriter, r *http.Request) {
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// Ambil token dari header / cookie
-	tokenString := r.Header.Get("Authorization")
-	if tokenString == "" {
-		if cookie, err := r.Cookie("token"); err == nil {
-			tokenString = cookie.Value
-		}
-	}
-
-	// Validasi token & role
-	claims, err := utils.ParseJWT(tokenString)
-	if err != nil || strings.ToLower(claims.Role) != "admin" {
-		http.Redirect(w, r, "/loginusers", http.StatusSeeOther)
-		return
-	}
-
 	if r.Method == "GET" {
 		userID := r.URL.Query().Get("id")
 		safeUserID := utils.SanitizeLogInput(userID)
@@ -158,12 +143,6 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Gagal membuat request", http.StatusInternalServerError)
 			return
 		}
-
-		// Tambahkan token ke header
-		if !strings.HasPrefix(tokenString, "Bearer ") {
-			tokenString = "Bearer " + tokenString
-		}
-		req.Header.Set("Authorization", tokenString)
 
 		resp, err := client.Do(req)
 		if err != nil {
@@ -303,25 +282,6 @@ func DetailTelaahICP(w http.ResponseWriter, r *http.Request) {
 	// Set header content type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// Ambil token dari cookie atau header
-	var tokenString string
-	cookie, err := r.Cookie("token")
-	if err == nil {
-		tokenString = cookie.Value
-	} else {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader != "" {
-			tokenString = strings.Replace(authHeader, "Bearer ", "", 1)
-		}
-	}
-
-	// Validasi token
-	claims, err := utils.ParseJWT(tokenString)
-	if err != nil || strings.ToLower(claims.Role) != "admin" {
-		http.Redirect(w, r, "/loginusers", http.StatusSeeOther)
-		return
-	}
-
 	// Serve the admin Proposal HTML file
 	http.ServeFile(w, r, "static/admin/detail_telaah_icp.html")
 }
@@ -386,25 +346,6 @@ func ListProposal(w http.ResponseWriter, r *http.Request) {
 func DetailBerkasProposal(w http.ResponseWriter, r *http.Request) {
 	// Set header content type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	// Ambil token dari cookie atau header
-	var tokenString string
-	cookie, err := r.Cookie("token")
-	if err == nil {
-		tokenString = cookie.Value
-	} else {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader != "" {
-			tokenString = strings.Replace(authHeader, "Bearer ", "", 1)
-		}
-	}
-
-	// Validasi token
-	claims, err := utils.ParseJWT(tokenString)
-	if err != nil || strings.ToLower(claims.Role) != "admin" {
-		http.Redirect(w, r, "/loginusers", http.StatusSeeOther)
-		return
-	}
 
 	// Serve the admin Proposal HTML file
 	http.ServeFile(w, r, "static/admin/detail_berkas_seminar_proposal.html")
@@ -555,25 +496,6 @@ func DetailBerkasLaporan70(w http.ResponseWriter, r *http.Request) {
 	// Set header content type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// Ambil token dari cookie atau header
-	var tokenString string
-	cookie, err := r.Cookie("token")
-	if err == nil {
-		tokenString = cookie.Value
-	} else {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader != "" {
-			tokenString = strings.Replace(authHeader, "Bearer ", "", 1)
-		}
-	}
-
-	// Validasi token
-	claims, err := utils.ParseJWT(tokenString)
-	if err != nil || strings.ToLower(claims.Role) != "admin" {
-		http.Redirect(w, r, "/loginusers", http.StatusSeeOther)
-		return
-	}
-
 	// Serve the admin Proposal HTML file
 	http.ServeFile(w, r, "static/admin/detail_berkas_seminar_laporan70.html")
 }
@@ -639,25 +561,6 @@ func DetailBerkasLaporan100(w http.ResponseWriter, r *http.Request) {
 	// Set header content type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// Ambil token dari cookie atau header
-	var tokenString string
-	cookie, err := r.Cookie("token")
-	if err == nil {
-		tokenString = cookie.Value
-	} else {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader != "" {
-			tokenString = strings.Replace(authHeader, "Bearer ", "", 1)
-		}
-	}
-
-	// Validasi token
-	claims, err := utils.ParseJWT(tokenString)
-	if err != nil || strings.ToLower(claims.Role) != "admin" {
-		http.Redirect(w, r, "/loginusers", http.StatusSeeOther)
-		return
-	}
-
 	// Serve the admin Proposal HTML file
 	http.ServeFile(w, r, "static/admin/detail_berkas_seminar_laporan100.html")
 }
@@ -694,25 +597,6 @@ func Repositori(w http.ResponseWriter, r *http.Request) {
 func DetailTugasAkhir(w http.ResponseWriter, r *http.Request) {
 	// Set header content type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	// Ambil token dari cookie atau header
-	var tokenString string
-	cookie, err := r.Cookie("token")
-	if err == nil {
-		tokenString = cookie.Value
-	} else {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader != "" {
-			tokenString = strings.Replace(authHeader, "Bearer ", "", 1)
-		}
-	}
-
-	// Validasi token
-	claims, err := utils.ParseJWT(tokenString)
-	if err != nil || strings.ToLower(claims.Role) != "admin" {
-		http.Redirect(w, r, "/loginusers", http.StatusSeeOther)
-		return
-	}
 
 	// Serve the admin Proposal HTML file
 	http.ServeFile(w, r, "static/admin/detail_berkas_tugas_akhir.html")

@@ -39,16 +39,41 @@ jobs:
         with:
           output: codeql-results
 
-      # === Gate Severity High ===
-      - name: Fail on High findings
+      # === Gate: Fail jika ada HIGH (>=7.0) atau CRITICAL (>=9.0) ===
+      - name: Fail on High/Critical CodeQL findings
         run: |
-          echo "🔍 Checking for High vulnerabilities..."
-          # Grep file SARIF untuk severity=HIGH
-          if grep -q '"level": "error"' codeql-results/*.sarif; then
-            echo "❌ Found High vulnerabilities in CodeQL scan!"
+          sudo apt-get update -y && sudo apt-get install -y jq
+          shopt -s nullglob
+          files=(codeql-results/*.sarif)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "Tidak ada file SARIF yang ditemukan di codeql-results/."
+            exit 1
+          fi
+
+          total_high=0
+          total_crit=0
+
+          for f in "${files[@]}"; do
+            echo "Memeriksa $f ..."
+            crit=$(jq '[.runs[].results[] 
+                        | select((.properties."security-severity" // "0" | tonumber) >= 9.0)
+                      ] | length' "$f")
+            high=$(jq '[.runs[].results[] 
+                        | select((.properties."security-severity" // "0" | tonumber) >= 7.0
+                                  and (.properties."security-severity" // "0" | tonumber) < 9.0)
+                      ] | length' "$f")
+            echo "  Critical: $crit, High: $high"
+            total_crit=$((total_crit + crit))
+            total_high=$((total_high + high))
+          done
+
+          echo "Total Critical: $total_crit, Total High: $total_high"
+
+          if [ "$total_crit" -gt 0 ] || [ "$total_high" -gt 0 ]; then
+            echo "❌ CodeQL menemukan temuan High/Critical. Gagal."
             exit 1
           else
-            echo "✅ No High vulnerabilities found."
+            echo "✅ Tidak ada temuan High/Critical."
           fi
 
   # DEPENDENCY SCAN (govulncheck)
@@ -372,6 +397,49 @@ jobs:
   #       uses: actions/upload-artifact@v4
   #       with:
   #         name: zapdosen${{ github.run_id }}
+  #         path: |
+  #           zap-out/zap-report.html
+  #           zap-out/zap.log
+  #         if-no-files-found: error
+
+  # # DAST - OWASP ZAP untuk /admin/dashboard
+  # zap-dast-admin:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Pull ZAP image (GHCR)
+  #       run: docker pull ghcr.io/zaproxy/zaproxy:stable
+
+  #     - name: Run ZAP Quick Scan and generate HTML report
+  #       run: |
+  #         set -euo pipefail
+  #         mkdir -p zap-out
+
+  #         # Jalankan tanpa --rm agar bisa docker cp reportnya
+  #         docker rm -f zaprun 2>/dev/null || true
+  #         docker run --name zaprun \
+  #           ghcr.io/zaproxy/zaproxy:stable \
+  #             zap.sh -cmd \
+  #               -addonupdate \
+  #               -addoninstall quickstart,report \
+  #               -config log.level=DEBUG \
+  #               -quickurl "http://104.43.89.154:8085/admin/dashboard" \
+  #               -quickprogress \
+  #               -quickout "/home/zap/.ZAP/reports/zap-report.html"
+
+  #         # Simpan log & ambil report dari dalam container
+  #         docker logs zaprun > zap-out/zap.log || true
+  #         docker cp zaprun:/home/zap/.ZAP/reports/zap-report.html zap-out/zap-report.html || true
+
+  #         echo "== Files in zap-out =="
+  #         ls -lah zap-out
+
+  #         # Bersihkan container
+  #         docker rm -f zaprun || true
+
+  #     - name: Upload HTML report
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: zapadmin${{ github.run_id }}
   #         path: |
   #           zap-out/zap-report.html
   #           zap-out/zap.log

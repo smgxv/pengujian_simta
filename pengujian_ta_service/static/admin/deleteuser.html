@@ -173,36 +173,36 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
     
-        <script>
+    <script>
         function handleDelete(event) {
-            event.preventDefault();
-            
-            const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-            const userId = document.querySelector('input[name="user_id"]').value;
+          event.preventDefault();
         
-            if (confirm("Apakah Anda yakin ingin menghapus user ini?")) {
-                fetch(`http://104.43.89.154:8086/users/delete?id=${userId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status) {
-                        alert("User berhasil dihapus");
-                        window.location.href = "/admin/listuser";
-                    } else {
-                        alert(data.message || "Gagal menghapus user");
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert("Terjadi kesalahan saat menghapus user");
-                });
-            }
+          const userId = document.querySelector('input[name="user_id"]').value;
+          if (!userId) {
+            alert("User ID tidak ditemukan");
+            return;
+          }
+        
+          if (confirm("Apakah Anda yakin ingin menghapus user ini?")) {
+            fetch(`http://104.43.89.154:8086/users/delete?id=${encodeURIComponent(userId)}`, {
+              method: 'DELETE'
+            })
+            .then(res => res.json().catch(() => ({})))
+            .then(data => {
+              if ((data && data.status) || data === true) {
+                alert("User berhasil dihapus");
+                window.location.href = "/admin/listuser";
+              } else {
+                alert((data && data.message) || "Gagal menghapus user");
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              alert("Terjadi kesalahan saat menghapus user");
+            });
+          }
         }
         </script>
+        
 </body>
 </html>

@@ -630,260 +630,201 @@
 		<!-- End Google Tag Manager (noscript) -->
 
 		<script>
-			// Fungsi Logout
+			// ==== Logout tanpa Authorization ====
 			async function logout() {
+			  try {
+				// Coba hit endpoint logout tanpa header Authorization
 				try {
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					
-					const response = await fetch('http://104.43.89.154:8085/logout', {
-						method: 'POST',
-						headers: {
-							'Authorization': token ? `Bearer ${token}` : '',
-							'Content-Type': 'application/json'
-						},
-						credentials: 'include'
-					});
-
-					const data = await response.json();
-					
-					if (response.ok && data.status === 'success') {
-						// Clear localStorage
-						localStorage.clear();
-						
-						// Clear sessionStorage
-						sessionStorage.clear();
-						
-						// Clear all cookies for all possible paths
-						const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
-						const cookies = document.cookie.split(';');
-						
-						for (let cookie of cookies) {
-							const eqPos = cookie.indexOf('=');
-							const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-							
-							// Hapus cookie untuk setiap path
-							paths.forEach(path => {
-								document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
-							});
-						}
-						
-						// Clear cache if browser supports it
-						if (window.caches) {
-							caches.keys().then(names => {
-								names.forEach(name => {
-									caches.delete(name);
-								});
-							});
-						}
-
-						// Clear application cache
-						if (window.applicationCache) {
-							window.applicationCache.abort();
-						}
-
-						// Clear service workers if any
-						if (navigator.serviceWorker) {
-							navigator.serviceWorker.getRegistrations().then(registrations => {
-								registrations.forEach(registration => {
-									registration.unregister();
-								});
-							});
-						}
-						
-						console.log('Logout berhasil');
-						
-						// Force reload halaman login untuk membersihkan cache
-						window.location.href = '/loginusers';
-						window.location.reload(true);
-					} else {
-						throw new Error(data.message || 'Gagal logout');
-					}
-				} catch (error) {
-					console.error('Error during logout:', error);
-					alert('Gagal logout. Silakan coba lagi.');
+				  await fetch('http://104.43.89.154:8085/logout', {
+					method: 'POST',
+					credentials: 'include'
+				  });
+				} catch (_) {}
+		  
+				// Bersihkan storage & cookies
+				localStorage.clear();
+				sessionStorage.clear();
+		  
+				const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
+				const cookies = document.cookie.split(';');
+				for (let cookie of cookies) {
+				  const eqPos = cookie.indexOf('=');
+				  const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+				  paths.forEach(path => {
+					document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+				  });
 				}
+		  
+				// Bersihkan cache & service worker
+				if (window.caches) {
+				  caches.keys().then(names => names.forEach(n => caches.delete(n)));
+				}
+				if (window.applicationCache) {
+				  window.applicationCache.abort();
+				}
+				if (navigator.serviceWorker) {
+				  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+				}
+		  
+				console.log('Logout berhasil');
+				window.location.href = '/loginusers';
+				window.location.reload(true);
+			  } catch (error) {
+				console.error('Error during logout:', error);
+				alert('Gagal logout. Silakan coba lagi.');
+			  }
 			}
-
-			// Tambahkan pengecekan autentikasi saat halaman dimuat
-			document.addEventListener('DOMContentLoaded', function() {
-				// Cek token
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				if (!token) {
-					window.location.replace('/loginusers');
-					return;
-				}
-
-				// Ambil ID user dari token
-				const userId = localStorage.getItem('userId');
-
-				// Ambil data user dari API
-				fetch(`http://104.43.89.154:8086/users?id=${userId}`, {
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				})
-				.then(response => {
-					if (!response.ok) {
-						throw new Error('Gagal mengambil data user');
-					}
+		  
+			// ==== Init halaman: tanpa cek token & tanpa Authorization ====
+			document.addEventListener('DOMContentLoaded', function () {
+			  const userId = localStorage.getItem('userId');
+		  
+			  if (userId) {
+				fetch(`http://104.43.89.154:8086/users?id=${encodeURIComponent(userId)}`)
+				  .then(response => {
+					if (!response.ok) throw new Error('Gagal mengambil data user');
 					return response.json();
-				})
-				.then(user => {
-					// Update username di header
+				  })
+				  .then(user => {
 					const usernameElement = document.getElementById('username');
 					if (usernameElement) {
-						usernameElement.textContent = user.username || user.nama_lengkap || 'User';
+					  usernameElement.textContent = user.username || user.nama_lengkap || 'User';
 					}
-				})
-				.catch(error => {
+				  })
+				  .catch(error => {
 					console.error('Error:', error);
 					const usernameElement = document.getElementById('username');
 					if (usernameElement) {
-						usernameElement.textContent = 'User';
+					  usernameElement.textContent = 'User';
 					}
-				});
-
-				// Validasi token dengan server
-				fetch('http://104.43.89.154:8085/taruna/dashboard', { // Ubah ke endpoint taruna
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				}).catch(() => {
-					window.location.replace('/loginusers');
-				});
+				  });
+			  } else {
+				const usernameElement = document.getElementById('username');
+				if (usernameElement) usernameElement.textContent = 'User';
+			  }
 			});
-
-			// Pastikan event listener untuk tombol logout terpasang dengan benar
+		  
+			// ==== Pasang handler tombol logout ====
 			document.addEventListener('DOMContentLoaded', function() {
-				const logoutButton = document.querySelector('a[onclick="logout()"]');
-				if (logoutButton) {
-					logoutButton.addEventListener('click', function(e) {
-						e.preventDefault();
-						logout();
-					});
-				}
+			  const logoutButton = document.querySelector('a[onclick="logout()"]');
+			  if (logoutButton) {
+				logoutButton.addEventListener('click', function(e) {
+				  e.preventDefault();
+				  logout();
+				});
+			  }
 			});
-
-			// Fungsi untuk menampilkan alert
+		  
+			// ==== Alert util (gunakan container yang sudah ada di halaman) ====
 			function showAlert(message, type) {
-				const alertContainer = document.getElementById('alertContainer');
-				const alertMessage = document.getElementById('alertMessage');
-				
-				alertMessage.className = `alert alert-${type}`;
-				alertMessage.textContent = message;
-				alertContainer.style.display = 'block';
-				
-				// Sembunyikan alert setelah 5 detik
-				setTimeout(() => {
-					alertContainer.style.display = 'none';
-				}, 5000);
-			}
-
-			// Fungsi untuk redirect ke profile
-			function redirectToProfile() {
-				window.location.href = '/admin/profile';
-			}
-
-			// Fungsi untuk memuat detail telaah ICP
-			document.addEventListener("DOMContentLoaded", function () {
-				loadDetailTelaah();
-			});
-
-			// Fungsi untuk memuat detail telaah ICP
-			// Fungsi untuk memuat detail telaah ICP
-			async function loadDetailTelaah() {
-				const params = new URLSearchParams(window.location.search);
-				const icpId = params.get('id');
-
-				console.log('Fetching detail telaah for ICP ID:', icpId);
-
-				if (!icpId) {
-					showAlert('ID ICP tidak valid', 'danger');
-					return;
-				}
-
-				try {
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					const response = await fetch(`http://104.43.89.154:8087/hasiltelaah/detail?id=${icpId}`, {
-						headers: {
-							'Authorization': `Bearer ${token}`
-						}
-					});
-
-					const result = await response.json();
-					console.log('Detail telaah ICP:', result);
-
-					if (result.status !== 'success') {
-						showAlert(result.message || 'Gagal mengambil data', 'danger');
-						return;
-					}
-
-					const { info: taruna, telaah } = result;
-
-					// Tampilkan info taruna
-					document.getElementById('nama-taruna').textContent = taruna.nama_taruna || '-';
-					document.getElementById('jurusan').textContent = taruna.jurusan || '-';
-					document.getElementById('kelas').textContent = taruna.kelas || '-';
-					document.getElementById('topik-penelitian').textContent = taruna.topik_penelitian || '-';
-					document.getElementById('status-icp').textContent = taruna.status_icp || '-';
-					document.getElementById('status-telaah').textContent = taruna.status_telaah || '-';
-
-					// Tampilkan info telaah
-					const tableBody = document.querySelector('.data-table tbody');
-					tableBody.innerHTML = '';
-
-					if (!telaah || telaah.length === 0) {
-						tableBody.innerHTML = `
-							<tr>
-								<td colspan="4" class="text-center">Belum ada data telaah</td>
-							</tr>
-						`;
-						return;
-					}
-
-					telaah.forEach(item => {
-						const hasFile = item.file_path && item.file_path.trim() !== '';
-						const fileName = hasFile ? item.file_path.split('/').pop() : '';
-						const tanggal = item.tanggal_telaah
-							? new Date(item.tanggal_telaah).toLocaleString('id-ID', {
-								dateStyle: 'medium',
-								timeStyle: 'short'
-							})
-							: '-';
-
-						const row = document.createElement('tr');
-						row.innerHTML = `
-							<td>${item.nama_dosen || '-'}</td>
-							<td><span class="badge badge-${hasFile ? 'success' : 'danger'}">
-								${hasFile ? 'Sudah Ditelaah' : 'Belum Ditelaah'}
-							</span></td>
-							<td>${tanggal}</td>
-							<td>
-								${hasFile
-									? `<a href="http://104.43.89.154:8087/hasiltelaah/download?path=${fileName}" download class="btn btn-outline-primary btn-sm">Download File</a>`
-									: '-'}
-							</td>
-						`;
-						tableBody.appendChild(row);
-					});
-
-				} catch (error) {
-					console.error('Error fetching detail telaah:', error);
-					showAlert('Terjadi kesalahan saat mengambil data telaah', 'danger');
-				}
-			}
-
-
-			// Fungsi notifikasi
-			function showAlert(message, type = "info") {
-				const alert = document.createElement("div");
-				alert.className = `alert alert-${type}`;
+			  const alertContainer = document.getElementById('alertContainer');
+			  const alertMessage = document.getElementById('alertMessage');
+		  
+			  if (!alertContainer || !alertMessage) {
+				// fallback sederhana jika container tidak ada
+				const alert = document.createElement('div');
+				alert.className = `alert alert-${type || 'info'}`;
 				alert.textContent = message;
 				document.body.prepend(alert);
 				setTimeout(() => alert.remove(), 5000);
+				return;
+			  }
+		  
+			  alertMessage.className = `alert alert-${type}`;
+			  alertMessage.textContent = message;
+			  alertContainer.style.display = 'block';
+			  setTimeout(() => { alertContainer.style.display = 'none'; }, 5000);
 			}
-	
-		</script>
+		  
+			// ==== Redirect ke profile ====
+			function redirectToProfile() {
+			  window.location.href = '/admin/profile';
+			}
+		  
+			// ==== Muat detail telaah ICP (tanpa Authorization) ====
+			document.addEventListener("DOMContentLoaded", function () {
+			  loadDetailTelaah();
+			});
+		  
+			async function loadDetailTelaah() {
+			  const params = new URLSearchParams(window.location.search);
+			  const icpId = params.get('id');
+		  
+			  console.log('Fetching detail telaah for ICP ID:', icpId);
+		  
+			  if (!icpId) {
+				showAlert('ID ICP tidak valid', 'danger');
+				return;
+			  }
+		  
+			  try {
+				const response = await fetch(`http://104.43.89.154:8087/hasiltelaah/detail?id=${encodeURIComponent(icpId)}`);
+				const result = await response.json();
+				console.log('Detail telaah ICP:', result);
+		  
+				if (result.status !== 'success') {
+				  showAlert(result.message || 'Gagal mengambil data', 'danger');
+				  return;
+				}
+		  
+				const { info: taruna, telaah } = result;
+		  
+				// Info taruna
+				document.getElementById('nama-taruna').textContent = taruna.nama_taruna || '-';
+				document.getElementById('jurusan').textContent = taruna.jurusan || '-';
+				document.getElementById('kelas').textContent = taruna.kelas || '-';
+				document.getElementById('topik-penelitian').textContent = taruna.topik_penelitian || '-';
+				document.getElementById('status-icp').textContent = taruna.status_icp || '-';
+				document.getElementById('status-telaah').textContent = taruna.status_telaah || '-';
+		  
+				// Tabel telaah
+				const tableBody = document.querySelector('.data-table tbody');
+				if (!tableBody) return;
+		  
+				tableBody.innerHTML = '';
+		  
+				if (!telaah || telaah.length === 0) {
+				  tableBody.innerHTML = `
+					<tr>
+					  <td colspan="4" class="text-center">Belum ada data telaah</td>
+					</tr>
+				  `;
+				  return;
+				}
+		  
+				telaah.forEach(item => {
+				  const hasFile = item.file_path && item.file_path.trim() !== '';
+				  const fileName = hasFile ? item.file_path.split('/').pop() : '';
+				  const tanggal = item.tanggal_telaah
+					? new Date(item.tanggal_telaah).toLocaleString('id-ID', {
+						dateStyle: 'medium',
+						timeStyle: 'short'
+					  })
+					: '-';
+		  
+				  const row = document.createElement('tr');
+				  row.innerHTML = `
+					<td>${item.nama_dosen || '-'}</td>
+					<td><span class="badge badge-${hasFile ? 'success' : 'danger'}">
+					  ${hasFile ? 'Sudah Ditelaah' : 'Belum Ditelaah'}
+					</span></td>
+					<td>${tanggal}</td>
+					<td>
+					  ${hasFile
+						? `<a href="http://104.43.89.154:8087/hasiltelaah/download?path=${encodeURIComponent(fileName)}" download class="btn btn-outline-primary btn-sm">Download File</a>`
+						: '-'}
+					</td>
+				  `;
+				  tableBody.appendChild(row);
+				});
+		  
+			  } catch (error) {
+				console.error('Error fetching detail telaah:', error);
+				showAlert('Terjadi kesalahan saat mengambil data telaah', 'danger');
+			  }
+			}
+		  </script>
+		  
 
 		<style>
 		.badge {

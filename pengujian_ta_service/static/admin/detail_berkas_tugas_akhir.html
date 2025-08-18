@@ -645,254 +645,187 @@
 		<!-- End Google Tag Manager (noscript) -->
 
 		<script>
-			// Fungsi Logout
+			// ==== Logout tanpa Authorization ====
 			async function logout() {
+			  try {
+				// Coba hit logout tanpa header (abaikan jika gagal)
 				try {
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					
-					const response = await fetch('http://104.43.89.154:8085/logout', {
-						method: 'POST',
-						headers: {
-							'Authorization': token ? `Bearer ${token}` : '',
-							'Content-Type': 'application/json'
-						},
-						credentials: 'include'
-					});
-
-					const data = await response.json();
-					
-					if (response.ok && data.status === 'success') {
-						// Clear localStorage
-						localStorage.clear();
-						
-						// Clear sessionStorage
-						sessionStorage.clear();
-						
-						// Clear all cookies for all possible paths
-						const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
-						const cookies = document.cookie.split(';');
-						
-						for (let cookie of cookies) {
-							const eqPos = cookie.indexOf('=');
-							const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-							
-							// Hapus cookie untuk setiap path
-							paths.forEach(path => {
-								document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
-							});
-						}
-						
-						// Clear cache if browser supports it
-						if (window.caches) {
-							caches.keys().then(names => {
-								names.forEach(name => {
-									caches.delete(name);
-								});
-							});
-						}
-
-						// Clear application cache
-						if (window.applicationCache) {
-							window.applicationCache.abort();
-						}
-
-						// Clear service workers if any
-						if (navigator.serviceWorker) {
-							navigator.serviceWorker.getRegistrations().then(registrations => {
-								registrations.forEach(registration => {
-									registration.unregister();
-								});
-							});
-						}
-						
-						console.log('Logout berhasil');
-						
-						// Force reload halaman login untuk membersihkan cache
-						window.location.href = '/loginusers';
-						window.location.reload(true);
-					} else {
-						throw new Error(data.message || 'Gagal logout');
-					}
-				} catch (error) {
-					console.error('Error during logout:', error);
-					alert('Gagal logout. Silakan coba lagi.');
+				  await fetch('http://104.43.89.154:8085/logout', {
+					method: 'POST',
+					credentials: 'include'
+				  });
+				} catch (_) {}
+		  
+				// Bersihkan storage & cookies
+				localStorage.clear();
+				sessionStorage.clear();
+		  
+				const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
+				const cookies = document.cookie.split(';');
+				for (let cookie of cookies) {
+				  const eqPos = cookie.indexOf('=');
+				  const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+				  paths.forEach(path => {
+					document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+				  });
 				}
+		  
+				// Bersihkan cache & service worker
+				if (window.caches) {
+				  caches.keys().then(names => names.forEach(n => caches.delete(n)));
+				}
+				if (window.applicationCache) {
+				  window.applicationCache.abort();
+				}
+				if (navigator.serviceWorker) {
+				  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+				}
+		  
+				console.log('Logout berhasil');
+				window.location.href = '/loginusers';
+				window.location.reload(true);
+			  } catch (error) {
+				console.error('Error during logout:', error);
+				alert('Gagal logout. Silakan coba lagi.');
+			  }
 			}
-
-			// Tambahkan pengecekan autentikasi saat halaman dimuat
-			document.addEventListener('DOMContentLoaded', function() {
-				// Cek token
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				if (!token) {
-					window.location.replace('/loginusers');
-					return;
-				}
-
-				// Ambil ID user dari token
-				const userId = localStorage.getItem('userId');
-
-				// Ambil data user dari API
-				fetch(`http://104.43.89.154:8086/users?id=${userId}`, {
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				})
-				.then(response => {
-					if (!response.ok) {
-						throw new Error('Gagal mengambil data user');
-					}
+		  
+			// ==== Inisialisasi halaman (tanpa cek token & tanpa Authorization) ====
+			document.addEventListener('DOMContentLoaded', function () {
+			  const userId = localStorage.getItem('userId');
+		  
+			  if (userId) {
+				fetch(`http://104.43.89.154:8086/users?id=${encodeURIComponent(userId)}`)
+				  .then(response => {
+					if (!response.ok) throw new Error('Gagal mengambil data user');
 					return response.json();
-				})
-				.then(user => {
-					// Update username di header
+				  })
+				  .then(user => {
 					const usernameElement = document.getElementById('username');
 					if (usernameElement) {
-						usernameElement.textContent = user.username || user.nama_lengkap || 'User';
+					  usernameElement.textContent = user.username || user.nama_lengkap || 'User';
 					}
-				})
-				.catch(error => {
+				  })
+				  .catch(error => {
 					console.error('Error:', error);
 					const usernameElement = document.getElementById('username');
-					if (usernameElement) {
-						usernameElement.textContent = 'User';
-					}
-				});
-
-				// Validasi token dengan server
-				fetch('http://104.43.89.154:8085/taruna/dashboard', { // Ubah ke endpoint taruna
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				}).catch(() => {
-					window.location.replace('/loginusers');
-				});
+					if (usernameElement) usernameElement.textContent = 'User';
+				  });
+			  } else {
+				const usernameElement = document.getElementById('username');
+				if (usernameElement) usernameElement.textContent = 'User';
+			  }
 			});
-
-			// Pastikan event listener untuk tombol logout terpasang dengan benar
+		  
+			// ==== Pasang handler tombol logout ====
 			document.addEventListener('DOMContentLoaded', function() {
-				const logoutButton = document.querySelector('a[onclick="logout()"]');
-				if (logoutButton) {
-					logoutButton.addEventListener('click', function(e) {
-						e.preventDefault();
-						logout();
-					});
-				}
+			  const logoutButton = document.querySelector('a[onclick="logout()"]');
+			  if (logoutButton) {
+				logoutButton.addEventListener('click', function(e) {
+				  e.preventDefault();
+				  logout();
+				});
+			  }
 			});
-
-			// Fungsi untuk menampilkan alert
+		  
+			// ==== Util alert ====
 			function showAlert(message, type) {
-				const alertContainer = document.getElementById('alertContainer');
-				const alertMessage = document.getElementById('alertMessage');
-				
-				alertMessage.className = `alert alert-${type}`;
-				alertMessage.textContent = message;
-				alertContainer.style.display = 'block';
-				
-				// Sembunyikan alert setelah 5 detik
-				setTimeout(() => {
-					alertContainer.style.display = 'none';
-				}, 5000);
+			  const alertContainer = document.getElementById('alertContainer');
+			  const alertMessage = document.getElementById('alertMessage');
+			  alertMessage.className = `alert alert-${type}`;
+			  alertMessage.textContent = message;
+			  alertContainer.style.display = 'block';
+			  setTimeout(() => { alertContainer.style.display = 'none'; }, 5000);
 			}
-
-			// Fungsi untuk menentukan class badge berdasarkan status
+		  
+			// ==== Util badge status ====
 			function getStatusBadgeClass(status) {
-				switch (status?.toLowerCase()) {
-					case 'approved':
-						return 'success';
-					case 'rejected':
-						return 'danger';
-					case 'revision':
-						return 'warning';
-					default:
-						return 'warning';
-				}
+			  switch (status?.toLowerCase()) {
+				case 'approved': return 'success';
+				case 'rejected': return 'danger';
+				case 'revision': return 'warning';
+				default: return 'warning';
+			  }
 			}
-
-			// Fungsi untuk redirect ke profile
+		  
+			// ==== Redirect profile ====
 			function redirectToProfile() {
-				window.location.href = '/admin/profile';
+			  window.location.href = '/admin/profile';
 			}
-
-			// Fungsi untuk menampilkan data tugas akhir
+		  
+			// ==== Tampilkan data Tugas Akhir (tanpa Authorization) ====
 			document.addEventListener('DOMContentLoaded', function() {
-				// Get laporan100 ID from URL parameter
-				const urlParams = new URLSearchParams(window.location.search);
-				const tugasakhirID = urlParams.get('id');
-
-				if (!tugasakhirID) {
-					showAlert('ID Tugas Akhir tidak ditemukan', 'danger');
-					window.location.href = '/admin/listlaporan100';
-					return;
-				}
-
-				loadTugasAkhirDetails(tugasakhirID);
+			  const urlParams = new URLSearchParams(window.location.search);
+			  const tugasakhirID = urlParams.get('id');
+		  
+			  if (!tugasakhirID) {
+				showAlert('ID Tugas Akhir tidak ditemukan', 'danger');
+				window.location.href = '/admin/listlaporan100';
+				return;
+			  }
+		  
+			  loadTugasAkhirDetails(tugasakhirID);
 			});
-
-			// Fungsi untuk memuat detail tugas akhir
+		  
 			async function loadTugasAkhirDetails(tugasakhirID) {
-				try {
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					const response = await fetch(`http://104.43.89.154:8087/tugasakhir/detail/${tugasakhirID}`, {
-						headers: {
-							'Authorization': `Bearer ${token}`
-						}
-					});
-					
-					if (!response.ok) {
-						throw new Error('Failed to fetch tugas akhir details');
-					}
-
-					const result = await response.json();
-					if (result.status !== 'success') {
-						throw new Error(result.message || 'Failed to load data');
-					}
-
-					const data = result.data;
-
-					// Update informasi taruna
-					document.getElementById('nama-taruna').textContent = data.nama_taruna || '-';
-					document.getElementById('jurusan').textContent = data.jurusan || '-';
-					document.getElementById('kelas').textContent = data.kelas || '-';
-					document.getElementById('topik-penelitian').textContent = data.topik_penelitian || '-';
-					document.getElementById('tahun-akademik').textContent = data.tahun_akademik || '-';
-					document.getElementById('abstrak-id').textContent = data.abstrak_id || '-';
-					document.getElementById('abstrak-en').textContent = data.abstrak_en || '-';
-					document.getElementById('kata-kunci').textContent = data.kata_kunci || '-';
-					const linkRepoEl = document.getElementById('link-repo');
-					const repo = data.link_repo;
-
-					if (repo && repo.startsWith('http' || 'https')) {
-						linkRepoEl.innerHTML = `<a href="${repo}" target="_blank" rel="noopener noreferrer">${repo}</a>`;
-					} else {
-						linkRepoEl.textContent = '-';
-					}
-					
-					function renderDownloadButton(filePath, id, type) {
-						if (!filePath || filePath === "-") return '-';
-
-						return `
-							<a href="http://104.43.89.154:8087/revisilaporan100/download/${id}/${type}" 
-							class="btn btn-sm btn-outline-primary" 
-							target="_blank" 
-							download>
-								Download
-							</a>
-						`;
-					}
-
-					// Contoh pemakaian (dalam loadTugasAkhirDetails):
-					document.getElementById('file-path').innerHTML = renderDownloadButton(data.file_dokumen, tugasakhirID, "file");
-					document.getElementById('file-produk-path').innerHTML = renderDownloadButton(data.file_produk, tugasakhirID, "produk");
-					document.getElementById('file-bap-path').innerHTML = renderDownloadButton(data.file_bap, tugasakhirID, "bap");
-
-
-				} catch (error) {
-					console.error('Error:', error);
-					showAlert('Terjadi kesalahan saat memuat data', 'danger');
+			  try {
+				const response = await fetch(`http://104.43.89.154:8087/tugasakhir/detail/${encodeURIComponent(tugasakhirID)}`);
+				if (!response.ok) throw new Error('Failed to fetch tugas akhir details');
+		  
+				const result = await response.json();
+				if (result.status !== 'success') throw new Error(result.message || 'Failed to load data');
+		  
+				const data = result.data;
+		  
+				// Update informasi taruna
+				document.getElementById('nama-taruna').textContent = data.nama_taruna || '-';
+				document.getElementById('jurusan').textContent = data.jurusan || '-';
+				document.getElementById('kelas').textContent = data.kelas || '-';
+				document.getElementById('topik-penelitian').textContent = data.topik_penelitian || '-';
+				document.getElementById('tahun-akademik').textContent = data.tahun_akademik || '-';
+				document.getElementById('abstrak-id').textContent = data.abstrak_id || '-';
+				document.getElementById('abstrak-en').textContent = data.abstrak_en || '-';
+				document.getElementById('kata-kunci').textContent = data.kata_kunci || '-';
+		  
+				// Link repository (perbaiki pengecekan http/https)
+				const linkRepoEl = document.getElementById('link-repo');
+				const repo = data.link_repo;
+				if (linkRepoEl) {
+				  if (repo && /^https?:\/\//i.test(repo)) {
+					linkRepoEl.innerHTML = `<a href="${repo}" target="_blank" rel="noopener noreferrer">${repo}</a>`;
+				  } else {
+					linkRepoEl.textContent = '-';
+				  }
 				}
+		  
+				// Tombol download helper
+				function renderDownloadButton(filePath, id, type) {
+				  if (!filePath || filePath === "-") return '-';
+				  return `
+					<a href="http://104.43.89.154:8087/revisilaporan100/download/${id}/${type}"
+					   class="btn btn-sm btn-outline-primary"
+					   target="_blank"
+					   download>
+					  Download
+					</a>
+				  `;
+				}
+		  
+				// Set tombol download
+				document.getElementById('file-path').innerHTML =
+				  renderDownloadButton(data.file_dokumen, tugasakhirID, 'file');
+				document.getElementById('file-produk-path').innerHTML =
+				  renderDownloadButton(data.file_produk, tugasakhirID, 'produk');
+				document.getElementById('file-bap-path').innerHTML =
+				  renderDownloadButton(data.file_bap, tugasakhirID, 'bap');
+		  
+			  } catch (error) {
+				console.error('Error:', error);
+				showAlert('Terjadi kesalahan saat memuat data', 'danger');
+			  }
 			}
-
-		</script>
+		  </script>
+		  
 
 		<style>
 		.badge {
