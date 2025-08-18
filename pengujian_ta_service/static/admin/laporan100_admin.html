@@ -586,479 +586,369 @@
 		<!-- End Google Tag Manager (noscript) -->
 
 		<script>
-			// Fungsi Logout
+			// Fungsi Logout (tanpa Authorization)
 			async function logout() {
-				try {
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					
-					const response = await fetch('http://104.43.89.154:8085/logout', {
-						method: 'POST',
-						headers: {
-							'Authorization': token ? `Bearer ${token}` : '',
-							'Content-Type': 'application/json'
-						},
-						credentials: 'include'
-					});
-
-					const data = await response.json();
-					
-					if (response.ok && data.status === 'success') {
-						// Clear localStorage
-						localStorage.clear();
-						
-						// Clear sessionStorage
-						sessionStorage.clear();
-						
-						// Clear all cookies for all possible paths
-						const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
-						const cookies = document.cookie.split(';');
-						
-						for (let cookie of cookies) {
-							const eqPos = cookie.indexOf('=');
-							const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-							
-							// Hapus cookie untuk setiap path
-							paths.forEach(path => {
-								document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
-							});
-						}
-						
-						// Clear cache if browser supports it
-						if (window.caches) {
-							caches.keys().then(names => {
-								names.forEach(name => {
-									caches.delete(name);
-								});
-							});
-						}
-
-						// Clear application cache
-						if (window.applicationCache) {
-							window.applicationCache.abort();
-						}
-
-						// Clear service workers if any
-						if (navigator.serviceWorker) {
-							navigator.serviceWorker.getRegistrations().then(registrations => {
-								registrations.forEach(registration => {
-									registration.unregister();
-								});
-							});
-						}
-						
-						console.log('Logout berhasil');
-						
-						// Force reload halaman login untuk membersihkan cache
-						window.location.href = '/loginusers';
-						window.location.reload(true);
-					} else {
-						throw new Error(data.message || 'Gagal logout');
-					}
-				} catch (error) {
-					console.error('Error during logout:', error);
-					alert('Gagal logout. Silakan coba lagi.');
+			  try {
+				const response = await fetch('http://104.43.89.154:8085/logout', {
+				  method: 'POST',
+				  headers: { 'Content-Type': 'application/json' },
+				  credentials: 'include'
+				});
+		  
+				try { await response.json(); } catch {}
+		  
+				// Bersihkan storage & cookies
+				localStorage.clear();
+				sessionStorage.clear();
+		  
+				const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
+				const cookies = document.cookie.split(';');
+				for (let cookie of cookies) {
+				  const eqPos = cookie.indexOf('=');
+				  const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+				  paths.forEach(path => {
+					document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+				  });
 				}
+		  
+				if (window.caches) {
+				  caches.keys().then(names => names.forEach(n => caches.delete(n)));
+				}
+				if (window.applicationCache) {
+				  window.applicationCache.abort();
+				}
+				if (navigator.serviceWorker) {
+				  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+				}
+		  
+				window.location.href = '/loginusers';
+				window.location.reload(true);
+			  } catch (error) {
+				console.error('Error during logout:', error);
+				alert('Gagal logout. Silakan coba lagi.');
+			  }
 			}
-
-			// Tambahkan pengecekan autentikasi saat halaman dimuat
-			document.addEventListener('DOMContentLoaded', function() {
-				// Cek token
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				if (!token) {
-					window.location.replace('/loginusers');
-					return;
-				}
-
-				// Ambil ID user dari token
-				const userId = localStorage.getItem('userId');
-
-				// Ambil data user dari API
-				fetch(`http://104.43.89.154:8086/users?id=${userId}`, {
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				})
-				.then(response => {
-					if (!response.ok) {
-						throw new Error('Gagal mengambil data user');
-					}
-					return response.json();
-				})
-				.then(user => {
-					// Update username di header
+		  
+			// Hapus pengecekan autentikasi saat halaman dimuat
+			document.addEventListener('DOMContentLoaded', function () {
+			  // Ambil data user TANPA Authorization (opsional; boleh gagal saat DAST)
+			  const userId = localStorage.getItem('userId');
+			  if (userId) {
+				fetch(`http://104.43.89.154:8086/users?id=${userId}`)
+				  .then(r => r.json())
+				  .then(payload => {
+					const user = payload?.data ?? payload;
 					const usernameElement = document.getElementById('username');
 					if (usernameElement) {
-						usernameElement.textContent = user.username || user.nama_lengkap || 'User';
+					  usernameElement.textContent = user?.username || user?.nama_lengkap || 'User';
 					}
-				})
-				.catch(error => {
-					console.error('Error:', error);
+				  })
+				  .catch(() => {
 					const usernameElement = document.getElementById('username');
-					if (usernameElement) {
-						usernameElement.textContent = 'User';
-					}
-				});
-
-				// Validasi token dengan server
-				fetch('http://104.43.89.154:8085/taruna/dashboard', { // Ubah ke endpoint taruna
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				}).catch(() => {
-					window.location.replace('/loginusers');
-				});
+					if (usernameElement) usernameElement.textContent = 'User';
+				  });
+			  } else {
+				const usernameElement = document.getElementById('username');
+				if (usernameElement) usernameElement.textContent = 'User';
+			  }
 			});
-
-			// Pastikan event listener untuk tombol logout terpasang dengan benar
+		  
+			// Listener tombol logout
 			document.addEventListener('DOMContentLoaded', function() {
-				const logoutButton = document.querySelector('a[onclick="logout()"]');
-				if (logoutButton) {
-					logoutButton.addEventListener('click', function(e) {
-						e.preventDefault();
-						logout();
-					});
-				}
+			  const logoutButton = document.querySelector('a[onclick="logout()"]');
+			  if (logoutButton) {
+				logoutButton.addEventListener('click', function(e) {
+				  e.preventDefault();
+				  logout();
+				});
+			  }
 			});
-
-			// Fungsi untuk menampilkan alert
+		  
+			// Helper alert
 			function showAlert(message, type) {
-				const alertContainer = document.getElementById('alertContainer');
-				const alertMessage = document.getElementById('alertMessage');
-				
-				alertMessage.className = `alert alert-${type}`;
-				alertMessage.textContent = message;
-				alertContainer.style.display = 'block';
-				
-				// Sembunyikan alert setelah 5 detik
-				setTimeout(() => {
-					alertContainer.style.display = 'none';
-				}, 5000);
+			  const alertContainer = document.getElementById('alertContainer');
+			  const alertMessage = document.getElementById('alertMessage');
+			  alertMessage.className = `alert alert-${type}`;
+			  alertMessage.textContent = message;
+			  alertContainer.style.display = 'block';
+			  setTimeout(() => { alertContainer.style.display = 'none'; }, 5000);
 			}
-
-			let allLaporan100Data = []; // Menyimpan semua data Laporan100
+		  
+			let allLaporan100Data = [];
 			let uniqueJurusan = new Set();
 			let uniqueKelas = new Set();
-
-			// Fungsi untuk memperbarui opsi filter
+		  
 			function updateFilterOptions() {
-				const jurusanFilter = document.getElementById('jurusanFilter');
-				const kelasFilter = document.getElementById('kelasFilter');
-
-				// Clear existing options except the first one
-				jurusanFilter.innerHTML = '<option value="">Semua Jurusan</option>';
-				kelasFilter.innerHTML = '<option value="">Semua Kelas</option>';
-
-				// Add unique jurusan options
-				[...uniqueJurusan].sort().forEach(jurusan => {
-					const option = document.createElement('option');
-					option.value = jurusan;
-					option.textContent = jurusan;
-					jurusanFilter.appendChild(option);
-				});
-
-				// Add unique kelas options
-				[...uniqueKelas].sort().forEach(kelas => {
-					const option = document.createElement('option');
-					option.value = kelas;
-					option.textContent = kelas;
-					kelasFilter.appendChild(option);
-				});
+			  const jurusanFilter = document.getElementById('jurusanFilter');
+			  const kelasFilter = document.getElementById('kelasFilter');
+		  
+			  jurusanFilter.innerHTML = '<option value="">Semua Jurusan</option>';
+			  kelasFilter.innerHTML = '<option value="">Semua Kelas</option>';
+		  
+			  [...uniqueJurusan].sort().forEach(j => {
+				const option = document.createElement('option');
+				option.value = j;
+				option.textContent = j;
+				jurusanFilter.appendChild(option);
+			  });
+		  
+			  [...uniqueKelas].sort().forEach(k => {
+				const option = document.createElement('option');
+				option.value = k;
+				option.textContent = k;
+				kelasFilter.appendChild(option);
+			  });
 			}
-
-			// ====== Load data Final Laporan100 (admin) ======
+		  
+			// ====== Load data Final Laporan100 (tanpa Authorization) ======
 			async function loadLaporan100Data() {
-			try {
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				const response = await fetch('http://104.43.89.154:8087/finallaporan100/all', {
-				headers: { 'Authorization': `Bearer ${token}` }
-				});
-
+			  try {
+				const response = await fetch('http://104.43.89.154:8087/finallaporan100/all');
 				if (!response.ok) throw new Error('Failed to fetch Laporan 100% data');
-
+		  
 				const result = await response.json();
-				if (result.status !== 'success') {
-				throw new Error(result.message || 'Failed to load data');
-				}
-
+				if (result.status !== 'success') throw new Error(result.message || 'Failed to load data');
+		  
 				allLaporan100Data = result.data || [];
-
-				// Kumpulkan nilai unik filter
+		  
 				allLaporan100Data.forEach(item => {
-				if (item.jurusan) uniqueJurusan.add(item.jurusan);
-				if (item.kelas) uniqueKelas.add(item.kelas);
+				  if (item.jurusan) uniqueJurusan.add(item.jurusan);
+				  if (item.kelas) uniqueKelas.add(item.kelas);
 				});
-
+		  
 				updateFilterOptions();
 				displayFilteredData();
-			} catch (error) {
+			  } catch (error) {
 				console.error('Error:', error);
 				showAlert('Failed to load Laporan 100% data', 'danger');
+			  }
 			}
-			}
-
-			// ====== Helper: buat item menu untuk file pendukung Final Laporan100 ======
+		  
+			// ====== Helper menu file pendukung (tanpa Authorization) ======
 			function buildSupportMenuItemsLaporan100(item) {
-			let html = '';
-
-			if (!item || !item.final_laporan100_id || item.final_laporan100_id <= 0) return html;
-
-			const raw = item.file_pendukung_path; // JSON string: ["path1","path2",...]
-			if (!raw) return html;
-
-			try {
+			  let html = '';
+			  if (!item || !item.final_laporan100_id || item.final_laporan100_id <= 0) return html;
+		  
+			  const raw = item.file_pendukung_path;
+			  if (!raw) return html;
+		  
+			  try {
 				const parsed = JSON.parse(raw);
 				if (!Array.isArray(parsed) || parsed.length === 0) return html;
-
+		  
 				html += `<div class="dropdown-divider"></div>`;
-
+		  
 				parsed.forEach((entry, idx) => {
-				// jika formatnya string path
-				let displayName = `File Pendukung ${idx + 1}`;
-				if (typeof entry === 'string') {
+				  let displayName = `File Pendukung ${idx + 1}`;
+				  if (typeof entry === 'string') {
 					const parts = entry.split('/');
 					displayName = parts[parts.length - 1] || displayName;
-				} else if (entry && typeof entry === 'object') {
-					// jika suatu saat format disimpan sebagai object {original, stored}
+				  } else if (entry && typeof entry === 'object') {
 					displayName = entry.original || (entry.stored ? (entry.stored.split('/').pop() || displayName) : displayName);
-				}
-
-				html += `
+				  }
+		  
+				  html += `
 					<a class="dropdown-item"
-					href="http://104.43.89.154:8087/finallaporan100/download/${item.final_laporan100_id}?type=support&index=${idx}"
-					download>
-					<i class="dw dw-download"></i> ${displayName}
+					   href="http://104.43.89.154:8087/finallaporan100/download/${item.final_laporan100_id}?type=support&index=${idx}"
+					   download>
+					  <i class="dw dw-download"></i> ${displayName}
 					</a>`;
 				});
-			} catch (e) {
+			  } catch (e) {
 				console.warn('Gagal parse file_pendukung_path (laporan100):', e);
+			  }
+		  
+			  return html;
 			}
-
-			return html;
-			}
-
+		  
 			// ====== Tampilkan data terfilter ======
 			function displayFilteredData() {
-			const jurusanFilter = document.getElementById('jurusanFilter').value;
-			const kelasFilter = document.getElementById('kelasFilter').value;
-
-			const filteredData = allLaporan100Data.filter(item => {
+			  const jurusanFilter = document.getElementById('jurusanFilter').value;
+			  const kelasFilter = document.getElementById('kelasFilter').value;
+		  
+			  const filteredData = allLaporan100Data.filter(item => {
 				const matchJurusan = !jurusanFilter || item.jurusan === jurusanFilter;
 				const matchKelas = !kelasFilter || item.kelas === kelasFilter;
 				return matchJurusan && matchKelas;
-			});
-
-			const tableBody = document.querySelector('.data-table tbody');
-			tableBody.innerHTML = '';
-
-			filteredData.forEach(item => {
+			  });
+		  
+			  const tableBody = document.querySelector('.data-table tbody');
+			  tableBody.innerHTML = '';
+		  
+			  filteredData.forEach(item => {
 				const row = document.createElement('tr');
 				const statusBadge = item.status
-				? `<span class="badge badge-${getStatusBadgeClass(item.status)}">${item.status}</span>`
-				: '-';
-
-				// menu file pendukung
+				  ? `<span class="badge badge-${getStatusBadgeClass(item.status)}">${item.status}</span>`
+				  : '-';
+		  
 				const pendukungLinks = buildSupportMenuItemsLaporan100(item);
-
+		  
 				row.innerHTML = `
-				<td>${item.nama_lengkap || '-'}</td>
-				<td>${item.jurusan || '-'}</td>
-				<td>${item.kelas || '-'}</td>
-				<td>${item.topik_penelitian || '-'}</td>
-				<td>${statusBadge}</td>
-				<td>
+				  <td>${item.nama_lengkap || '-'}</td>
+				  <td>${item.jurusan || '-'}</td>
+				  <td>${item.kelas || '-'}</td>
+				  <td>${item.topik_penelitian || '-'}</td>
+				  <td>${statusBadge}</td>
+				  <td>
 					${item.final_laporan100_id > 0 ? `
 					<div class="dropdown">
-						<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle" href="#" role="button" data-toggle="dropdown">
+					  <a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle" href="#" role="button" data-toggle="dropdown">
 						<i class="dw dw-more"></i>
-						</a>
-						<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+					  </a>
+					  <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
 						<a class="dropdown-item"
-							href="http://104.43.89.154:8087/finallaporan100/download/${item.final_laporan100_id}?type=form"
-							download>
-							<i class="dw dw-download"></i> Download Form Bimbingan
+						   href="http://104.43.89.154:8087/finallaporan100/download/${item.final_laporan100_id}?type=form"
+						   download>
+						   <i class="dw dw-download"></i> Download Form Bimbingan
 						</a>
 						<a class="dropdown-item"
-							href="http://104.43.89.154:8087/finallaporan100/download/${item.final_laporan100_id}?type=final"
-							download>
-							<i class="dw dw-download"></i> Download Final Laporan100
+						   href="http://104.43.89.154:8087/finallaporan100/download/${item.final_laporan100_id}?type=final"
+						   download>
+						   <i class="dw dw-download"></i> Download Final Laporan100
 						</a>
 						${pendukungLinks}
 						<a class="dropdown-item" href="#" onclick="updateStatus(${item.final_laporan100_id}, 'approved')">
-							<i class="dw dw-check"></i> Accept
+						  <i class="dw dw-check"></i> Accept
 						</a>
 						<a class="dropdown-item" href="#" onclick="updateStatus(${item.final_laporan100_id}, 'rejected')">
-							<i class="dw dw-cross"></i> Reject
+						  <i class="dw dw-cross"></i> Reject
 						</a>
-						</div>
+					  </div>
 					</div>` : '-'}
-				</td>
+				  </td>
 				`;
 				tableBody.appendChild(row);
-			});
+			  });
 			}
-
-			// Fungsi untuk menerapkan filter
-			function applyFilters() {
-				displayFilteredData();
-			}
-
-			// Fungsi untuk menentukan class badge berdasarkan status
+		  
+			function applyFilters() { displayFilteredData(); }
+		  
 			function getStatusBadgeClass(status) {
-				switch (status?.toLowerCase()) {
-					case 'approved':
-						return 'success';
-					case 'rejected':
-						return 'danger';
-					case 'revision':
-						return 'warning';
-					default:
-						return 'warning';
-				}
+			  switch (status?.toLowerCase()) {
+				case 'approved': return 'success';
+				case 'rejected': return 'danger';
+				case 'revision': return 'warning';
+				default:         return 'warning';
+			  }
 			}
-
-			// Fungsi untuk melihat detail Laporan100
+		  
 			function viewLaporan100(laporan100Id) {
-				window.location.href = `/admin/viewlaporan100?id=${laporan100Id}`;
+			  window.location.href = `/admin/viewlaporan100?id=${laporan100Id}`;
 			}
-
-			// Fungsi untuk redirect ke profile
+		  
 			function redirectToProfile() {
-				window.location.href = '/admin/profile';
+			  window.location.href = '/admin/profile';
 			}
-
-			// Fungsi untuk mengupdate status Laporan100
+		  
+			// ====== Update status (tanpa Authorization) ======
 			async function updateStatus(id, status) {
-				try {
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					const response = await fetch('http://104.43.89.154:8087/finallaporan100/status', {
-						method: 'POST',
-						headers: {
-							'Authorization': `Bearer ${token}`,
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({
-							id: id,
-							status: status
-						})
-					});
-
-					if (!response.ok) {
-						throw new Error('Failed to update status');
-					}
-
-					const result = await response.json();
-					if (result.status === 'success') {
-						showAlert(`Laporan100 berhasil di${status}`, 'success');
-						loadLaporan100Data(); // Reload data
-					} else {
-						throw new Error(result.message || 'Failed to update status');
-					}
-				} catch (error) {
-					console.error('Error:', error);
-					showAlert('Failed to update status', 'danger');
+			  try {
+				const response = await fetch('http://104.43.89.154:8087/finallaporan100/status', {
+				  method: 'POST',
+				  headers: { 'Content-Type': 'application/json' },
+				  body: JSON.stringify({ id, status })
+				});
+		  
+				if (!response.ok) throw new Error('Failed to update status');
+		  
+				const result = await response.json();
+				if (result.status === 'success') {
+				  showAlert(`Laporan100 berhasil di${status}`, 'success');
+				  loadLaporan100Data();
+				} else {
+				  throw new Error(result.message || 'Failed to update status');
 				}
+			  } catch (error) {
+				console.error('Error:', error);
+				showAlert('Failed to update status', 'danger');
+			  }
 			}
-
-			// Fungsi untuk download Laporan100
+		  
+			// ====== Download (tanpa token query) ======
 			function downloadLaporan100(id) {
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				window.open(`http://104.43.89.154:8087/finallaporan100/download/${id}?token=${token}`, '_blank');
+			  window.open(`http://104.43.89.154:8087/finallaporan100/download/${id}`, '_blank');
 			}
-
+		  
 			// Load data Laporan100 saat halaman dimuat
 			document.addEventListener('DOMContentLoaded', function() {
-				loadLaporan100Data();
-
-				// Set username dari localStorage
-				const username = document.getElementById('username');
-				if (username) {
-					username.textContent = localStorage.getItem('username') || 'Admin';
-				}
+			  loadLaporan100Data();
+			  const username = document.getElementById('username');
+			  if (username) {
+				username.textContent = localStorage.getItem('username') || 'Admin';
+			  }
 			});
-
-			// Fungsi untuk memuat data monitoring penilaian laporan100
+		  
+			// ====== Monitoring (tanpa Authorization) ======
 			async function loadMonitoringData() {
-				try {
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					const response = await fetch('http://104.43.89.154:8087/monitoring/penilaian_laporan100', {
-						headers: {
-							'Authorization': `Bearer ${token}`
-						}
+			  try {
+				const response = await fetch('http://104.43.89.154:8087/monitoring/penilaian_laporan100');
+				if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+		  
+				const data = await response.json();
+				const tbody = document.querySelector('#monitoringTable tbody');
+				tbody.innerHTML = '';
+		  
+				if (data.status === 'success' && Array.isArray(data.data)) {
+				  if (data.data.length > 0) {
+					data.data.forEach(item => {
+					  const statusClass = item.status_kelengkapan === 'Lengkap' ? 'badge-success' : 'badge-warning';
+		  
+					  tbody.innerHTML += `
+						<tr>
+						  <td>${item.nama_taruna || '-'}</td>
+						  <td>${item.jurusan || '-'}</td>
+						  <td>${item.topik_penelitian || '-'}</td>
+						  <td>${item.ketua_penguji || '-'}</td>
+						  <td>${item.penguji1 || '-'}</td>
+						  <td>${item.penguji2 || '-'}</td>
+						  <td>
+							<span class="badge ${statusClass}">
+							  ${item.status_kelengkapan || 'Belum Lengkap'}
+							</span>
+						  </td>
+						  <td>
+							<div class="dropdown">
+							  <a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
+								 href="#" role="button" data-toggle="dropdown">
+								<i class="dw dw-more"></i>
+							  </a>
+							  <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+								<a class="dropdown-item" href="#" onclick="viewPenilaianDetails(${item.final_laporan100_id}); return false;">
+								  <i class="dw dw-eye"></i> View Details
+								</a>
+							  </div>
+							</div>
+						  </td>
+						</tr>
+					  `;
 					});
-					if (!response.ok) {
-						throw new Error(`HTTP error! status: ${response.status}`);
-					}
-					const data = await response.json();
-					console.log('Monitoring data response:', data); // Debug log
-
-					const tbody = document.querySelector('#monitoringTable tbody');
-					tbody.innerHTML = '';
-
-					if (data.status === 'success' && Array.isArray(data.data)) {
-						if (data.data.length > 0) {
-							data.data.forEach(item => {
-								const statusClass = item.status_kelengkapan === 'Lengkap' ? 'badge-success' : 'badge-warning';
-
-								tbody.innerHTML += `
-									<tr>
-										<td>${item.nama_taruna || '-'}</td>
-										<td>${item.jurusan || '-'}</td>
-										<td>${item.topik_penelitian || '-'}</td>
-										<td>${item.ketua_penguji || '-'}</td>
-										<td>${item.penguji1 || '-'}</td>
-										<td>${item.penguji2 || '-'}</td>
-										<td>
-											<span class="badge ${statusClass}">
-												${item.status_kelengkapan || 'Belum Lengkap'}
-											</span>
-										</td>
-										<td>
-											<div class="dropdown">
-												<a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
-													href="#" role="button" data-toggle="dropdown">
-													<i class="dw dw-more"></i>
-												</a>
-												<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
-													<a class="dropdown-item" href="#" onclick="viewPenilaianDetails(${item.final_laporan100_id}); return false;">
-														<i class="dw dw-eye"></i> View Details
-													</a>
-												</div>
-											</div>
-										</td>
-									</tr>
-								`;
-							});
-						} else {
-							tbody.innerHTML = '<tr><td colspan="8" class="text-center">Tidak ada data monitoring</td></tr>';
-						}
-					} else {
-						throw new Error(data.message || 'Invalid response format');
-					}
-				} catch (error) {
-					console.error('Error loading monitoring data:', error);
-					const tbody = document.querySelector('#monitoringTable tbody');
-					tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error: Gagal memuat data monitoring</td></tr>';
-					showAlert('Terjadi kesalahan saat memuat data monitoring: ' + error.message, 'danger');
+				  } else {
+					tbody.innerHTML = '<tr><td colspan="8" class="text-center">Tidak ada data monitoring</td></tr>';
+				  }
+				} else {
+				  throw new Error(data.message || 'Invalid response format');
 				}
+			  } catch (error) {
+				console.error('Error loading monitoring data:', error);
+				const tbody = document.querySelector('#monitoringTable tbody');
+				tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error: Gagal memuat data monitoring</td></tr>';
+				showAlert('Terjadi kesalahan saat memuat data monitoring: ' + error.message, 'danger');
+			  }
 			}
-
-			// Fungsi untuk menampilkan detail penilaian
+		  
 			function viewPenilaianDetails(finalLaporan100Id) {
-				console.log('Viewing details for final laporan100 ID:', finalLaporan100Id);
-				if (!finalLaporan100Id || finalLaporan100Id === 'undefined' || finalLaporan100Id === 'null') {
-					showAlert('ID Laporan100 tidak valid', 'danger');
-					return;
-				}
-				window.location.href = `/admin/detail_berkas_seminar_laporan100?id=${finalLaporan100Id}`;
+			  if (!finalLaporan100Id) {
+				showAlert('ID Laporan100 tidak valid', 'danger');
+				return;
+			  }
+			  window.location.href = `/admin/detail_berkas_seminar_laporan100?id=${finalLaporan100Id}`;
 			}
-
-
-			// Load monitoring data saat halaman dimuat
+		  
 			document.addEventListener('DOMContentLoaded', () => {
-				loadMonitoringData();
+			  loadMonitoringData();
 			});
-
-		</script>
+		  </script>
+		  
 
 		<style>
 		.badge {

@@ -584,343 +584,279 @@
 		<!-- End Google Tag Manager (noscript) -->
 
 		<script>
-			// Fungsi Logout
+			// ==== Logout tanpa Authorization ====
 			async function logout() {
+			  try {
+				// Coba hit endpoint logout tanpa header Authorization
 				try {
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					
-					const response = await fetch('http://104.43.89.154:8085/logout', {
-						method: 'POST',
-						headers: {
-							'Authorization': token ? `Bearer ${token}` : '',
-							'Content-Type': 'application/json'
-						},
-						credentials: 'include'
-					});
-
-					const data = await response.json();
-					
-					if (response.ok && data.status === 'success') {
-						// Clear localStorage
-						localStorage.clear();
-						
-						// Clear sessionStorage
-						sessionStorage.clear();
-						
-						// Clear all cookies for all possible paths
-						const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
-						const cookies = document.cookie.split(';');
-						
-						for (let cookie of cookies) {
-							const eqPos = cookie.indexOf('=');
-							const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-							
-							// Hapus cookie untuk setiap path
-							paths.forEach(path => {
-								document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
-							});
-						}
-						
-						// Clear cache if browser supports it
-						if (window.caches) {
-							caches.keys().then(names => {
-								names.forEach(name => {
-									caches.delete(name);
-								});
-							});
-						}
-
-						// Clear application cache
-						if (window.applicationCache) {
-							window.applicationCache.abort();
-						}
-
-						// Clear service workers if any
-						if (navigator.serviceWorker) {
-							navigator.serviceWorker.getRegistrations().then(registrations => {
-								registrations.forEach(registration => {
-									registration.unregister();
-								});
-							});
-						}
-						
-						console.log('Logout berhasil');
-						
-						// Force reload halaman login untuk membersihkan cache
-						window.location.href = '/loginusers';
-						window.location.reload(true);
-					} else {
-						throw new Error(data.message || 'Gagal logout');
-					}
-				} catch (error) {
-					console.error('Error during logout:', error);
-					alert('Gagal logout. Silakan coba lagi.');
+				  await fetch('http://104.43.89.154:8085/logout', {
+					method: 'POST',
+					credentials: 'include'
+				  });
+				} catch (_) {}
+		  
+				// Bersihkan storage & cookies
+				localStorage.clear();
+				sessionStorage.clear();
+		  
+				const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
+				const cookies = document.cookie.split(';');
+				for (let cookie of cookies) {
+				  const eqPos = cookie.indexOf('=');
+				  const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+				  paths.forEach(path => {
+					document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+				  });
 				}
+		  
+				// Bersihkan cache & service worker
+				if (window.caches) {
+				  caches.keys().then(names => names.forEach(n => caches.delete(n)));
+				}
+				if (window.applicationCache) {
+				  window.applicationCache.abort();
+				}
+				if (navigator.serviceWorker) {
+				  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+				}
+		  
+				console.log('Logout berhasil');
+				window.location.href = '/loginusers';
+				window.location.reload(true);
+			  } catch (error) {
+				console.error('Error during logout:', error);
+				alert('Gagal logout. Silakan coba lagi.');
+			  }
 			}
-
-			// Tambahkan pengecekan autentikasi saat halaman dimuat
-			document.addEventListener('DOMContentLoaded', function() {
-				// Cek token
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				if (!token) {
-					window.location.replace('/loginusers');
-					return;
-				}
-
-				// Ambil ID user dari token
-				const userId = localStorage.getItem('userId');
-
-				// Ambil data user dari API
-				fetch(`http://104.43.89.154:8086/users?id=${userId}`, {
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				})
-				.then(response => {
-					if (!response.ok) {
-						throw new Error('Gagal mengambil data user');
-					}
+		  
+			// ==== Init halaman: tanpa cek token & tanpa Authorization ====
+			document.addEventListener('DOMContentLoaded', function () {
+			  const userId = localStorage.getItem('userId');
+		  
+			  if (userId) {
+				fetch(`http://104.43.89.154:8086/users?id=${encodeURIComponent(userId)}`)
+				  .then(response => {
+					if (!response.ok) throw new Error('Gagal mengambil data user');
 					return response.json();
-				})
-				.then(user => {
-					// Update username di header
+				  })
+				  .then(user => {
 					const usernameElement = document.getElementById('username');
 					if (usernameElement) {
-						usernameElement.textContent = user.username || user.nama_lengkap || 'User';
+					  usernameElement.textContent = user.username || user.nama_lengkap || 'User';
 					}
-				})
-				.catch(error => {
+				  })
+				  .catch(error => {
 					console.error('Error:', error);
 					const usernameElement = document.getElementById('username');
-					if (usernameElement) {
-						usernameElement.textContent = 'User';
-					}
-				});
-
-				// Validasi token dengan server
-				fetch('http://104.43.89.154:8085/admin/dashboard', {
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				}).catch(() => {
-					window.location.replace('/loginusers');
-				});
+					if (usernameElement) usernameElement.textContent = 'User';
+				  });
+			  } else {
+				const usernameElement = document.getElementById('username');
+				if (usernameElement) usernameElement.textContent = 'User';
+			  }
 			});
-
-			// Pastikan event listener untuk tombol logout terpasang dengan benar
-			document.addEventListener('DOMContentLoaded', function() {
-				const logoutButton = document.querySelector('a[onclick="logout()"]');
-				if (logoutButton) {
-					logoutButton.addEventListener('click', function(e) {
-						e.preventDefault();
-						logout();
-					});
-				}
-			});
-
-			// Load data taruna
+		  
+			// Pasang handler tombol logout
 			document.addEventListener('DOMContentLoaded', function () {
-				loadTarunaData();
+			  const logoutButton = document.querySelector('a[onclick="logout()"]');
+			  if (logoutButton) {
+				logoutButton.addEventListener('click', function (e) {
+				  e.preventDefault();
+				  logout();
+				});
+			  }
 			});
-
-			// Fungsi untuk menampilkan alert
+		  
+			// Load data taruna saat halaman siap
+			document.addEventListener('DOMContentLoaded', function () {
+			  loadTarunaData();
+			});
+		  
+			// ==== Alert util ====
 			function showAlert(message, type) {
-				const alertContainer = document.getElementById('alertContainer');
-				const alertMessage = document.getElementById('alertMessage');
-				
-				alertMessage.className = `alert alert-${type}`;
-				alertMessage.textContent = message;
-				alertContainer.style.display = 'block';
-				
-				// Sembunyikan alert setelah 5 detik
-				setTimeout(() => {
-					alertContainer.style.display = 'none';
-				}, 5000);
+			  const alertContainer = document.getElementById('alertContainer');
+			  const alertMessage = document.getElementById('alertMessage');
+		  
+			  if (!alertContainer || !alertMessage) {
+				const alert = document.createElement('div');
+				alert.className = `alert alert-${type || 'info'}`;
+				alert.textContent = message;
+				document.body.prepend(alert);
+				setTimeout(() => alert.remove(), 5000);
+				return;
+			  }
+		  
+			  alertMessage.className = `alert alert-${type}`;
+			  alertMessage.textContent = message;
+			  alertContainer.style.display = 'block';
+		  
+			  setTimeout(() => {
+				alertContainer.style.display = 'none';
+			  }, 5000);
 			}
-
+		  
 			let allTarunaData = []; // Menyimpan semua data Taruna
 			let uniqueJurusan = new Set();
-
-			// Fungsi untuk memperbarui opsi filter jurusan
+		  
+			// Perbarui opsi filter jurusan
 			function updateFilterOptions() {
-				const jurusanFilter = document.getElementById('jurusanFilter');
-				jurusanFilter.innerHTML = '<option value="">Semua Jurusan</option>';
-				[...uniqueJurusan].sort().forEach(jurusan => {
-					const option = document.createElement('option');
-					option.value = jurusan;
-					option.textContent = jurusan;
-					jurusanFilter.appendChild(option);
-				});
+			  const jurusanFilter = document.getElementById('jurusanFilter');
+			  jurusanFilter.innerHTML = '<option value="">Semua Jurusan</option>';
+			  [...uniqueJurusan].sort().forEach(jurusan => {
+				const option = document.createElement('option');
+				option.value = jurusan;
+				option.textContent = jurusan;
+				jurusanFilter.appendChild(option);
+			  });
 			}
-
-			// Fungsi untuk memuat data Taruna
+		  
+			// ==== Muat data Taruna (tanpa Authorization) ====
 			async function loadTarunaData() {
-				try {
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					const response = await fetch('http://104.43.89.154:8086/taruna/dosbing', {
-						headers: {
-							'Authorization': `Bearer ${token}`
-						}
-					});
-
-					if (!response.ok) {
-						throw new Error('Failed to fetch Taruna data');
-					}
-
-					const result = await response.json();
-
-					if (result.status !== 'success') {
-						throw new Error(result.message || 'Failed to load data');
-					}
-
-					allTarunaData = Array.isArray(result.data) ? result.data : [];
-
-					allTarunaData.forEach(item => {
-						if (item.jurusan) uniqueJurusan.add(item.jurusan);
-					});
-
-					updateFilterOptions();
-					displayFilteredData();
-				} catch (error) {
-					console.error('Error in loadTarunaData:', error);
-					showAlert('Failed to load Taruna data: ' + error.message, 'danger');
-				}
-			}
-
-			// Fungsi untuk menampilkan data yang sudah difilter
-			function displayFilteredData() {
-				const jurusanFilter = document.getElementById('jurusanFilter').value;
-				const filteredData = allTarunaData.filter(item => {
-					return !jurusanFilter || item.jurusan === jurusanFilter;
+			  try {
+				const response = await fetch('http://104.43.89.154:8086/taruna/dosbing');
+				if (!response.ok) throw new Error('Failed to fetch Taruna data');
+		  
+				const result = await response.json();
+				if (result.status !== 'success') throw new Error(result.message || 'Failed to load data');
+		  
+				allTarunaData = Array.isArray(result.data) ? result.data : [];
+		  
+				allTarunaData.forEach(item => {
+				  if (item.jurusan) uniqueJurusan.add(item.jurusan);
 				});
-
-				const tableBody = document.querySelector('.data-table tbody');
-				tableBody.innerHTML = '';
-
-				if (filteredData.length === 0) {
-					tableBody.innerHTML = `
-						<tr>
-							<td colspan="6" class="text-center">Tidak ada data yang tersedia</td>
-						</tr>
-					`;
-					return;
-				}
-
-				filteredData.forEach(item => {
-					const row = document.createElement('tr');
-					row.innerHTML = `
-						<td>${item.nama_lengkap || '-'}</td>
-						<td>${item.jurusan || '-'}</td>
-						<td>${item.kelas || '-'}</td>
-						<td>${item.dosen_pembimbing || '-'}</td>
-						<td>
-							<button class="btn btn-sm btn-primary" onclick="showDosenPembimbingModal(${item.taruna_id}, '')">
-								Pilih Dosen
-							</button>
-						</td>
-					`;
-					tableBody.appendChild(row);
-				});
-			}
-
-			// Fungsi untuk menerapkan filter
-			function applyFilters() {
+		  
+				updateFilterOptions();
 				displayFilteredData();
+			  } catch (error) {
+				console.error('Error in loadTarunaData:', error);
+				showAlert('Failed to load Taruna data: ' + error.message, 'danger');
+			  }
 			}
-
-			// Fungsi untuk redirect ke profile
+		  
+			// Tampilkan data yang sudah difilter
+			function displayFilteredData() {
+			  const jurusanFilter = document.getElementById('jurusanFilter').value;
+			  const filteredData = allTarunaData.filter(item => {
+				return !jurusanFilter || item.jurusan === jurusanFilter;
+			  });
+		  
+			  const tableBody = document.querySelector('.data-table tbody');
+			  tableBody.innerHTML = '';
+		  
+			  if (filteredData.length === 0) {
+				tableBody.innerHTML = `
+				  <tr>
+					<td colspan="6" class="text-center">Tidak ada data yang tersedia</td>
+				  </tr>
+				`;
+				return;
+			  }
+		  
+			  filteredData.forEach(item => {
+				const row = document.createElement('tr');
+				row.innerHTML = `
+				  <td>${item.nama_lengkap || '-'}</td>
+				  <td>${item.jurusan || '-'}</td>
+				  <td>${item.kelas || '-'}</td>
+				  <td>${item.dosen_pembimbing || '-'}</td>
+				  <td>
+					<button class="btn btn-sm btn-primary" onclick="showDosenPembimbingModal(${item.taruna_id}, '')">
+					  Pilih Dosen
+					</button>
+				  </td>
+				`;
+				tableBody.appendChild(row);
+			  });
+			}
+		  
+			// Terapkan filter
+			function applyFilters() {
+			  displayFilteredData();
+			}
+		  
+			// Redirect ke profile
 			function redirectToProfile() {
-				window.location.href = '/admin/profile';
+			  window.location.href = '/admin/profile';
 			}
-
-			// Fungsi untuk memuat data dosen
+		  
+			// ==== Muat data dosen (tanpa Authorization) ====
 			async function loadDosenData() {
-				try {
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					const response = await fetch('http://104.43.89.154:8086/dosen', {
-						headers: {
-							'Authorization': `Bearer ${token}`
-						}
-					});
-
-					if (!response.ok) throw new Error('Gagal mengambil data dosen');
-
-					const result = await response.json();
-					if (result.status !== 'success' || !Array.isArray(result.data)) {
-						throw new Error('Response format salah');
-					}
-
-					const select = document.getElementById('dosenPembimbing');
-					select.innerHTML = '<option value="">Pilih Dosen Pembimbing</option>';
-
-					result.data.forEach(dosen => {
-						const option = document.createElement('option');
-						option.value = dosen.id;
-						option.textContent = dosen.nama_lengkap;
-						select.appendChild(option);
-					});
-				} catch (error) {
-					console.error('Error loadDosenData:', error);
-					showAlert('Gagal memuat data dosen: ' + error.message, 'danger');
+			  try {
+				const response = await fetch('http://104.43.89.154:8086/dosen');
+				if (!response.ok) throw new Error('Gagal mengambil data dosen');
+		  
+				const result = await response.json();
+				if (result.status !== 'success' || !Array.isArray(result.data)) {
+				  throw new Error('Response format salah');
 				}
-			}
-
-			// Fungsi untuk menampilkan modal pilih dosen pembimbing
-			function showDosenPembimbingModal(tarunaId, dosenPembimbingId = '') {
-				document.getElementById('currentTarunaId').value = tarunaId;
-
-				loadDosenData().then(() => {
-					if (dosenPembimbingId) {
-						document.getElementById('dosenPembimbing').value = dosenPembimbingId;
-					}
-					$('#modalPilihDosenPembimbing').modal('show');
+		  
+				const select = document.getElementById('dosenPembimbing');
+				select.innerHTML = '<option value="">Pilih Dosen Pembimbing</option>';
+		  
+				result.data.forEach(dosen => {
+				  const option = document.createElement('option');
+				  option.value = dosen.id;
+				  option.textContent = dosen.nama_lengkap;
+				  select.appendChild(option);
 				});
+			  } catch (error) {
+				console.error('Error loadDosenData:', error);
+				showAlert('Gagal memuat data dosen: ' + error.message, 'danger');
+			  }
 			}
-
-			// Fungsi untuk menyimpan dosen pembimbing
-			async function savePembimbing() {
-				try {
-					const tarunaId = parseInt(document.getElementById('currentTarunaId').value);
-					const dosenId = parseInt(document.getElementById('dosenPembimbing').value);
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-
-					if (!tarunaId || !dosenId) {
-						showAlert('Pastikan semua field telah dipilih', 'warning');
-						return;
-					}
-
-					const response = await fetch('http://104.43.89.154:8086/dosbing_proposal', {
-						method: 'POST',
-						headers: {
-							'Authorization': `Bearer ${token}`,
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({
-							taruna_id: tarunaId,
-							dosen_id: dosenId,
-							status: 'aktif'
-						})
-					});
-
-					const result = await response.json();
-
-					if (!response.ok || result.status !== 'success') {
-						throw new Error(result.message || 'Gagal menyimpan dosbing');
-					}
-
-					console.log("Taruna ID yang akan dikirim:", tarunaId);
-					showAlert('Dosen pembimbing berhasil disimpan', 'success');
-					$('#modalPilihDosenPembimbing').modal('hide');
-					loadTarunaData(); // reload list taruna setelah simpan
-
-				} catch (error) {
-					console.error('Error saving dosbing:', error);
-					showAlert('Gagal menyimpan dosen pembimbing: ' + error.message, 'danger');
+		  
+			// Tampilkan modal pilih dosen pembimbing
+			function showDosenPembimbingModal(tarunaId, dosenPembimbingId = '') {
+			  document.getElementById('currentTarunaId').value = tarunaId;
+		  
+			  loadDosenData().then(() => {
+				if (dosenPembimbingId) {
+				  document.getElementById('dosenPembimbing').value = dosenPembimbingId;
 				}
+				$('#modalPilihDosenPembimbing').modal('show');
+			  });
 			}
-
-
-		</script>
+		  
+			// ==== Simpan dosen pembimbing (tanpa Authorization) ====
+			async function savePembimbing() {
+			  try {
+				const tarunaId = parseInt(document.getElementById('currentTarunaId').value);
+				const dosenId = parseInt(document.getElementById('dosenPembimbing').value);
+		  
+				if (!tarunaId || !dosenId) {
+				  showAlert('Pastikan semua field telah dipilih', 'warning');
+				  return;
+				}
+		  
+				const response = await fetch('http://104.43.89.154:8086/dosbing_proposal', {
+				  method: 'POST',
+				  headers: {
+					'Content-Type': 'application/json'
+				  },
+				  body: JSON.stringify({
+					taruna_id: tarunaId,
+					dosen_id: dosenId,
+					status: 'aktif'
+				  })
+				});
+		  
+				const result = await response.json();
+		  
+				if (!response.ok || result.status !== 'success') {
+				  throw new Error(result.message || 'Gagal menyimpan dosbing');
+				}
+		  
+				console.log('Taruna ID yang akan dikirim:', tarunaId);
+				showAlert('Dosen pembimbing berhasil disimpan', 'success');
+				$('#modalPilihDosenPembimbing').modal('hide');
+				loadTarunaData(); // reload list taruna setelah simpan
+			  } catch (error) {
+				console.error('Error saving dosbing:', error);
+				showAlert('Gagal menyimpan dosen pembimbing: ' + error.message, 'danger');
+			  }
+			}
+		  </script>
+		  
 
 		<style>
 		.badge {

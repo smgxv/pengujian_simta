@@ -599,401 +599,267 @@
 		<!-- End Google Tag Manager (noscript) -->
 
 		<script>
-			// Fungsi Logout
-			async function logout() {
-				try {
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					
-					const response = await fetch('http://104.43.89.154:8085/logout', {
-						method: 'POST',
-						headers: {
-							'Authorization': token ? `Bearer ${token}` : '',
-							'Content-Type': 'application/json'
-						},
-						credentials: 'include'
-					});
-
-					const data = await response.json();
-					
-					if (response.ok && data.status === 'success') {
-						// Clear localStorage
-						localStorage.clear();
-						
-						// Clear sessionStorage
-						sessionStorage.clear();
-						
-						// Clear all cookies for all possible paths
-						const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
-						const cookies = document.cookie.split(';');
-						
-						for (let cookie of cookies) {
-							const eqPos = cookie.indexOf('=');
-							const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-							
-							// Hapus cookie untuk setiap path
-							paths.forEach(path => {
-								document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
-							});
-						}
-						
-						// Clear cache if browser supports it
-						if (window.caches) {
-							caches.keys().then(names => {
-								names.forEach(name => {
-									caches.delete(name);
-								});
-							});
-						}
-
-						// Clear application cache
-						if (window.applicationCache) {
-							window.applicationCache.abort();
-						}
-
-						// Clear service workers if any
-						if (navigator.serviceWorker) {
-							navigator.serviceWorker.getRegistrations().then(registrations => {
-								registrations.forEach(registration => {
-									registration.unregister();
-								});
-							});
-						}
-						
-						console.log('Logout berhasil');
-						
-						// Force reload halaman login untuk membersihkan cache
-						window.location.href = '/loginusers';
-						window.location.reload(true);
-					} else {
-						throw new Error(data.message || 'Gagal logout');
-					}
-				} catch (error) {
-					console.error('Error during logout:', error);
-					alert('Gagal logout. Silakan coba lagi.');
-				}
-			}
-
-			// Tambahkan pengecekan autentikasi saat halaman dimuat
-			document.addEventListener('DOMContentLoaded', function() {
-				// Cek token
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				if (!token) {
-					window.location.replace('/loginusers');
-					return;
-				}
-
-				// Ambil ID user dari token
-				const userId = localStorage.getItem('userId');
-
-				// Ambil data user dari API
-				fetch(`http://104.43.89.154:8086/users?id=${userId}`, {
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				})
-				.then(response => {
-					if (!response.ok) {
-						throw new Error('Gagal mengambil data user');
-					}
-					return response.json();
-				})
-				.then(user => {
-					// Update username di header
-					const usernameElement = document.getElementById('username');
-					if (usernameElement) {
-						usernameElement.textContent = user.username || user.nama_lengkap || 'User';
-					}
-				})
-				.catch(error => {
-					console.error('Error:', error);
-					const usernameElement = document.getElementById('username');
-					if (usernameElement) {
-						usernameElement.textContent = 'User';
-					}
-				});
-
-				// Validasi token dengan server
-				fetch('http://104.43.89.154:8085/admin/dashboard', {
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				}).catch(() => {
-					window.location.replace('/loginusers');
-				});
-			});
-
-			// Pastikan event listener untuk tombol logout terpasang dengan benar
-			document.addEventListener('DOMContentLoaded', function() {
-				const logoutButton = document.querySelector('a[onclick="logout()"]');
-				if (logoutButton) {
-					logoutButton.addEventListener('click', function(e) {
-						e.preventDefault();
-						logout();
-					});
-				}
-			});
-
-			// Load data taruna
-			document.addEventListener('DOMContentLoaded', function () {
-				loadTarunaData();
-			});
-
-			// Fungsi untuk menampilkan alert
+			// ===== Helper alert =====
 			function showAlert(message, type) {
-				const alertContainer = document.getElementById('alertContainer');
-				const alertMessage = document.getElementById('alertMessage');
-				
-				alertMessage.className = `alert alert-${type}`;
-				alertMessage.textContent = message;
-				alertContainer.style.display = 'block';
-				
-				// Sembunyikan alert setelah 5 detik
-				setTimeout(() => {
-					alertContainer.style.display = 'none';
-				}, 5000);
+			  const alertContainer = document.getElementById('alertContainer');
+			  const alertMessage = document.getElementById('alertMessage');
+			  if (!alertContainer || !alertMessage) { console.warn(message); return; }
+			  alertMessage.className = `alert alert-${type}`;
+			  alertMessage.textContent = message;
+			  alertContainer.style.display = 'block';
+			  setTimeout(() => { alertContainer.style.display = 'none'; }, 5000);
 			}
-
-			let allTarunaData = []; // Menyimpan semua data Taruna
-			let uniqueJurusan = new Set();
-
-			// Fungsi untuk memperbarui opsi filter jurusan
-			function updateFilterOptions() {
-				const jurusanFilter = document.getElementById('jurusanFilter');
-				jurusanFilter.innerHTML = '<option value="">Semua Jurusan</option>';
-				[...uniqueJurusan].sort().forEach(jurusan => {
-					const option = document.createElement('option');
-					option.value = jurusan;
-					option.textContent = jurusan;
-					jurusanFilter.appendChild(option);
-				});
-			}
-
-			// Fungsi untuk memuat data Taruna (Laporan 100%)
-			async function loadTarunaData() {
-				try {
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					const response = await fetch('http://104.43.89.154:8086/taruna/pengujilaporan100', {
-						headers: {
-							'Authorization': `Bearer ${token}`
-						}
-					});
-
-					if (!response.ok) {
-						throw new Error('Failed to fetch Taruna data');
-					}
-
-					const result = await response.json();
-
-					if (result.status !== 'success') {
-						throw new Error(result.message || 'Failed to load data');
-					}
-
-					allTarunaData = Array.isArray(result.data) ? result.data : [];
-
-					allTarunaData.forEach(item => {
-						if (item.jurusan) uniqueJurusan.add(item.jurusan);
-					});
-
-					updateFilterOptions();
-					displayFilteredData();
-				} catch (error) {
-					console.error('Error in loadTarunaData:', error);
-					showAlert('Failed to load Taruna data: ' + error.message, 'danger');
-				}
-			}
-
-			// Fungsi untuk menampilkan data yang sudah difilter (Laporan 100%)
-			function displayFilteredData() {
-				const jurusanFilter = document.getElementById('jurusanFilter').value;
-				const filteredData = allTarunaData.filter(item => {
-					return !jurusanFilter || item.jurusan === jurusanFilter;
-				});
-
-				const tableBody = document.querySelector('.data-table tbody');
-				tableBody.innerHTML = '';
-
-				if (filteredData.length === 0) {
-					tableBody.innerHTML = `
-						<tr>
-							<td colspan="8" class="text-center">Tidak ada data yang tersedia</td>
-						</tr>
-					`;
-					return;
-				}
-
-				filteredData.forEach(item => {
-					const badge = item.status_pengumpulan
-						? '<span class="badge badge-success">Sudah</span>'
-						: '<span class="badge badge-danger">Belum</span>';
-
-					const disabled = item.status_pengumpulan ? '' : 'disabled';
-
-					const row = document.createElement('tr');
-					row.innerHTML = `
-						<td>${item.nama_lengkap || '-'}</td>
-						<td>${item.jurusan || '-'}</td>
-						<td>${item.kelas || '-'}</td>
-						<td>${item.ketua_penguji || '-'}</td>
-						<td>${item.penguji_1 || '-'}</td>
-						<td>${item.penguji_2 || '-'}</td>
-						<td>${badge}</td>
-						<td>
-							<button class="btn btn-sm btn-primary" onclick="showPengujiModal(${item.taruna_id})" ${disabled}>
-								Pilih Dosen
-							</button>
-						</td>
-					`;
-					tableBody.appendChild(row);
-				});
-			}
-
-
-			// Fungsi untuk menerapkan filter
-			function applyFilters() {
-				displayFilteredData();
-			}
-
-			// Fungsi untuk redirect ke profile
+		  
+			// ===== Redirect ke profile (tanpa cek token) =====
 			function redirectToProfile() {
+			  const userId = localStorage.getItem('userId');
+			  if (userId) {
+				window.location.href = `/admin/profile?id=${userId}`;
+			  } else {
 				window.location.href = '/admin/profile';
+			  }
 			}
-
-			// Fungsi untuk memuat data dosen
-			async function loadDosenData() {
-				try {
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					const response = await fetch('http://104.43.89.154:8086/dosen', {
-						headers: {
-							'Authorization': `Bearer ${token}`
-						}
-					});
-
-					if (!response.ok) throw new Error('Gagal mengambil data dosen');
-
-					const result = await response.json();
-					if (result.status !== 'success' || !Array.isArray(result.data)) {
-						throw new Error('Response format salah');
-					}
-
-					// ID select element yang valid
-					const selectIDs = ['ketuaPenguji', 'penguji1', 'penguji2'];
-					selectIDs.forEach(id => {
-						const select = document.getElementById(id);
-						let label = 'Penguji';
-						if (id === 'ketuaPenguji') label = 'Ketua Penguji';
-						else if (id === 'penguji1') label = 'Penguji 1';
-						else if (id === 'penguji2') label = 'Penguji 2';
-
-						select.innerHTML = `<option value="">Pilih ${label}</option>`;
-						result.data.forEach(dosen => {
-							const option = document.createElement('option');
-							option.value = dosen.id;
-							option.textContent = dosen.nama_lengkap;
-							select.appendChild(option);
-						});
-					});
-
-				} catch (error) {
-					console.error('Error loadDosenData:', error);
-					showAlert('Gagal memuat data dosen: ' + error.message, 'danger');
+		  
+			// ===== Logout (tanpa Authorization) =====
+			async function logout() {
+			  try {
+				await fetch('http://104.43.89.154:8085/logout', {
+				  method: 'POST',
+				  headers: { 'Content-Type': 'application/json' },
+				  credentials: 'include'
+				}).catch(() => {});
+			  } finally {
+				// Bersihkan storage & cookies supaya sesi reset saat uji
+				localStorage.clear();
+				sessionStorage.clear();
+				const cookies = document.cookie.split(';');
+				for (let cookie of cookies) {
+				  const eqPos = cookie.indexOf('=');
+				  const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+				  ['/', '/admin', '/taruna'].forEach(path => {
+					document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+				  });
 				}
+				window.location.href = '/loginusers';
+			  }
 			}
-
-			// Fungsi untuk menampilkan modal pilih penguji
-			function showPengujiModal(tarunaId, currentPenguji = {}) {
-				document.getElementById('currentTarunaId').value = tarunaId;
-
-				loadDosenData().then(() => {
-					// Isi nilai default jika ada data sebelumnya
-					if (currentPenguji.ketua_id) {
-						document.getElementById('ketuaPenguji').value = currentPenguji.ketua_id;
-					}
-					if (currentPenguji.penguji_1_id) {
-						document.getElementById('penguji1').value = currentPenguji.penguji_1_id;
-					}
-					if (currentPenguji.penguji_2_id) {
-						document.getElementById('penguji2').value = currentPenguji.penguji_2_id;
-					}
-					$('#modalPilihPenguji').modal('show');
+		  
+			// ===== Pasang listener tombol logout =====
+			document.addEventListener('DOMContentLoaded', function () {
+			  const logoutButton = document.querySelector('a[onclick="logout()"]');
+			  if (logoutButton) {
+				logoutButton.addEventListener('click', function (e) {
+				  e.preventDefault();
+				  logout();
 				});
+			  }
+			});
+		  
+			// ===== Set username header (tanpa Authorization) =====
+			document.addEventListener('DOMContentLoaded', function () {
+			  const userId = localStorage.getItem('userId');
+			  if (!userId) {
+				const el = document.getElementById('username');
+				if (el) el.textContent = 'User';
+				return;
+			  }
+			  fetch(`http://104.43.89.154:8086/users?id=${encodeURIComponent(userId)}`)
+				.then(r => r.ok ? r.json() : null)
+				.then(data => {
+				  const user = data?.data ?? data ?? {};
+				  const el = document.getElementById('username');
+				  if (el) el.textContent = user.username || user.nama_lengkap || 'User';
+				})
+				.catch(() => {
+				  const el = document.getElementById('username');
+				  if (el) el.textContent = 'User';
+				});
+			});
+		  
+			// ===== Data & filter =====
+			let allTarunaData = [];
+			let uniqueJurusan = new Set();
+		  
+			function updateFilterOptions() {
+			  const jurusanFilter = document.getElementById('jurusanFilter');
+			  if (!jurusanFilter) return;
+			  jurusanFilter.innerHTML = '<option value="">Semua Jurusan</option>';
+			  [...uniqueJurusan].sort().forEach(j => {
+				const opt = document.createElement('option');
+				opt.value = j; opt.textContent = j;
+				jurusanFilter.appendChild(opt);
+			  });
 			}
-
-			// Fungsi untuk mengambil ID final_laporan100 berdasarkan tarunaId
+		  
+			// ===== Load Taruna (Laporan 100%) - tanpa Authorization =====
+			async function loadTarunaData() {
+			  try {
+				const response = await fetch('http://104.43.89.154:8086/taruna/pengujilaporan100');
+				if (!response.ok) throw new Error('Failed to fetch Taruna data');
+		  
+				const result = await response.json();
+				if (result.status !== 'success') throw new Error(result.message || 'Failed to load data');
+		  
+				allTarunaData = Array.isArray(result.data) ? result.data : [];
+				allTarunaData.forEach(i => { if (i.jurusan) uniqueJurusan.add(i.jurusan); });
+		  
+				updateFilterOptions();
+				displayFilteredData();
+			  } catch (err) {
+				console.error('Error in loadTarunaData:', err);
+				showAlert('Failed to load Taruna data: ' + err.message, 'danger');
+			  }
+			}
+		  
+			// ===== Tampilkan data terfilter =====
+			function displayFilteredData() {
+			  const jurusanFilter = document.getElementById('jurusanFilter')?.value || '';
+			  const filtered = allTarunaData.filter(i => !jurusanFilter || i.jurusan === jurusanFilter);
+		  
+			  const tableBody = document.querySelector('.data-table tbody');
+			  if (!tableBody) return;
+			  tableBody.innerHTML = '';
+		  
+			  if (filtered.length === 0) {
+				tableBody.innerHTML = `
+				  <tr><td colspan="8" class="text-center">Tidak ada data yang tersedia</td></tr>`;
+				return;
+			  }
+		  
+			  filtered.forEach(item => {
+				const badge = item.status_pengumpulan
+				  ? '<span class="badge badge-success">Sudah</span>'
+				  : '<span class="badge badge-danger">Belum</span>';
+		  
+				const disabled = item.status_pengumpulan ? '' : 'disabled';
+		  
+				const row = document.createElement('tr');
+				row.innerHTML = `
+				  <td>${item.nama_lengkap || '-'}</td>
+				  <td>${item.jurusan || '-'}</td>
+				  <td>${item.kelas || '-'}</td>
+				  <td>${item.ketua_penguji || '-'}</td>
+				  <td>${item.penguji_1 || '-'}</td>
+				  <td>${item.penguji_2 || '-'}</td>
+				  <td>${badge}</td>
+				  <td>
+					<button class="btn btn-sm btn-primary" onclick="showPengujiModal(${item.taruna_id})" ${disabled}>
+					  Pilih Dosen
+					</button>
+				  </td>`;
+				tableBody.appendChild(row);
+			  });
+			}
+		  
+			function applyFilters() { displayFilteredData(); }
+		  
+			// ===== Load dosen (tanpa Authorization) =====
+			async function loadDosenData() {
+			  try {
+				const response = await fetch('http://104.43.89.154:8086/dosen');
+				if (!response.ok) throw new Error('Gagal mengambil data dosen');
+		  
+				const result = await response.json();
+				if (result.status !== 'success' || !Array.isArray(result.data)) {
+				  throw new Error('Response format salah');
+				}
+		  
+				['ketuaPenguji', 'penguji1', 'penguji2'].forEach(id => {
+				  const select = document.getElementById(id);
+				  if (!select) return;
+				  let label = id === 'ketuaPenguji' ? 'Ketua Penguji' : (id === 'penguji1' ? 'Penguji 1' : 'Penguji 2');
+				  select.innerHTML = `<option value="">Pilih ${label}</option>`;
+				  result.data.forEach(dosen => {
+					const opt = document.createElement('option');
+					opt.value = dosen.id;
+					opt.textContent = dosen.nama_lengkap;
+					select.appendChild(opt);
+				  });
+				});
+			  } catch (err) {
+				console.error('Error loadDosenData:', err);
+				showAlert('Gagal memuat data dosen: ' + err.message, 'danger');
+			  }
+			}
+		  
+			// ===== Modal pilih penguji =====
+			function showPengujiModal(tarunaId, currentPenguji = {}) {
+			  const hid = document.getElementById('currentTarunaId');
+			  if (hid) hid.value = tarunaId;
+		  
+			  loadDosenData().then(() => {
+				if (currentPenguji.ketua_id)  { const s = document.getElementById('ketuaPenguji'); if (s) s.value = currentPenguji.ketua_id; }
+				if (currentPenguji.penguji_1_id) { const s = document.getElementById('penguji1'); if (s) s.value = currentPenguji.penguji_1_id; }
+				if (currentPenguji.penguji_2_id) { const s = document.getElementById('penguji2'); if (s) s.value = currentPenguji.penguji_2_id; }
+				if (window.$) $('#modalPilihPenguji').modal('show');
+			  });
+			}
+		  
+			// ===== Ambil final_laporan100_id by taruna (tanpa Authorization) =====
 			async function getFinalLaporan100IdByTarunaId(tarunaId) {
-				try {
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					const response = await fetch(`http://104.43.89.154:8086/final_laporan100?taruna_id=${tarunaId}`, {
-						headers: {
-							'Authorization': `Bearer ${token}`
-						}
-					});
-
-					const data = await response.json();
-					if (data.status === 'success' && data.data && data.data.id) {
-						return data.data.id;
-					} else {
-						console.warn('final_laporan100 tidak ditemukan untuk taruna_id:', tarunaId);
-						return null;
-					}
-				} catch (error) {
-					console.error('Error fetching final laporan100 ID:', error);
-					return null;
-				}
+			  try {
+				const response = await fetch(`http://104.43.89.154:8086/final_laporan100?taruna_id=${tarunaId}`);
+				const data = await response.json();
+				if (data.status === 'success' && data.data && data.data.id) return data.data.id;
+				console.warn('final_laporan100 tidak ditemukan untuk taruna_id:', tarunaId);
+				return null;
+			  } catch (err) {
+				console.error('Error fetching final laporan100 ID:', err);
+				return null;
+			  }
 			}
-
-			// Fungsi untuk menyimpan penguji
+		  
+			// ===== Simpan penguji (tanpa Authorization) =====
 			async function savePenguji() {
-				try {
-					const tarunaId = parseInt(document.getElementById('currentTarunaId').value);
-					const ketuaPengujiId = parseInt(document.getElementById('ketuaPenguji').value);
-					const penguji1Id = parseInt(document.getElementById('penguji1').value);
-					const penguji2Id = parseInt(document.getElementById('penguji2').value);
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-
-					if (!tarunaId || !ketuaPengujiId || !penguji1Id || !penguji2Id) {
-						showAlert('Semua penguji harus dipilih', 'warning');
-						return;
-					}
-
-					// Opsional: fetch final_laporan100_id berdasarkan tarunaId dari backend
-					const finalLaporan100Id = await getFinalLaporan100IdByTarunaId(tarunaId);
-					if (!finalLaporan100Id) {
-						showAlert('Taruna ini belum mengumpulkan laporan100', 'danger');
-						return;
-					}
-
-					const response = await fetch('http://104.43.89.154:8086/penguji_laporan100', {
-						method: 'POST',
-						headers: {
-							'Authorization': `Bearer ${token}`,
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({
-							taruna_id: tarunaId,
-							final_laporan100_id: finalLaporan100Id,
-							ketua_id: ketuaPengujiId,
-							penguji_1_id: penguji1Id,
-							penguji_2_id: penguji2Id
-						})
-					});
-
-					const result = await response.json();
-
-					if (!response.ok || result.status !== 'success') {
-						throw new Error(result.message || 'Gagal menyimpan penguji');
-					}
-
-					showAlert('Penguji berhasil disimpan', 'success');
-					$('#modalPilihPenguji').modal('hide');
-					loadTarunaData();
-
-				} catch (error) {
-					console.error('Error saving penguji:', error);
-					showAlert('Gagal menyimpan penguji: ' + error.message, 'danger');
+			  try {
+				const tarunaId       = parseInt(document.getElementById('currentTarunaId').value);
+				const ketuaPengujiId = parseInt(document.getElementById('ketuaPenguji').value);
+				const penguji1Id     = parseInt(document.getElementById('penguji1').value);
+				const penguji2Id     = parseInt(document.getElementById('penguji2').value);
+		  
+				if (!tarunaId || !ketuaPengujiId || !penguji1Id || !penguji2Id) {
+				  showAlert('Semua penguji harus dipilih', 'warning');
+				  return;
 				}
+		  
+				const finalId = await getFinalLaporan100IdByTarunaId(tarunaId);
+				if (!finalId) {
+				  showAlert('Taruna ini belum mengumpulkan laporan100', 'danger');
+				  return;
+				}
+		  
+				const response = await fetch('http://104.43.89.154:8086/penguji_laporan100', {
+				  method: 'POST',
+				  headers: { 'Content-Type': 'application/json' },
+				  body: JSON.stringify({
+					taruna_id: tarunaId,
+					final_laporan100_id: finalId,
+					ketua_id: ketuaPengujiId,
+					penguji_1_id: penguji1Id,
+					penguji_2_id: penguji2Id
+				  })
+				});
+		  
+				const result = await response.json();
+				if (!response.ok || result.status !== 'success') {
+				  throw new Error(result.message || 'Gagal menyimpan penguji');
+				}
+		  
+				showAlert('Penguji berhasil disimpan', 'success');
+				if (window.$) $('#modalPilihPenguji').modal('hide');
+				loadTarunaData();
+			  } catch (err) {
+				console.error('Error saving penguji:', err);
+				showAlert('Gagal menyimpan penguji: ' + err.message, 'danger');
+			  }
 			}
-
-		</script>
+		  
+			// ===== Auto-load saat halaman dimuat =====
+			document.addEventListener('DOMContentLoaded', function () {
+			  loadTarunaData();
+			});
+		  </script>
+		  
 
 		<style>
 		.badge {

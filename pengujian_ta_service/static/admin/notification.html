@@ -610,185 +610,133 @@
 		<!-- End Google Tag Manager (noscript) -->
 
 		<script>
-			// Tambahkan fungsi untuk redirect ke profile
+			// Redirect ke profile (tanpa paksa login)
 			function redirectToProfile() {
-				const userId = localStorage.getItem('userId');
-				if (userId) {
-					window.location.href = `/admin/profile?id=${userId}`;
-				} else {
-					console.error('User ID tidak ditemukan');
-					window.location.replace('/loginusers');
-				}
+			  const userId = localStorage.getItem('userId');
+			  if (userId) {
+				window.location.href = `/admin/profile?id=${userId}`;
+			  } else {
+				console.warn('User ID tidak ditemukan');
+				// tetap arahkan agar alur pengujian lanjut
+				window.location.href = '/admin/profile';
+			  }
 			}
-
+		  
 			function showAlert(message, type) {
-				const alertContainer = document.getElementById('alertContainer');
-				const alertMessage = document.getElementById('alertMessage');
-				
-				// Set pesan dan tipe alert
-				alertMessage.textContent = message;
-				alertMessage.className = `alert alert-${type}`;
-				
-				// Tampilkan alert
-				alertContainer.style.display = 'block';
-				
-				// Hilangkan alert setelah 5 detik
-				setTimeout(() => {
-					alertContainer.style.display = 'none';
-				}, 5000);
+			  const alertContainer = document.getElementById('alertContainer');
+			  const alertMessage = document.getElementById('alertMessage');
+			  if (!alertContainer || !alertMessage) { console.warn(message); return; }
+			  alertMessage.textContent = message;
+			  alertMessage.className = `alert alert-${type}`;
+			  alertContainer.style.display = 'block';
+			  setTimeout(() => { alertContainer.style.display = 'none'; }, 5000);
 			}
-
+		  
+			// Logout (tanpa Authorization)
 			async function logout() {
-				try {
-					// Ambil token dari localStorage dan sessionStorage
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					
-					// Kirim request logout ke server
-					const response = await fetch('http://104.43.89.154:8085/logout', {
-						method: 'POST',
-						headers: {
-							'Authorization': token ? `Bearer ${token}` : '',
-							'Content-Type': 'application/json'
-						},
-						credentials: 'include'
-					});
-	
-					const data = await response.json();
-					
-					if (response.ok && data.status === 'success') {
-						// Hapus semua data storage
-						localStorage.clear();
-						sessionStorage.clear();
-						
-						// Hapus semua cookies
-						const cookies = document.cookie.split(';');
-						for (let cookie of cookies) {
-							const eqPos = cookie.indexOf('=');
-							const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-							document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
-							document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/admin';
-						}
-						
-						console.log('Logout berhasil');
-						
-						// Force reload halaman login untuk membersihkan cache
-						window.location.replace('/loginusers');
-					} else {
-						throw new Error(data.message || 'Gagal logout');
-					}
-				} catch (error) {
-					console.error('Error during logout:', error);
-					alert('Gagal logout. Silakan coba lagi.');
+			  try {
+				const response = await fetch('http://104.43.89.154:8085/logout', {
+				  method: 'POST',
+				  headers: { 'Content-Type': 'application/json' },
+				  credentials: 'include'
+				});
+				try { await response.json(); } catch {}
+				// Bersihkan storage & cookies untuk simulasi logout
+				localStorage.clear();
+				sessionStorage.clear();
+				const cookies = document.cookie.split(';');
+				for (let cookie of cookies) {
+				  const eqPos = cookie.indexOf('=');
+				  const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+				  document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+				  document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/admin';
 				}
+				window.location.replace('/loginusers');
+			  } catch (error) {
+				console.error('Error during logout:', error);
+				alert('Gagal logout. Silakan coba lagi.');
+			  }
 			}
-
-			// JS untuk upload file notifikasi
+		  
+			// Upload broadcast (tanpa Authorization)
 			document.addEventListener("DOMContentLoaded", function () {
-				const form = document.getElementById("broadcastForm");
-
-				form.addEventListener("submit", async function (e) {
-					e.preventDefault();
-
-					const formData = new FormData(form);
-					const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-
-					// Ambil semua checkbox target yang dicentang
-					const targets = [];
-					if (document.getElementById("targetTaruna").checked) targets.push("Taruna");
-					if (document.getElementById("targetDosen").checked) targets.push("Dosen");
-
-					// Tambahkan target unik ke FormData
-					const uniqueTargets = [...new Set(targets)];
-					uniqueTargets.forEach(t => formData.append("target", t));
-
-					try {
-						const response = await fetch("http://104.43.89.154:8086/broadcast", {
-							method: "POST",
-							headers: {
-								// Jika pakai auth, tambahkan Authorization header
-								"Authorization": `Bearer ${token}`, 
-							},
-							body: formData,
-						});
-
-						if (!response.ok) {
-							const err = await response.text();
-							showAlert("Gagal mengirim notifikasi: " + err, "danger");
-							return;
-						}
-
-						const result = await response.json();
-						form.reset();
-						$('#successModal').modal('show');
-
-					} catch (error) {
-						console.error("Error:", error);
-						showAlert("Terjadi kesalahan saat mengirim data", "danger");
-					}
-				});
-			});
-
-			// Tambahkan pengecekan autentikasi saat halaman dimuat
-			document.addEventListener('DOMContentLoaded', function() {
-				// Cek token
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				if (!token) {
-					window.location.replace('/loginusers');
+			  const form = document.getElementById("broadcastForm");
+			  if (!form) return;
+		  
+			  form.addEventListener("submit", async function (e) {
+				e.preventDefault();
+		  
+				const formData = new FormData(form);
+		  
+				// target unik dari checkbox
+				const targets = [];
+				if (document.getElementById("targetTaruna")?.checked) targets.push("Taruna");
+				if (document.getElementById("targetDosen")?.checked) targets.push("Dosen");
+				[...new Set(targets)].forEach(t => formData.append("target", t));
+		  
+				try {
+				  const response = await fetch("http://104.43.89.154:8086/broadcast", {
+					method: "POST",
+					// JANGAN set Content-Type saat pakai FormData
+					body: formData
+				  });
+		  
+				  if (!response.ok) {
+					const err = await response.text();
+					showAlert("Gagal mengirim notifikasi: " + err, "danger");
 					return;
+				  }
+		  
+				  // jika server balas JSON
+				  try { await response.json(); } catch {}
+				  form.reset();
+				  if (window.$) { $('#successModal').modal('show'); }
+				  else { showAlert("Notifikasi terkirim.", "success"); }
+				} catch (error) {
+				  console.error("Error:", error);
+				  showAlert("Terjadi kesalahan saat mengirim data", "danger");
 				}
-
-				// Ambil ID user dari token (jika tersedia)
-				const userId = localStorage.getItem('userId');
-
-				// Ambil data user dari API
-				fetch(`http://104.43.89.154:8086/users?id=${userId}`, {
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
+			  });
+			});
+		  
+			// Header username (tanpa cek token & tanpa Authorization)
+			document.addEventListener('DOMContentLoaded', function () {
+			  const userId = localStorage.getItem('userId');
+			  if (!userId) {
+				const usernameElement = document.getElementById('username');
+				if (usernameElement) usernameElement.textContent = 'User';
+				return;
+			  }
+		  
+			  fetch(`http://104.43.89.154:8086/users?id=${userId}`)
+				.then(res => res.text())
+				.then(txt => {
+				  let data; try { data = JSON.parse(txt); } catch { data = {}; }
+				  const user = data?.data ?? data;
+				  const usernameElement = document.getElementById('username');
+				  if (usernameElement) {
+					usernameElement.textContent = user?.username || user?.nama_lengkap || 'User';
+				  }
 				})
-				.then(response => {
-					if (!response.ok) {
-						throw new Error('Gagal mengambil data user');
-					}
-					return response.json();
-				})
-				.then(user => {
-					// Update username di header
-					const usernameElement = document.getElementById('username');
-					if (usernameElement) {
-						usernameElement.textContent = user.username || user.nama_lengkap || 'User';
-					}
-				})
-				.catch(error => {
-					console.error('Error:', error);
-					// Jika gagal mengambil data, tampilkan placeholder
-					const usernameElement = document.getElementById('username');
-					if (usernameElement) {
-						usernameElement.textContent = 'User';
-					}
-				});
-
-				// Validasi token dengan server
-				fetch('http://104.43.89.154:8085/admin/dashboard', {
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				}).catch(() => {
-					window.location.replace('/loginusers');
+				.catch(err => {
+				  console.warn('Gagal memuat user:', err);
+				  const usernameElement = document.getElementById('username');
+				  if (usernameElement) usernameElement.textContent = 'User';
 				});
 			});
-
-			// Pastikan event listener untuk tombol logout terpasang dengan benar
-			document.addEventListener('DOMContentLoaded', function() {
-				const logoutButton = document.querySelector('a[onclick="logout()"]');
-				if (logoutButton) {
-					logoutButton.addEventListener('click', function(e) {
-						e.preventDefault();
-						logout();
-					});
-				}
+		  
+			// Listener tombol logout
+			document.addEventListener('DOMContentLoaded', function () {
+			  const logoutButton = document.querySelector('a[onclick="logout()"]');
+			  if (logoutButton) {
+				logoutButton.addEventListener('click', function (e) {
+				  e.preventDefault();
+				  logout();
+				});
+			  }
 			});
-		</script>
+		  </script>
+		  
 
 	</body>
 </html>

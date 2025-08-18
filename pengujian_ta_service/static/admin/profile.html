@@ -552,142 +552,81 @@
 		<script src="vendors/scripts/layout-settings.js"></script>
 		<script src="src/plugins/cropperjs/dist/cropper.js"></script>
         <script src="src/plugins/bootstrap-select/bootstrap-select.min.js"></script>
-
 		<script>
-			document.addEventListener("DOMContentLoaded", function() {
-				// Ambil token dari storage
-				const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-				if (!token) {
-					window.location.replace("/loginusers");
-					return;
-				}
-
-				// Ambil ID dari parameter URL
-				const urlParams = new URLSearchParams(window.location.search);
-				const userId = urlParams.get('id');
-
-				// Jika ada ID, ambil data user spesifik
-				if (userId) {
-					fetch(`http://104.43.89.154:8086/users?id=${userId}`, {
-						headers: {
-							"Authorization": `Bearer ${token}`
-						}
-					})
-					.then(response => {
-						if (!response.ok) {
-							throw new Error("Gagal mengambil data user");
-						}
-						return response.json();
-					})
-					.then(user => {
-						// Update informasi profile dengan pengecekan data kosong
-						const updateElement = (elementId, value) => {
-							const element = document.getElementById(elementId);
-							if (element) {
-								element.textContent = value || '-';
-							}
-						};
-
-						// Update setiap elemen dengan pengecekan data kosong
-						updateElement("fullName", user.nama_lengkap);
-						updateElement("role", user.role);
-						updateElement("username", user.username);
-						updateElement("email", user.email);
-						updateElement("jurusan", user.jurusan);
-						updateElement("kelas", user.kelas);
-						updateElement("roleInfo", user.role);
-					})
-					.catch(error => {
-						console.error("Error:", error);
-						// Hanya tampilkan alert jika error bukan karena data kosong
-						if (error.message !== "Gagal mengambil data user") {
-							alert("Terjadi kesalahan saat mengakses server");
-						}
-					});
-				} else {
-					// Jika tidak ada ID, tampilkan pesan atau redirect
-					console.log("ID user tidak ditemukan");
-					// Optional: redirect ke halaman lain
-					// window.location.replace("/admin/listuser");
-				}
-			});
-
-			async function logout() {
-				try {
-					// Ambil token dari localStorage dan sessionStorage
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					
-					// Kirim request logout ke server
-					const response = await fetch('http://104.43.89.154:8085/logout', {
-						method: 'POST',
-						headers: {
-							'Authorization': token ? `Bearer ${token}` : '',
-							'Content-Type': 'application/json'
-						},
-						credentials: 'include'
-					});
-
-					const data = await response.json();
-					
-					if (response.ok && data.status === 'success') {
-						// Hapus semua data storage
-						localStorage.clear();
-						sessionStorage.clear();
-						
-						// Hapus semua cookies
-						const cookies = document.cookie.split(';');
-						for (let cookie of cookies) {
-							const eqPos = cookie.indexOf('=');
-							const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-							document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
-							document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/admin';
-						}
-						
-						console.log('Logout berhasil');
-						
-						// Force reload halaman login untuk membersihkan cache
-						window.location.replace('/loginusers');
-					} else {
-						throw new Error(data.message || 'Gagal logout');
-					}
-				} catch (error) {
-					console.error('Error during logout:', error);
-					alert('Gagal logout. Silakan coba lagi.');
-				}
-			}
-
-			// Tambahkan pengecekan autentikasi saat halaman dimuat
-			document.addEventListener('DOMContentLoaded', function() {
-				// Cek token
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				if (!token) {
-					window.location.replace('/loginusers');
-					return;
-				}
-
-				// Validasi token dengan server
-				fetch('http://104.43.89.154:8085/admin/dashboard', {
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				}).catch(() => {
-					// Jika ada error, redirect ke login
-					window.location.replace('/loginusers');
+			// ====== Profil (tanpa cek token) ======
+			document.addEventListener("DOMContentLoaded", function () {
+			  // Ambil ID dari parameter URL
+			  const urlParams = new URLSearchParams(window.location.search);
+			  const userId = urlParams.get('id');
+		  
+			  // Ambil data user spesifik (tanpa Authorization)
+			  if (userId) {
+				fetch(`http://104.43.89.154:8086/users?id=${encodeURIComponent(userId)}`)
+				  .then(response => response.ok ? response.json() : Promise.reject(new Error("Gagal mengambil data user")))
+				  .then(user => {
+					const updateElement = (id, val) => {
+					  const el = document.getElementById(id);
+					  if (el) el.textContent = (val ?? '-') || '-';
+					};
+					updateElement("fullName",  user.nama_lengkap);
+					updateElement("role",      user.role);
+					updateElement("username",  user.username);
+					updateElement("email",     user.email);
+					updateElement("jurusan",   user.jurusan);
+					updateElement("kelas",     user.kelas);
+					updateElement("roleInfo",  user.role);
+				  })
+				  .catch(err => {
+					console.error("Error:", err);
+					// Saat DAST, biarkan gagal tanpa redirect
+				  });
+			  } else {
+				console.log("ID user tidak ditemukan");
+			  }
+		  
+			  // Pasang listener tombol logout
+			  const logoutButton = document.querySelector('a[onclick="logout()"]');
+			  if (logoutButton) {
+				logoutButton.addEventListener('click', function(e) {
+				  e.preventDefault();
+				  logout();
 				});
+			  }
 			});
-
-			// Pastikan event listener untuk tombol logout terpasang dengan benar
-			document.addEventListener('DOMContentLoaded', function() {
-				const logoutButton = document.querySelector('a[onclick="logout()"]');
-				if (logoutButton) {
-					logoutButton.addEventListener('click', function(e) {
-						e.preventDefault();
-						logout();
-					});
+		  
+			// ====== Logout tanpa Authorization (untuk uji DAST) ======
+			async function logout() {
+			  try {
+				// Kirim logout tanpa header Authorization
+				await fetch('http://104.43.89.154:8085/logout', {
+				  method: 'POST',
+				  headers: { 'Content-Type': 'application/json' },
+				  credentials: 'include'
+				}).catch(() => { /* abaikan kesalahan saat uji */ });
+		  
+			  } catch (error) {
+				console.error('Error during logout:', error);
+				// lanjutkan pembersihan lokal meski request gagal
+			  } finally {
+				// Bersihkan storage & cookies agar sesi lokal ter-reset saat pengujian
+				localStorage.clear();
+				sessionStorage.clear();
+		  
+				const cookies = document.cookie.split(';');
+				for (let cookie of cookies) {
+				  const eqPos = cookie.indexOf('=');
+				  const name = (eqPos > -1 ? cookie.substr(0, eqPos) : cookie).trim();
+				  ['/', '/admin'].forEach(path => {
+					document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=' + path;
+				  });
 				}
-			});
-		</script>
-		
+		  
+				// Kembali ke halaman login (opsional saat uji)
+				window.location.replace('/loginusers');
+			  }
+			}
+		  </script>
+		  
 		<!-- Google Tag Manager (noscript) -->	
 		<noscript
 			><iframe

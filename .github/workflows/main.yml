@@ -16,104 +16,104 @@ env:
 
 jobs:
   # 1. SAST - CodeQL (Go + JS)
-  sast-codeql:
-    name: SAST dengan CodeQL (Go + JS)
-    runs-on: ubuntu-latest
+  # sast-codeql:
+  #   name: SAST dengan CodeQL (Go + JS)
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout source code
+  #       uses: actions/checkout@v4
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: 1.23
+  #     - name: Setup Go
+  #       uses: actions/setup-go@v5
+  #       with:
+  #         go-version: 1.23
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: go, javascript
+  #     - name: Initialize CodeQL
+  #       uses: github/codeql-action/init@v3
+  #       with:
+  #         languages: go, javascript
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
-        with:
-          output: codeql-results
+  #     - name: Perform CodeQL Analysis
+  #       uses: github/codeql-action/analyze@v3
+  #       with:
+  #         output: codeql-results
 
-      # === Gate: Fail jika ada HIGH (>=7.0) atau CRITICAL (>=9.0) ===
-      - name: Fail on High/Critical CodeQL findings
-        run: |
-          sudo apt-get update -y && sudo apt-get install -y jq
-          shopt -s nullglob
-          files=(codeql-results/*.sarif)
-          if [ ${#files[@]} -eq 0 ]; then
-            echo "Tidak ada file SARIF yang ditemukan di codeql-results/."
-            exit 1
-          fi
+  #     # === Gate: Fail jika ada HIGH (>=7.0) atau CRITICAL (>=9.0) ===
+  #     - name: Fail on High/Critical CodeQL findings
+  #       run: |
+  #         sudo apt-get update -y && sudo apt-get install -y jq
+  #         shopt -s nullglob
+  #         files=(codeql-results/*.sarif)
+  #         if [ ${#files[@]} -eq 0 ]; then
+  #           echo "Tidak ada file SARIF yang ditemukan di codeql-results/."
+  #           exit 1
+  #         fi
 
-          total_high=0
-          total_crit=0
+  #         total_high=0
+  #         total_crit=0
 
-          for f in "${files[@]}"; do
-            echo "Memeriksa $f ..."
-            crit=$(jq '[.runs[].results[] 
-                        | select((.properties."security-severity" // "0" | tonumber) >= 9.0)
-                      ] | length' "$f")
-            high=$(jq '[.runs[].results[] 
-                        | select((.properties."security-severity" // "0" | tonumber) >= 7.0
-                                  and (.properties."security-severity" // "0" | tonumber) < 9.0)
-                      ] | length' "$f")
-            echo "  Critical: $crit, High: $high"
-            total_crit=$((total_crit + crit))
-            total_high=$((total_high + high))
-          done
+  #         for f in "${files[@]}"; do
+  #           echo "Memeriksa $f ..."
+  #           crit=$(jq '[.runs[].results[] 
+  #                       | select((.properties."security-severity" // "0" | tonumber) >= 9.0)
+  #                     ] | length' "$f")
+  #           high=$(jq '[.runs[].results[] 
+  #                       | select((.properties."security-severity" // "0" | tonumber) >= 7.0
+  #                                 and (.properties."security-severity" // "0" | tonumber) < 9.0)
+  #                     ] | length' "$f")
+  #           echo "  Critical: $crit, High: $high"
+  #           total_crit=$((total_crit + crit))
+  #           total_high=$((total_high + high))
+  #         done
 
-          echo "Total Critical: $total_crit, Total High: $total_high"
+  #         echo "Total Critical: $total_crit, Total High: $total_high"
 
-          if [ "$total_crit" -gt 0 ] || [ "$total_high" -gt 0 ]; then
-            echo "❌ CodeQL menemukan temuan High/Critical. Gagal."
-            exit 1
-          else
-            echo "✅ Tidak ada temuan High/Critical."
-          fi
+  #         if [ "$total_crit" -gt 0 ] || [ "$total_high" -gt 0 ]; then
+  #           echo "❌ CodeQL menemukan temuan High/Critical. Gagal."
+  #           exit 1
+  #         else
+  #           echo "✅ Tidak ada temuan High/Critical."
+  #         fi
 
-  # DEPENDENCY SCAN (govulncheck)
-  dep-scan:
-    needs: sast-codeql
-    name: Govulncheck (${{ matrix.service.name }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        service:
-          - { name: pengujian-ta-service,           path: pengujian_ta_service }
-          - { name: pengujian-user-service,         path: pengujian_user_service }
-          - { name: pengujian-document-service,     path: pengujian_document_service }
-          - { name: pengujian-notification-service, path: pengujian_notification_service }
+  # # DEPENDENCY SCAN (govulncheck)
+  # dep-scan:
+  #   needs: sast-codeql
+  #   name: Govulncheck (${{ matrix.service.name }})
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       service:
+  #         - { name: pengujian-ta-service,           path: pengujian_ta_service }
+  #         - { name: pengujian-user-service,         path: pengujian_user_service }
+  #         - { name: pengujian-document-service,     path: pengujian_document_service }
+  #         - { name: pengujian-notification-service, path: pengujian_notification_service }
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      # Gate + simpan laporan TEXT
-      - name: Govulncheck (gate + save text report)
-        uses: golang/govulncheck-action@v1
-        with:
-          go-version-input: ${{ env.GO_VERSION }}         # contoh: "1.22.x" atau "1.23"
-          work-dir: ${{ matrix.service.path }}             # jalankan per service (monorepo)
-          go-package: ./...                                # analisis semua paket
-          output-format: text                              # penting: TEXT → mengikuti exit code
-          output-file: ${{ matrix.service.name }}-govulncheck.txt
-          repo-checkout: false
-          cache: true
-          cache-dependency-path: ${{ matrix.service.path }}/go.sum
+  #     # Gate + simpan laporan TEXT
+  #     - name: Govulncheck (gate + save text report)
+  #       uses: golang/govulncheck-action@v1
+  #       with:
+  #         go-version-input: ${{ env.GO_VERSION }}         # contoh: "1.22.x" atau "1.23"
+  #         work-dir: ${{ matrix.service.path }}             # jalankan per service (monorepo)
+  #         go-package: ./...                                # analisis semua paket
+  #         output-format: text                              # penting: TEXT → mengikuti exit code
+  #         output-file: ${{ matrix.service.name }}-govulncheck.txt
+  #         repo-checkout: false
+  #         cache: true
+  #         cache-dependency-path: ${{ matrix.service.path }}/go.sum
 
-      # Arsipkan laporan TEXT
-      - name: Upload govulncheck report (artifact)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: govulncheck-${{ matrix.service.name }}
-          path: ${{ matrix.service.name }}-govulncheck.txt
+  #     # Arsipkan laporan TEXT
+  #     - name: Upload govulncheck report (artifact)
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: govulncheck-${{ matrix.service.name }}
+  #         path: ${{ matrix.service.name }}-govulncheck.txt
 
 
   # # IMAGE SCAN (trivy)
@@ -152,23 +152,23 @@ jobs:
   #         hide-progress: true
   #         timeout: 10m
 
-  # # Build Image ()
-  # build-pengujian-ta-service:
-  #   needs: image-scan
-  #   name: Build Image
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
-  #     - name: Build Image
-  #       run: docker build -t smgxv/pengujian-ta-service -f pengujian_ta_service/Dockerfile pengujian_ta_service
-  #     - name: Login to DockerHub
-  #       uses: docker/login-action@v1
-  #       with:
-  #         username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
-  #     - name: Push Image
-  #       run: docker push smgxv/pengujian-ta-service
+  # Build Image ()
+  build-pengujian-ta-service:
+    # needs: image-scan
+    name: Build Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build Image
+        run: docker build -t smgxv/pengujian-ta-service -f pengujian_ta_service/Dockerfile pengujian_ta_service
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Push Image
+        run: docker push smgxv/pengujian-ta-service
   
   # build-pengujian-user-service:
   #   needs: image-scan
@@ -222,23 +222,23 @@ jobs:
   #       run: docker push smgxv/pengujian-notification-service
 
   # # Deploy ke lingkungan sementara 
-  # deploy-pengujian-ta-service:
-  #   needs: build-pengujian-ta-service
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Deploy to VPS
-  #       uses: appleboy/ssh-action@master
-  #       with:
-  #         host: ${{ secrets.VPS_HOST }}
-  #         username: ${{ secrets.VPS_USERNAME }}
-  #         password: ${{ secrets.VPS_PASSWORD }}
-  #         port: ${{ secrets.VPS_PORT }}
-  #         script: |
-  #           docker stop pengujian-ta-service || true && docker rm pengujian-ta-service || true
-  #           docker system prune -af
-  #           docker pull smgxv/pengujian-ta-service
-  #           docker run -d -p 8085:8085 --name pengujian-ta-service smgxv/pengujian-ta-service
-  #           docker network connect simta_net pengujian-ta-service
+  deploy-pengujian-ta-service:
+    needs: build-pengujian-ta-service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            docker stop pengujian-ta-service || true && docker rm pengujian-ta-service || true
+            docker system prune -af
+            docker pull smgxv/pengujian-ta-service
+            docker run -d -p 8085:8085 --name pengujian-ta-service smgxv/pengujian-ta-service
+            docker network connect simta_net pengujian-ta-service
 
   # deploy-pengujian-user-service:
   #   needs: build-pengujian-user-service

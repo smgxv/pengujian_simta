@@ -518,218 +518,206 @@
 
     <!-- // ... existing code ... -->
     <script>
-        document.querySelectorAll('.toggle-password').forEach(function(toggle) {
-            toggle.addEventListener('click', function () {
-                const input = document.querySelector(this.getAttribute('toggle'));
-                const icon = this.querySelector('i');
-        
-                if (input.type === "password") {
-                    input.type = "text";
-                    icon.classList.remove("fa-eye");
-                    icon.classList.add("fa-eye-slash");
-                } else {
-                    input.type = "password";
-                    icon.classList.remove("fa-eye-slash");
-                    icon.classList.add("fa-eye");
-                }
-            });
-        });
-        
-        const kelasPerJurusan = {
-            'Keamanan Siber': [
-                'IV Rekayasa Keamanan Siber Echo',
-                'IV Rekayasa Keamanan Siber Trace',
-                'IV Rekayasa Keamanan Siber Route'
-            ],
-            'Kriptografi': [
-                'IV Rekayasa Perangkat Lunak Kripto',
-                'IV Rekayasa Perangkat Keras Kriptografi',
-                'IV Rekayasa Sistem Kriptografi'
-            ]
-        };
-        
-        function toggleJurusanKelas() {
-            const role = document.getElementById('role').value;
-            const jurusanGroup = document.getElementById('jurusanGroup');
-            const kelasGroup = document.getElementById('kelasGroup');
-            const jurusanSelect = document.getElementById('jurusan');
-            const kelasSelect = document.getElementById('kelas');
-            const npmGroup = document.getElementById('npmGroup');
-            const npmInput = document.getElementById('npm');
-        
-            jurusanSelect.value = '';
-            kelasSelect.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>';
-        
-            if (role.toLowerCase() === 'taruna') {
-                jurusanGroup.style.display = 'flex';
-                kelasGroup.style.display = 'flex';
-                npmGroup.style.display = 'flex';
-                jurusanSelect.required = true;
-                kelasSelect.required = true;
-                npmInput.required = true;
-            } else if (role.toLowerCase() === 'dosen') {
-                jurusanGroup.style.display = 'flex';
-                kelasGroup.style.display = 'none';
-                npmGroup.style.display = 'none';
-                jurusanSelect.required = true;
-                kelasSelect.required = false;
-                npmInput.required = false;
+        document.querySelectorAll('.toggle-password').forEach(function (toggle) {
+          toggle.addEventListener('click', function () {
+            const input = document.querySelector(this.getAttribute('toggle'));
+            const icon = this.querySelector('i');
+      
+            if (input.type === "password") {
+              input.type = "text";
+              icon.classList.remove("fa-eye");
+              icon.classList.add("fa-eye-slash");
             } else {
-                jurusanGroup.style.display = 'none';
-                kelasGroup.style.display = 'none';
-                npmGroup.style.display = 'none';
-                jurusanSelect.required = false;
-                kelasSelect.required = false;
-                npmInput.required = false;
+              input.type = "password";
+              icon.classList.remove("fa-eye-slash");
+              icon.classList.add("fa-eye");
             }
+          });
+        });
+      
+        const kelasPerJurusan = {
+          'Keamanan Siber': [
+            'IV Rekayasa Keamanan Siber Echo',
+            'IV Rekayasa Keamanan Siber Trace',
+            'IV Rekayasa Keamanan Siber Route'
+          ],
+          'Kriptografi': [
+            'IV Rekayasa Perangkat Lunak Kripto',
+            'IV Rekayasa Perangkat Keras Kriptografi',
+            'IV Rekayasa Sistem Kriptografi'
+          ]
+        };
+      
+        function toggleJurusanKelas() {
+          const role = document.getElementById('role').value;
+          const jurusanGroup = document.getElementById('jurusanGroup');
+          const kelasGroup = document.getElementById('kelasGroup');
+          const jurusanSelect = document.getElementById('jurusan');
+          const kelasSelect = document.getElementById('kelas');
+          const npmGroup = document.getElementById('npmGroup');
+          const npmInput = document.getElementById('npm');
+      
+          jurusanSelect.value = '';
+          kelasSelect.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>';
+      
+          if (role.toLowerCase() === 'taruna') {
+            jurusanGroup.style.display = 'flex';
+            kelasGroup.style.display = 'flex';
+            npmGroup.style.display = 'flex';
+            jurusanSelect.required = true;
+            kelasSelect.required = true;
+            npmInput.required = true;
+          } else if (role.toLowerCase() === 'dosen') {
+            jurusanGroup.style.display = 'flex';
+            kelasGroup.style.display = 'none';
+            npmGroup.style.display = 'none';
+            jurusanSelect.required = true;
+            kelasSelect.required = false;
+            npmInput.required = false;
+          } else {
+            jurusanGroup.style.display = 'none';
+            kelasGroup.style.display = 'none';
+            npmGroup.style.display = 'none';
+            jurusanSelect.required = false;
+            kelasSelect.required = false;
+            npmInput.required = false;
+          }
         }
-        
+      
         function updateKelas() {
-            const role = document.getElementById('role').value;
-            const jurusanSelect = document.getElementById('jurusan');
-            const kelasSelect = document.getElementById('kelas');
-            const selectedJurusan = jurusanSelect.value;
-        
-            if (role.toLowerCase() === 'dosen') return;
-        
-            kelasSelect.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>';
-            if (selectedJurusan && role.toLowerCase() === 'taruna') {
-                const kelasOptions = kelasPerJurusan[selectedJurusan];
-                if (kelasOptions) {
-                    kelasOptions.forEach(kelas => {
-                        const option = document.createElement('option');
-                        option.value = kelas;
-                        option.textContent = kelas;
-                        kelasSelect.appendChild(option);
-                    });
-                }
+          const role = document.getElementById('role').value;
+          const jurusanSelect = document.getElementById('jurusan');
+          const kelasSelect = document.getElementById('kelas');
+          const selectedJurusan = jurusanSelect.value;
+      
+          if (role.toLowerCase() === 'dosen') return;
+      
+          kelasSelect.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>';
+          if (selectedJurusan && role.toLowerCase() === 'taruna') {
+            const kelasOptions = kelasPerJurusan[selectedJurusan];
+            if (kelasOptions) {
+              kelasOptions.forEach(kelas => {
+                const option = document.createElement('option');
+                option.value = kelas;
+                option.textContent = kelas;
+                kelasSelect.appendChild(option);
+              });
             }
+          }
         }
-        
+      
         document.getElementById('role').addEventListener('change', toggleJurusanKelas);
-        
+      
         document.addEventListener('DOMContentLoaded', () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('id');
-        const token  = localStorage.getItem('token') || sessionStorage.getItem('token');
-
-        if (!token) {
-            window.location.replace('/loginusers');
-            return;
-        }
-        if (!userId) {
+          const urlParams = new URLSearchParams(window.location.search);
+          const userId = urlParams.get('id');
+      
+          if (!userId) {
             alert('ID user tidak ditemukan di URL');
             return;
-        }
-
-        // ------- Helper fetch JSON yang robust -------
-        async function fetchJSON(url, opts = {}) {
+          }
+      
+          // Helper fetch JSON
+          async function fetchJSON(url, opts = {}) {
             const res = await fetch(url, opts);
-            const text = await res.text(); // baca sekali (bisa JSON / non-JSON)
+            const text = await res.text();
             let data = null;
             try { data = text ? JSON.parse(text) : null; } catch { /* bukan JSON */ }
-
+      
             if (!res.ok) {
-            const msg = (data && (data.message || data.error)) || text || `HTTP ${res.status}`;
-            throw new Error(msg);
+              const msg = (data && (data.message || data.error)) || text || `HTTP ${res.status}`;
+              throw new Error(msg);
             }
-            // kembalikan payload JSON atau null kalau body kosong
             return data;
-        }
-
-        // ------- Muat data user -------
-        (async () => {
+          }
+      
+          // ------- Muat data user (tanpa Authorization) -------
+          (async () => {
             try {
-            const payload = await fetchJSON(`http://104.43.89.154:8086/users/edit?id=${encodeURIComponent(userId)}`, {
-                method: 'GET',
-                headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`
+              const payload = await fetchJSON(
+                `http://104.43.89.154:8086/users/edit?id=${encodeURIComponent(userId)}`,
+                {
+                  method: 'GET',
+                  headers: { 'Accept': 'application/json' }
                 }
-            });
-
-            // dukung dua format: {status,data} atau langsung objek user
-            const user = payload?.data ?? payload;
-            if (!user || typeof user !== 'object') throw new Error('Data user tidak ditemukan');
-
-            // Normalisasi role ke lower-case
-            const roleLc = (user.role || '').toLowerCase();
-
-            // Isi form dasar
-            document.getElementById('nama_lengkap').value = user.nama_lengkap || '';
-            document.getElementById('email').value        = user.email || '';
-            document.getElementById('username').value     = user.username || '';
-            document.getElementById('role').value         = roleLc || ''; // pastikan opsi select cocok: dosen/taruna/admin
-
-            if (user.jurusan) document.getElementById('jurusan').value = user.jurusan;
-
-            // Tampilkan/sembunyikan field berdasarkan role
-            if (typeof toggleJurusanKelas === 'function') toggleJurusanKelas();
-
-            // Khusus Taruna: set kelas & npm
-            if (roleLc === 'taruna' && user.jurusan) {
+              );
+      
+              const user = payload?.data ?? payload;
+              if (!user || typeof user !== 'object') throw new Error('Data user tidak ditemukan');
+      
+              const roleLc = (user.role || '').toLowerCase();
+      
+              document.getElementById('nama_lengkap').value = user.nama_lengkap || '';
+              document.getElementById('email').value        = user.email || '';
+              document.getElementById('username').value     = user.username || '';
+              document.getElementById('role').value         = roleLc || '';
+      
+              if (user.jurusan) document.getElementById('jurusan').value = user.jurusan;
+      
+              if (typeof toggleJurusanKelas === 'function') toggleJurusanKelas();
+      
+              if (roleLc === 'taruna' && user.jurusan) {
                 if (typeof updateKelas === 'function') updateKelas();
                 setTimeout(() => {
-                document.getElementById('kelas').value = user.kelas || '';
-                document.getElementById('npm').value   = user.npm ?? ''; // backend bisa kirim null / number / string
+                  document.getElementById('kelas').value = user.kelas || '';
+                  document.getElementById('npm').value   = user.npm ?? '';
                 }, 100);
-            }
+              }
             } catch (err) {
-            console.error(err);
-            alert('Gagal mengambil data user: ' + (err?.message || err));
+              console.error(err);
+              alert('Gagal mengambil data user: ' + (err?.message || err));
             }
-        })();
-
-        // ------- Submit update -------
-        document.getElementById('editUserForm').addEventListener('submit', async (e) => {
+          })();
+      
+          // ------- Submit update (tanpa Authorization) -------
+          document.getElementById('editUserForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
+      
             const password        = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm_password').value;
             const roleValLc       = (document.getElementById('role').value || '').toLowerCase();
-
+      
             if (password && password !== confirmPassword) {
-            alert('Password dan konfirmasi password tidak cocok!');
-            return;
+              alert('Password dan konfirmasi password tidak cocok!');
+              return;
             }
-
+      
             const userData = {
-            id: parseInt(userId, 10),
-            nama_lengkap: document.getElementById('nama_lengkap').value,
-            email:        document.getElementById('email').value,
-            username:     document.getElementById('username').value,
-            jurusan:      document.getElementById('jurusan').value || null,
-            role:         roleValLc,
-            password:     password || '',
-            confirm_password: confirmPassword || ''
+              id: parseInt(userId, 10),
+              nama_lengkap: document.getElementById('nama_lengkap').value,
+              email:        document.getElementById('email').value,
+              username:     document.getElementById('username').value,
+              jurusan:      document.getElementById('jurusan').value || null,
+              role:         roleValLc,
+              password:     password || '',
+              confirm_password: confirmPassword || ''
             };
-
+      
             if (roleValLc === 'taruna') {
-            userData.kelas = document.getElementById('kelas').value || '';
-            userData.npm   = document.getElementById('npm').value || '';
+              userData.kelas = document.getElementById('kelas').value || '';
+              userData.npm   = document.getElementById('npm').value || '';
             }
-
+      
             try {
-            const payload = await fetchJSON('http://104.43.89.154:8086/users/edit', {
+              await fetchJSON('http://104.43.89.154:8086/users/edit', {
                 method: 'PUT',
                 headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(userData)
-            });
-
-            // sukses (abaikan bentuk payload; cukup tampilkan pesan umum)
-            alert('User berhasil diupdate');
-            window.location.href = '/admin/listuser';
+              });
+      
+              alert('User berhasil diupdate');
+              window.location.href = '/admin/listuser';
             } catch (err) {
-            console.error(err);
-            alert(err?.message || 'Terjadi kesalahan saat mengupdate user');
+              console.error(err);
+              alert(err?.message || 'Terjadi kesalahan saat mengupdate user');
             }
+          });
         });
-        });
-    </script>
+      </script>
+      
         
 <!-- // ... existing code ... -->
 </body>
