@@ -153,22 +153,22 @@ jobs:
   #         timeout: 10m
 
   # Build Image ()
-  build-pengujian-ta-service:
-    # needs: image-scan
-    name: Build Image
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Build Image
-        run: docker build -t smgxv/pengujian-ta-service -f pengujian_ta_service/Dockerfile pengujian_ta_service
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Push Image
-        run: docker push smgxv/pengujian-ta-service
+  # build-pengujian-ta-service:
+  #   # needs: image-scan
+  #   name: Build Image
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #     - name: Build Image
+  #       run: docker build -t smgxv/pengujian-ta-service -f pengujian_ta_service/Dockerfile pengujian_ta_service
+  #     - name: Login to DockerHub
+  #       uses: docker/login-action@v1
+  #       with:
+  #         username: ${{ secrets.DOCKERHUB_USERNAME }}
+  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
+  #     - name: Push Image
+  #       run: docker push smgxv/pengujian-ta-service
   
   # build-pengujian-user-service:
   #   needs: image-scan
@@ -222,23 +222,23 @@ jobs:
   #       run: docker push smgxv/pengujian-notification-service
 
   # # Deploy ke lingkungan sementara 
-  deploy-pengujian-ta-service:
-    needs: build-pengujian-ta-service
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to VPS
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          port: ${{ secrets.VPS_PORT }}
-          script: |
-            docker stop pengujian-ta-service || true && docker rm pengujian-ta-service || true
-            docker system prune -af
-            docker pull smgxv/pengujian-ta-service
-            docker run -d -p 8085:8085 --name pengujian-ta-service smgxv/pengujian-ta-service
-            docker network connect simta_net pengujian-ta-service
+  # deploy-pengujian-ta-service:
+  #   needs: build-pengujian-ta-service
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Deploy to VPS
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         host: ${{ secrets.VPS_HOST }}
+  #         username: ${{ secrets.VPS_USERNAME }}
+  #         password: ${{ secrets.VPS_PASSWORD }}
+  #         port: ${{ secrets.VPS_PORT }}
+  #         script: |
+  #           docker stop pengujian-ta-service || true && docker rm pengujian-ta-service || true
+  #           docker system prune -af
+  #           docker pull smgxv/pengujian-ta-service
+  #           docker run -d -p 8085:8085 --name pengujian-ta-service smgxv/pengujian-ta-service
+  #           docker network connect simta_net pengujian-ta-service
 
   # deploy-pengujian-user-service:
   #   needs: build-pengujian-user-service
@@ -402,48 +402,48 @@ jobs:
   #           zap-out/zap.log
   #         if-no-files-found: error
 
-  # # DAST - OWASP ZAP untuk /admin/dashboard
-  # zap-dast-admin:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Pull ZAP image (GHCR)
-  #       run: docker pull ghcr.io/zaproxy/zaproxy:stable
+  # DAST - OWASP ZAP untuk /admin/dashboard
+  zap-dast-admin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull ZAP image (GHCR)
+        run: docker pull ghcr.io/zaproxy/zaproxy:stable
 
-  #     - name: Run ZAP Quick Scan and generate HTML report
-  #       run: |
-  #         set -euo pipefail
-  #         mkdir -p zap-out
+      - name: Run ZAP Quick Scan and generate HTML report
+        run: |
+          set -euo pipefail
+          mkdir -p zap-out
 
-  #         # Jalankan tanpa --rm agar bisa docker cp reportnya
-  #         docker rm -f zaprun 2>/dev/null || true
-  #         docker run --name zaprun \
-  #           ghcr.io/zaproxy/zaproxy:stable \
-  #             zap.sh -cmd \
-  #               -addonupdate \
-  #               -addoninstall quickstart,report \
-  #               -config log.level=DEBUG \
-  #               -quickurl "http://104.43.89.154:8085/admin/dashboard" \
-  #               -quickprogress \
-  #               -quickout "/home/zap/.ZAP/reports/zap-report.html"
+          # Jalankan tanpa --rm agar bisa docker cp reportnya
+          docker rm -f zaprun 2>/dev/null || true
+          docker run --name zaprun \
+            ghcr.io/zaproxy/zaproxy:stable \
+              zap.sh -cmd \
+                -addonupdate \
+                -addoninstall quickstart,report \
+                -config log.level=DEBUG \
+                -quickurl "http://104.43.89.154:8085/admin/dashboard" \
+                -quickprogress \
+                -quickout "/home/zap/.ZAP/reports/zap-report.html"
 
-  #         # Simpan log & ambil report dari dalam container
-  #         docker logs zaprun > zap-out/zap.log || true
-  #         docker cp zaprun:/home/zap/.ZAP/reports/zap-report.html zap-out/zap-report.html || true
+          # Simpan log & ambil report dari dalam container
+          docker logs zaprun > zap-out/zap.log || true
+          docker cp zaprun:/home/zap/.ZAP/reports/zap-report.html zap-out/zap-report.html || true
 
-  #         echo "== Files in zap-out =="
-  #         ls -lah zap-out
+          echo "== Files in zap-out =="
+          ls -lah zap-out
 
-  #         # Bersihkan container
-  #         docker rm -f zaprun || true
+          # Bersihkan container
+          docker rm -f zaprun || true
 
-  #     - name: Upload HTML report
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: zapadmin${{ github.run_id }}
-  #         path: |
-  #           zap-out/zap-report.html
-  #           zap-out/zap.log
-  #         if-no-files-found: error
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zapadmin${{ github.run_id }}
+          path: |
+            zap-out/zap-report.html
+            zap-out/zap.log
+          if-no-files-found: error
 
 
 
