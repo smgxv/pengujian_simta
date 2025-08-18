@@ -15,7 +15,43 @@ env:
   GO_VERSION: "1.23"
 
 jobs:
-  # # 1) DEPENDENCY SCAN (govulncheck)
+  # 1. SAST - CodeQL (Go + JS)
+  sast-codeql:
+    name: SAST dengan CodeQL (Go + JS)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: go, javascript
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          output: codeql-results
+
+      # === Gate Severity Critical ===
+      - name: Fail on Critical findings
+        run: |
+          echo "🔍 Checking for Critical vulnerabilities..."
+          # Grep file SARIF untuk severity=CRITICAL
+          if grep -q '"level": "error"' codeql-results/*.sarif; then
+            echo "❌ Found Critical vulnerabilities in CodeQL scan!"
+            exit 1
+          else
+            echo "✅ No Critical vulnerabilities found."
+          fi
+
+  # DEPENDENCY SCAN (govulncheck)
   # dep-scan:
   #   name: Govulncheck (${{ matrix.service.name }})
   #   runs-on: ubuntu-latest
@@ -298,44 +334,128 @@ jobs:
   #         if-no-files-found: error
 
   # # DAST - OWASP ZAP untuk /dosen/dashboard
-  zap-dast-dosen:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Pull ZAP image (GHCR)
-        run: docker pull ghcr.io/zaproxy/zaproxy:stable
+  # zap-dast-dosen:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Pull ZAP image (GHCR)
+  #       run: docker pull ghcr.io/zaproxy/zaproxy:stable
 
-      - name: Run ZAP Quick Scan and generate HTML report
-        run: |
-          set -euo pipefail
-          mkdir -p zap-out
+  #     - name: Run ZAP Quick Scan and generate HTML report
+  #       run: |
+  #         set -euo pipefail
+  #         mkdir -p zap-out
 
-          # Jalankan tanpa --rm agar bisa docker cp reportnya
-          docker rm -f zaprun 2>/dev/null || true
-          docker run --name zaprun \
-            ghcr.io/zaproxy/zaproxy:stable \
-              zap.sh -cmd \
-                -addonupdate \
-                -addoninstall quickstart,report \
-                -config log.level=DEBUG \
-                -quickurl "http://104.43.89.154:8085/dosen/dashboard" \
-                -quickprogress \
-                -quickout "/home/zap/.ZAP/reports/zap-report.html"
+  #         # Jalankan tanpa --rm agar bisa docker cp reportnya
+  #         docker rm -f zaprun 2>/dev/null || true
+  #         docker run --name zaprun \
+  #           ghcr.io/zaproxy/zaproxy:stable \
+  #             zap.sh -cmd \
+  #               -addonupdate \
+  #               -addoninstall quickstart,report \
+  #               -config log.level=DEBUG \
+  #               -quickurl "http://104.43.89.154:8085/dosen/dashboard" \
+  #               -quickprogress \
+  #               -quickout "/home/zap/.ZAP/reports/zap-report.html"
 
-          # Simpan log & ambil report dari dalam container
-          docker logs zaprun > zap-out/zap.log || true
-          docker cp zaprun:/home/zap/.ZAP/reports/zap-report.html zap-out/zap-report.html || true
+  #         # Simpan log & ambil report dari dalam container
+  #         docker logs zaprun > zap-out/zap.log || true
+  #         docker cp zaprun:/home/zap/.ZAP/reports/zap-report.html zap-out/zap-report.html || true
 
-          echo "== Files in zap-out =="
-          ls -lah zap-out
+  #         echo "== Files in zap-out =="
+  #         ls -lah zap-out
 
-          # Bersihkan container
-          docker rm -f zaprun || true
+  #         # Bersihkan container
+  #         docker rm -f zaprun || true
 
-      - name: Upload HTML report
-        uses: actions/upload-artifact@v4
-        with:
-          name: zapdosen${{ github.run_id }}
-          path: |
-            zap-out/zap-report.html
-            zap-out/zap.log
-          if-no-files-found: error
+  #     - name: Upload HTML report
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: zapdosen${{ github.run_id }}
+  #         path: |
+  #           zap-out/zap-report.html
+  #           zap-out/zap.log
+  #         if-no-files-found: error
+
+
+
+
+
+
+
+
+
+
+  # #DEPENDENCY SCAN (govulncheck)
+  # dep-scan:
+  #   name: Govulncheck (${{ matrix.service.name }})
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       service:
+  #         - { name: ta-service,           path: ta_service }
+  #         - { name: user-service,         path: user_service }
+  #         - { name: document-service,     path: document_service }
+  #         - { name: notification-service, path: notification_service }
+
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+
+  #     # Gate + simpan laporan TEXT
+  #     - name: Govulncheck (gate + save text report)
+  #       uses: golang/govulncheck-action@v1
+  #       with:
+  #         go-version-input: ${{ env.GO_VERSION }}         
+  #         work-dir: ${{ matrix.service.path }}             
+  #         go-package: ./...                                
+  #         output-format: text                              
+  #         output-file: ${{ matrix.service.name }}-govulncheck.txt
+  #         repo-checkout: false
+  #         cache: true
+  #         cache-dependency-path: ${{ matrix.service.path }}/go.sum
+
+  #     # Arsipkan laporan TEXT
+  #     - name: Upload govulncheck report (artifact)
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: govulncheck-${{ matrix.service.name }}
+  #         path: ${{ matrix.service.name }}-govulncheck.txt
+
+
+  # # IMAGE SCAN (trivy)
+  # image-scan:
+  #   needs: dep-scan
+  #   name: Image Scan (${{ matrix.service.name }})
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       service:
+  #         - { name: ta-service,           path: ta_service,           dockerfile: ta_service/Dockerfile }
+  #         - { name: user-service,         path: user_service,         dockerfile: user_service/Dockerfile }
+  #         - { name: document-service,     path: document_service,     dockerfile: document_service/Dockerfile }
+  #         - { name: notification-service, path: notification_service, dockerfile: notification_service/Dockerfile }
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+
+  #     - name: Build image (local daemon)
+  #       run: |
+  #         docker build \
+  #           -f "${{ matrix.service.dockerfile }}" \
+  #           -t "${{ matrix.service.name }}:scan" \
+  #           "${{ matrix.service.path }}"
+
+  #     - name: Trivy Image scan (gate)
+  #       uses: aquasecurity/trivy-action@0.28.0
+  #       with:
+  #         image-ref: ${{ matrix.service.name }}:scan
+  #         format: table
+  #         vuln-type: os,library
+  #         ignore-unfixed: true
+  #         severity: CRITICAL      
+  #         exit-code: '1'          
+  #         hide-progress: true
+  #         timeout: 10m
