@@ -39,16 +39,16 @@ jobs:
         with:
           output: codeql-results
 
-      # === Gate Severity Critical ===
-      - name: Fail on Critical findings
+      # === Gate Severity High ===
+      - name: Fail on High findings
         run: |
-          echo "🔍 Checking for Critical vulnerabilities..."
-          # Grep file SARIF untuk severity=CRITICAL
+          echo "🔍 Checking for High vulnerabilities..."
+          # Grep file SARIF untuk severity=HIGH
           if grep -q '"level": "error"' codeql-results/*.sarif; then
-            echo "❌ Found Critical vulnerabilities in CodeQL scan!"
+            echo "❌ Found High vulnerabilities in CodeQL scan!"
             exit 1
           else
-            echo "✅ No Critical vulnerabilities found."
+            echo "✅ No High vulnerabilities found."
           fi
 
   # DEPENDENCY SCAN (govulncheck)
