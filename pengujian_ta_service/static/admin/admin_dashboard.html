@@ -482,185 +482,118 @@
 		<!-- End Google Tag Manager (noscript) -->
 
 		<script>
-		// Tambahkan fungsi untuk redirect ke profile
-		function redirectToProfile() {
-			const userId = localStorage.getItem('userId');
-			if (userId) {
-				window.location.href = `/admin/profile?id=${userId}`;
-			} else {
-				console.error('User ID tidak ditemukan');
-				// Optional: tampilkan pesan error atau redirect ke halaman login
-				// alert('Sesi Anda telah berakhir. Silakan login kembali.');
-				window.location.replace('/loginusers');
+			// Redirect ke profile (tanpa paksa login)
+			function redirectToProfile() {
+			  const userId = localStorage.getItem('userId');
+			  if (userId) {
+				window.location.href = `/admin/profile?id=${encodeURIComponent(userId)}`;
+			  } else {
+				console.warn('User ID tidak ditemukan');
+				// Opsional: tetap arahkan ke halaman profile umum
+				// window.location.href = '/admin/profile';
+			  }
 			}
-		}
-
-		async function logout() {
-			try {
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				
+		  
+			// Logout (tanpa Authorization/credentials)
+			async function logout() {
+			  try {
 				const response = await fetch('http://104.43.89.154:8085/logout', {
-					method: 'POST',
-					headers: {
-						'Authorization': token ? `Bearer ${token}` : '',
-						'Content-Type': 'application/json'
-					},
-					credentials: 'include'
+				  method: 'POST',
+				  headers: { 'Content-Type': 'application/json' }
 				});
-
-				const data = await response.json();
-				
+		  
+				const data = await response.json().catch(() => ({}));
+		  
 				if (response.ok && data.status === 'success') {
-					// Clear localStorage
-					localStorage.clear();
-					
-					// Clear sessionStorage
-					sessionStorage.clear();
-					
-					// Clear all cookies for all possible paths
-					const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
-					const cookies = document.cookie.split(';');
-					
-					for (let cookie of cookies) {
-						const eqPos = cookie.indexOf('=');
-						const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-						
-						// Hapus cookie untuk setiap path
-						paths.forEach(path => {
-							document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
-						});
-					}
-					
-					// Clear cache if browser supports it
-					if (window.caches) {
-						caches.keys().then(names => {
-							names.forEach(name => {
-								caches.delete(name);
-							});
-						});
-					}
-
-					// Clear application cache
-					if (window.applicationCache) {
-						window.applicationCache.abort();
-					}
-
-					// Clear service workers if any
-					if (navigator.serviceWorker) {
-						navigator.serviceWorker.getRegistrations().then(registrations => {
-							registrations.forEach(registration => {
-								registration.unregister();
-							});
-						});
-					}
-					
-					console.log('Logout berhasil');
-					
-					// Force reload halaman login untuk membersihkan cache
-					window.location.href = '/loginusers';
-					window.location.reload(true);
+				  // Bersihkan storage
+				  localStorage.clear();
+				  sessionStorage.clear();
+		  
+				  // Hapus cookies di beberapa path umum
+				  const paths = ['/', '/admin', '/taruna', '/admin/', '/taruna/'];
+				  const cookies = document.cookie.split(';');
+				  for (let cookie of cookies) {
+					const eqPos = cookie.indexOf('=');
+					const name = (eqPos > -1 ? cookie.substr(0, eqPos) : cookie).trim();
+					paths.forEach(path => {
+					  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+					});
+				  }
+		  
+				  // Bersihkan cache & service worker (jika ada)
+				  if (window.caches) {
+					caches.keys().then(names => names.forEach(n => caches.delete(n)));
+				  }
+				  if (window.applicationCache) {
+					try { window.applicationCache.abort(); } catch (_) {}
+				  }
+				  if (navigator.serviceWorker) {
+					navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+				  }
+		  
+				  console.log('Logout berhasil');
+				  window.location.href = '/loginusers';
+				  window.location.reload(true);
 				} else {
-					throw new Error(data.message || 'Gagal logout');
+				  throw new Error((data && data.message) || 'Gagal logout');
 				}
-			} catch (error) {
+			  } catch (error) {
 				console.error('Error during logout:', error);
 				alert('Gagal logout. Silakan coba lagi.');
+			  }
 			}
-		}
-
-		// Fungsi untuk memeriksa role user
-		async function checkAdminRole() {
-			const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-			const role = localStorage.getItem('role');
-
-			if (!token) {
-				alert('Sesi Anda telah berakhir. Silakan login kembali.');
-				window.location.replace('/loginusers');
-				return;
+		  
+			// Nonaktifkan pemeriksaan role/auth (no-op)
+			async function checkAdminRole() {
+			  console.log('checkAdminRole diabaikan (auth dinonaktifkan)');
+			  // Tidak ada pengecekan token/role maupun panggilan ke server
 			}
-
-			// Periksa role dari localStorage
-			if (role && role.toLowerCase() !== 'admin') {
-				alert('You are restricted! Only admin can access this page.');
-				window.location.replace('/loginusers');
-				return;
-			}
-
-			// Double check dengan server
-			try {
-				const response = await fetch('http://104.43.89.154:8085/admin/dashboard', {
-					headers: {
-						'Authorization': `Bearer ${token}`
+		  
+			document.addEventListener('DOMContentLoaded', function () {
+			  // Tidak lagi memeriksa token/role
+			  checkAdminRole();
+		  
+			  // Ambil ID user dari storage (bukan dari token)
+			  const userId = localStorage.getItem('userId') || sessionStorage.getItem('userId');
+		  
+			  // Ambil data user dari API (tanpa Authorization)
+			  if (userId) {
+				fetch(`http://104.43.89.154:8086/users?id=${encodeURIComponent(userId)}`)
+				  .then(response => {
+					if (!response.ok) throw new Error('Gagal mengambil data user');
+					return response.json();
+				  })
+				  .then(user => {
+					// Update username di header
+					const usernameElement = document.getElementById('username');
+					if (usernameElement) {
+					  usernameElement.textContent = user.username || user.nama_lengkap || 'User';
 					}
-				});
-
-				if (!response.ok) {
-					throw new Error('Unauthorized');
-				}
-			} catch (error) {
-				alert('You are restricted! Only admin can access this page.');
-				window.location.replace('/loginusers');
-			}
-		}
-
-		document.addEventListener('DOMContentLoaded', function() {
-			// Jalankan pemeriksaan role saat halaman dimuat
-			checkAdminRole();
-
-			// Cek token
-			const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-			if (!token) {
-				window.location.replace('/loginusers');
-				return;
-			}
-
-			// Ambil ID user dari token
-			const userId = localStorage.getItem('userId');
-
-			// Ambil data user dari API
-			fetch(`http://104.43.89.154:8086/users?id=${userId}`, {
-				headers: {
-					'Authorization': `Bearer ${token}`
-				}
-			})
-			.then(response => {
-				if (!response.ok) {
-					throw new Error('Gagal mengambil data user');
-				}
-				return response.json();
-			})
-			.then(user => {
-				// Update username di header
+					// Tidak ada pembatasan berdasarkan role
+				  })
+				  .catch(error => {
+					console.error('Error:', error);
+					const usernameElement = document.getElementById('username');
+					if (usernameElement) usernameElement.textContent = 'User';
+				  });
+			  } else {
+				// Jika tidak ada userId, isi username default tanpa redirect paksa
 				const usernameElement = document.getElementById('username');
-				if (usernameElement) {
-					usernameElement.textContent = user.username || user.nama_lengkap || 'User';
-				}
-
-				// Tambahan pemeriksaan role dari data user
-				if (user.role && user.role.toLowerCase() !== 'admin') {
-					alert('You are restricted! Only admin can access this page.');
-					window.location.replace('/loginusers');
-				}
-			})
-			.catch(error => {
-				console.error('Error:', error);
-				const usernameElement = document.getElementById('username');
-				if (usernameElement) {
-					usernameElement.textContent = 'User';
-				}
+				if (usernameElement) usernameElement.textContent = 'User';
+			  }
 			});
-		});
-
-		// Pastikan event listener untuk tombol logout terpasang dengan benar
-		document.addEventListener('DOMContentLoaded', function() {
-			const logoutButton = document.querySelector('a[onclick="logout()"]');
-			if (logoutButton) {
-				logoutButton.addEventListener('click', function(e) {
-					e.preventDefault();
-					logout();
+		  
+			// Pastikan event listener untuk tombol logout terpasang
+			document.addEventListener('DOMContentLoaded', function () {
+			  const logoutButton = document.querySelector('a[onclick="logout()"]');
+			  if (logoutButton) {
+				logoutButton.addEventListener('click', function (e) {
+				  e.preventDefault();
+				  logout();
 				});
-			}
-		});
-		</script>
+			  }
+			});
+		  </script>
+		  
 	</body>
 </html>

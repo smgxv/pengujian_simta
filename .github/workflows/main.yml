@@ -52,42 +52,43 @@ jobs:
           fi
 
   # DEPENDENCY SCAN (govulncheck)
-  # dep-scan:
-  #   name: Govulncheck (${{ matrix.service.name }})
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       service:
-  #         - { name: pengujian-ta-service,           path: pengujian_ta_service }
-  #         - { name: pengujian-user-service,         path: pengujian_user_service }
-  #         - { name: pengujian-document-service,     path: pengujian_document_service }
-  #         - { name: pengujian-notification-service, path: pengujian_notification_service }
+  dep-scan:
+    needs: sast-codeql
+    name: Govulncheck (${{ matrix.service.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - { name: pengujian-ta-service,           path: pengujian_ta_service }
+          - { name: pengujian-user-service,         path: pengujian_user_service }
+          - { name: pengujian-document-service,     path: pengujian_document_service }
+          - { name: pengujian-notification-service, path: pengujian_notification_service }
 
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  #     # Gate + simpan laporan TEXT
-  #     - name: Govulncheck (gate + save text report)
-  #       uses: golang/govulncheck-action@v1
-  #       with:
-  #         go-version-input: ${{ env.GO_VERSION }}         # contoh: "1.22.x" atau "1.23"
-  #         work-dir: ${{ matrix.service.path }}             # jalankan per service (monorepo)
-  #         go-package: ./...                                # analisis semua paket
-  #         output-format: text                              # penting: TEXT → mengikuti exit code
-  #         output-file: ${{ matrix.service.name }}-govulncheck.txt
-  #         repo-checkout: false
-  #         cache: true
-  #         cache-dependency-path: ${{ matrix.service.path }}/go.sum
+      # Gate + simpan laporan TEXT
+      - name: Govulncheck (gate + save text report)
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-input: ${{ env.GO_VERSION }}         # contoh: "1.22.x" atau "1.23"
+          work-dir: ${{ matrix.service.path }}             # jalankan per service (monorepo)
+          go-package: ./...                                # analisis semua paket
+          output-format: text                              # penting: TEXT → mengikuti exit code
+          output-file: ${{ matrix.service.name }}-govulncheck.txt
+          repo-checkout: false
+          cache: true
+          cache-dependency-path: ${{ matrix.service.path }}/go.sum
 
-  #     # Arsipkan laporan TEXT
-  #     - name: Upload govulncheck report (artifact)
-  #       if: always()
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: govulncheck-${{ matrix.service.name }}
-  #         path: ${{ matrix.service.name }}-govulncheck.txt
+      # Arsipkan laporan TEXT
+      - name: Upload govulncheck report (artifact)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: govulncheck-${{ matrix.service.name }}
+          path: ${{ matrix.service.name }}-govulncheck.txt
 
 
   # # IMAGE SCAN (trivy)

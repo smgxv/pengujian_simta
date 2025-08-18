@@ -644,311 +644,253 @@
 		<!-- End Google Tag Manager (noscript) -->
 
 		<script>
-			// Tambahkan fungsi untuk redirect ke profile
+			// Redirect ke profile (tanpa cek login)
 			function redirectToProfile() {
-				const userId = localStorage.getItem('userId');
-				if (userId) {
-					window.location.href = `/admin/profile?id=${userId}`;
-				} else {
-					console.error('User ID tidak ditemukan');
-					window.location.replace('/loginusers');
-				}
+			  const userId = localStorage.getItem('userId');
+			  if (userId) {
+				window.location.href = `/admin/profile?id=${encodeURIComponent(userId)}`;
+			  } else {
+				console.warn('User ID tidak ditemukan');
+				// Opsional: arahkan ke halaman profile umum
+				// window.location.href = '/admin/profile';
+			  }
 			}
-
+		  
 			const kelasPerJurusan = {
-				'Keamanan Siber': [
-					'IV Rekayasa Keamanan Siber Echo',
-					'IV Rekayasa Keamanan Siber Trace',
-					'IV Rekayasa Keamanan Siber Route'
-				],
-				'Kriptografi': [
-					'IV Rekayasa Perangkat Lunak Kripto',
-					'IV Rekayasa Perangkat Keras Kriptografi',
-					'IV Rekayasa Sistem Kriptografi'
-				]
+			  'Keamanan Siber': [
+				'IV Rekayasa Keamanan Siber Echo',
+				'IV Rekayasa Keamanan Siber Trace',
+				'IV Rekayasa Keamanan Siber Route'
+			  ],
+			  'Kriptografi': [
+				'IV Rekayasa Perangkat Lunak Kripto',
+				'IV Rekayasa Perangkat Keras Kriptografi',
+				'IV Rekayasa Sistem Kriptografi'
+			  ]
 			};
-
+		  
 			function toggleJurusanKelas() {
-				const role = document.getElementById('role').value;
-				const jurusanGroup = document.getElementById('jurusanGroup');
-				const kelasGroup = document.getElementById('kelasGroup');
-				const npmGroup = document.getElementById('npmGroup');
-				const jurusanSelect = document.getElementById('jurusan');
-				const kelasSelect = document.getElementById('kelas');
-
-				// Reset nilai
-				jurusanSelect.value = '';
-				kelasSelect.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>';
-
-				if (role === 'Dosen') {
-					jurusanGroup.style.display = 'flex';
-					kelasGroup.style.display = 'none';
-					npmGroup.style.display = 'none';
-					jurusanSelect.required = true;
-					kelasSelect.required = false;
-					document.querySelector('[name="npm"]').required = false;
-
-				} else if (role === 'Taruna') {
-					jurusanGroup.style.display = 'flex';
-					kelasGroup.style.display = 'flex';
-					npmGroup.style.display = 'flex';
-					jurusanSelect.required = true;
-					kelasSelect.required = true;
-					document.querySelector('[name="npm"]').required = true;
-
-				} else if (role === 'Admin') {
-					jurusanGroup.style.display = 'none';
-					kelasGroup.style.display = 'none';
-					npmGroup.style.display = 'none';
-					jurusanSelect.required = false;
-					kelasSelect.required = false;
-					document.querySelector('[name="npm"]').required = false;
-				}
+			  const role = document.getElementById('role').value;
+			  const jurusanGroup = document.getElementById('jurusanGroup');
+			  const kelasGroup = document.getElementById('kelasGroup');
+			  const npmGroup = document.getElementById('npmGroup');
+			  const jurusanSelect = document.getElementById('jurusan');
+			  const kelasSelect = document.getElementById('kelas');
+		  
+			  // Reset nilai
+			  jurusanSelect.value = '';
+			  kelasSelect.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>';
+		  
+			  if (role === 'Dosen') {
+				jurusanGroup.style.display = 'flex';
+				kelasGroup.style.display = 'none';
+				npmGroup.style.display = 'none';
+				jurusanSelect.required = true;
+				kelasSelect.required = false;
+				document.querySelector('[name="npm"]').required = false;
+		  
+			  } else if (role === 'Taruna') {
+				jurusanGroup.style.display = 'flex';
+				kelasGroup.style.display = 'flex';
+				npmGroup.style.display = 'flex';
+				jurusanSelect.required = true;
+				kelasSelect.required = true;
+				document.querySelector('[name="npm"]').required = true;
+		  
+			  } else if (role === 'Admin') {
+				jurusanGroup.style.display = 'none';
+				kelasGroup.style.display = 'none';
+				npmGroup.style.display = 'none';
+				jurusanSelect.required = false;
+				kelasSelect.required = false;
+				document.querySelector('[name="npm"]').required = false;
+			  }
 			}
-
-			// Fungsi untuk mengupdate opsi kelas berdasarkan jurusan yang dipilih
+		  
+			// Update opsi kelas berdasar jurusan terpilih (kecuali Dosen)
 			function updateKelas() {
-				const role = document.getElementById('role').value;
-				const jurusanSelect = document.getElementById('jurusan');
-				const kelasSelect = document.getElementById('kelas');
-				const selectedJurusan = jurusanSelect.value;
-
-				// Jika role adalah Dosen, tidak perlu mengupdate kelas
-				if (role === 'Dosen') {
-					return;
+			  const role = document.getElementById('role').value;
+			  const jurusanSelect = document.getElementById('jurusan');
+			  const kelasSelect = document.getElementById('kelas');
+			  const selectedJurusan = jurusanSelect.value;
+		  
+			  if (role === 'Dosen') return;
+		  
+			  kelasSelect.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>';
+		  
+			  if (selectedJurusan && role === 'Taruna') {
+				const kelasOptions = kelasPerJurusan[selectedJurusan];
+				if (kelasOptions) {
+				  kelasOptions.forEach(kelas => {
+					const option = document.createElement('option');
+					option.value = kelas;
+					option.textContent = kelas;
+					kelasSelect.appendChild(option);
+				  });
 				}
-
-				// Reset dropdown kelas
-				kelasSelect.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>';
-
-				// Jika ada jurusan yang dipilih dan role adalah Taruna
-				if (selectedJurusan && role === 'Taruna') {
-					const kelasOptions = kelasPerJurusan[selectedJurusan];
-					if (kelasOptions) {
-						kelasOptions.forEach(kelas => {
-							const option = document.createElement('option');
-							option.value = kelas;
-							option.textContent = kelas;
-							kelasSelect.appendChild(option);
-						});
-					}
-				}
+			  }
 			}
-
+		  
 			function showAlert(message, type) {
-				const alertContainer = document.getElementById('alertContainer');
-				const alertMessage = document.getElementById('alertMessage');
-				
-				// Set pesan dan tipe alert
-				alertMessage.textContent = message;
-				alertMessage.className = `alert alert-${type}`;
-				
-				// Tampilkan alert
-				alertContainer.style.display = 'block';
-				
-				// Hilangkan alert setelah 5 detik
-				setTimeout(() => {
-					alertContainer.style.display = 'none';
-				}, 5000);
+			  const alertContainer = document.getElementById('alertContainer');
+			  const alertMessage = document.getElementById('alertMessage');
+			  alertMessage.textContent = message;
+			  alertMessage.className = `alert alert-${type}`;
+			  alertContainer.style.display = 'block';
+			  setTimeout(() => { alertContainer.style.display = 'none'; }, 5000);
 			}
-
+		  
+			// Submit form (tanpa Authorization / cek token)
 			async function submitForm(event) {
-				event.preventDefault();
-
-				const form = document.getElementById('addUserForm');
-				const formData = new FormData(form);
-				const data = Object.fromEntries(formData);
-
-				// Ambil token dari storage
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				if (!token) {
-					showAlert('Sesi Anda telah berakhir. Silakan login kembali.', 'danger');
-					setTimeout(() => window.location.href = '/loginusers', 2000);
-					return;
+			  event.preventDefault();
+		  
+			  const form = document.getElementById('addUserForm');
+			  const formData = new FormData(form);
+			  const data = Object.fromEntries(formData);
+		  
+			  // Validasi password
+			  if (data.password !== data.confirm_password) {
+				showAlert('Password dan Konfirmasi Password harus sama!', 'danger');
+				return;
+			  }
+		  
+			  // Validasi role
+			  const role = data.role;
+			  if (!role) {
+				showAlert('Silakan pilih Role!', 'danger');
+				return;
+			  }
+		  
+			  // Validasi per role
+			  if (role === 'Taruna') {
+				if (!data.jurusan || !data.kelas || !data.npm) {
+				  showAlert('Taruna harus mengisi Jurusan, Kelas, dan NPM!', 'danger');
+				  return;
 				}
-
-				// Validasi password
-				if (data.password !== data.confirm_password) {
-					showAlert('Password dan Konfirmasi Password harus sama!', 'danger');
-					return;
+			  } else if (role === 'Dosen') {
+				if (!data.jurusan) {
+				  showAlert('Dosen harus mengisi Jurusan!', 'danger');
+				  return;
 				}
-
-				// Validasi role
-				const role = data.role;
-				if (!role) {
-					showAlert('Silakan pilih Role!', 'danger');
-					return;
+				delete data.kelas;
+				delete data.npm;
+			  } else if (role === 'Admin') {
+				delete data.jurusan;
+				delete data.kelas;
+				delete data.npm;
+			  }
+		  
+			  try {
+				const response = await fetch('http://104.43.89.154:8086/users/add', {
+				  method: 'POST',
+				  headers: { 'Content-Type': 'application/json' },
+				  body: JSON.stringify(data)
+				});
+		  
+				const rawText = await response.text();
+				let message = rawText;
+				try { message = JSON.parse(rawText).message || rawText; } catch (_) {}
+		  
+				if (response.ok) {
+				  showAlert(message || 'User berhasil ditambahkan!', 'success');
+				  form.reset();
+				} else if (response.status === 409) {
+				  showAlert('Email sudah terdaftar! Silakan gunakan email lain.', 'danger');
+				} else {
+				  showAlert('Gagal menambahkan user: ' + message, 'danger');
 				}
-
-				// Validasi per role
-				if (role === 'Taruna') {
-					if (!data.jurusan || !data.kelas || !data.npm) {
-						showAlert('Taruna harus mengisi Jurusan, Kelas, dan NPM!', 'danger');
-						return;
-					}
-				} else if (role === 'Dosen') {
-					if (!data.jurusan) {
-						showAlert('Dosen harus mengisi Jurusan!', 'danger');
-						return;
-					}
-					// Hapus field tidak relevan
-					delete data.kelas;
-					delete data.npm;
-				} else if (role === 'Admin') {
-					// Hapus field tidak relevan
-					delete data.jurusan;
-					delete data.kelas;
-					delete data.npm;
-				}
-
-				try {
-					const response = await fetch('http://104.43.89.154:8086/users/add', {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json',
-							'Authorization': `Bearer ${token}`
-						},
-						body: JSON.stringify(data)
-					});
-
-					// Tangani respons khusus
-					if (response.status === 401) {
-						showAlert('Sesi Anda telah berakhir. Silakan login kembali.', 'danger');
-						setTimeout(() => window.location.href = '/loginusers', 2000);
-						return;
-					}
-					if (response.status === 409) {
-						showAlert('Email sudah terdaftar! Silakan gunakan email lain.', 'danger');
-						return;
-					}
-
-					// Parsing hasil
-					let resultText = await response.text();
-					let resultMessage = resultText;
-
-					try {
-						const resultJSON = JSON.parse(resultText);
-						resultMessage = resultJSON.message || resultText;
-					} catch (e) {}
-
-					if (response.ok) {
-						showAlert(resultMessage || 'User berhasil ditambahkan!', 'success');
-						form.reset();
-					} else {
-						showAlert('Gagal menambahkan user: ' + resultMessage, 'danger');
-					}
-				} catch (error) {
-					console.error('Error:', error);
-					showAlert('Terjadi kesalahan, coba lagi.', 'danger');
-				}
+			  } catch (error) {
+				console.error('Error:', error);
+				showAlert('Terjadi kesalahan, coba lagi.', 'danger');
+			  }
 			}
-
-
+		  
+			// Logout (tanpa Authorization/credentials)
 			async function logout() {
-				try {
-					// Ambil token dari localStorage dan sessionStorage
-					const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-					
-					// Kirim request logout ke server
-					const response = await fetch('http://104.43.89.154:8085/logout', {
-						method: 'POST',
-						headers: {
-							'Authorization': token ? `Bearer ${token}` : '',
-							'Content-Type': 'application/json'
-						},
-						credentials: 'include'
+			  try {
+				const response = await fetch('http://104.43.89.154:8085/logout', {
+				  method: 'POST',
+				  headers: { 'Content-Type': 'application/json' }
+				});
+		  
+				const data = await response.json().catch(() => ({}));
+		  
+				if (response.ok && data.status === 'success') {
+				  localStorage.clear();
+				  sessionStorage.clear();
+		  
+				  // Hapus cookies di beberapa path
+				  const cookies = document.cookie.split(';');
+				  const paths = ['/', '/admin', '/admin/', '/taruna', '/taruna/'];
+				  for (let cookie of cookies) {
+					const eqPos = cookie.indexOf('=');
+					const name = (eqPos > -1 ? cookie.substr(0, eqPos) : cookie).trim();
+					paths.forEach(path => {
+					  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
 					});
-	
-					const data = await response.json();
-					
-					if (response.ok && data.status === 'success') {
-						// Hapus semua data storage
-						localStorage.clear();
-						sessionStorage.clear();
-						
-						// Hapus semua cookies
-						const cookies = document.cookie.split(';');
-						for (let cookie of cookies) {
-							const eqPos = cookie.indexOf('=');
-							const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-							document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
-							document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/admin';
-						}
-						
-						console.log('Logout berhasil');
-						
-						// Force reload halaman login untuk membersihkan cache
-						window.location.replace('/loginusers');
-					} else {
-						throw new Error(data.message || 'Gagal logout');
-					}
-				} catch (error) {
-					console.error('Error during logout:', error);
-					alert('Gagal logout. Silakan coba lagi.');
+				  }
+		  
+				  // Bersihkan cache & service worker (jika ada)
+				  if (window.caches) {
+					caches.keys().then(names => names.forEach(n => caches.delete(n)));
+				  }
+				  if (window.applicationCache) {
+					try { window.applicationCache.abort(); } catch (_) {}
+				  }
+				  if (navigator.serviceWorker) {
+					navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+				  }
+		  
+				  console.log('Logout berhasil');
+				  window.location.replace('/loginusers');
+				} else {
+				  throw new Error((data && data.message) || 'Gagal logout');
 				}
+			  } catch (error) {
+				console.error('Error during logout:', error);
+				alert('Gagal logout. Silakan coba lagi.');
+			  }
 			}
-	
-			// Tambahkan pengecekan autentikasi saat halaman dimuat
-			document.addEventListener('DOMContentLoaded', function() {
-				// Cek token
-				const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-				if (!token) {
-					window.location.replace('/loginusers');
-					return;
-				}
-
-				// Ambil ID user dari token (jika tersedia)
-				const userId = localStorage.getItem('userId');
-
-				// Ambil data user dari API
-				fetch(`http://104.43.89.154:8086/users?id=${userId}`, {
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				})
-				.then(response => {
-					if (!response.ok) {
-						throw new Error('Gagal mengambil data user');
-					}
-					return response.json();
-				})
-				.then(user => {
-					// Update username di header
+		  
+			// Muat awal halaman (tanpa cek token/role & tanpa Authorization)
+			document.addEventListener('DOMContentLoaded', function () {
+			  const userId = localStorage.getItem('userId') || sessionStorage.getItem('userId');
+		  
+			  if (userId) {
+				fetch(`http://104.43.89.154:8086/users?id=${encodeURIComponent(userId)}`)
+				  .then(res => {
+					if (!res.ok) throw new Error('Gagal mengambil data user');
+					return res.json();
+				  })
+				  .then(user => {
 					const usernameElement = document.getElementById('username');
 					if (usernameElement) {
-						usernameElement.textContent = user.username || user.nama_lengkap || 'User';
+					  usernameElement.textContent = user.username || user.nama_lengkap || 'User';
 					}
-				})
-				.catch(error => {
-					console.error('Error:', error);
-					// Jika gagal mengambil data, tampilkan placeholder
+				  })
+				  .catch(err => {
+					console.error('Error:', err);
 					const usernameElement = document.getElementById('username');
-					if (usernameElement) {
-						usernameElement.textContent = 'User';
-					}
-				});
-
-				// Validasi token dengan server
-				fetch('http://104.43.89.154:8085/admin/dashboard', {
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				}).catch(() => {
-					window.location.replace('/loginusers');
-				});
+					if (usernameElement) usernameElement.textContent = 'User';
+				  });
+			  } else {
+				const usernameElement = document.getElementById('username');
+				if (usernameElement) usernameElement.textContent = 'User';
+			  }
 			});
-
-			// Pastikan event listener untuk tombol logout terpasang dengan benar
-			document.addEventListener('DOMContentLoaded', function() {
-				const logoutButton = document.querySelector('a[onclick="logout()"]');
-				if (logoutButton) {
-					logoutButton.addEventListener('click', function(e) {
-						e.preventDefault();
-						logout();
-					});
-				}
+		  
+			// Pasang listener tombol logout
+			document.addEventListener('DOMContentLoaded', function () {
+			  const logoutButton = document.querySelector('a[onclick="logout()"]');
+			  if (logoutButton) {
+				logoutButton.addEventListener('click', function (e) {
+				  e.preventDefault();
+				  logout();
+				});
+			  }
 			});
-		</script>
+		  </script>
+		  
 
 	</body>
 </html>
