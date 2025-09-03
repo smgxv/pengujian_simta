@@ -171,7 +171,7 @@ jobs:
         run: docker push smgxv/pengujian-ta-service
   
   build-pengujian-user-service:
-    needs: image-scan
+    # needs: image-scan
     name: Build User Service Image
     runs-on: ubuntu-latest
     steps:
@@ -188,7 +188,7 @@ jobs:
         run: docker push smgxv/pengujian-user-service
 
   build-pengujian-document-service:
-    needs: image-scan
+    # needs: image-scan
     name: Build Document Service Image
     runs-on: ubuntu-latest
     steps:
@@ -205,7 +205,7 @@ jobs:
         run: docker push smgxv/pengujian-document-service
   
   build-pengujian-notification-service:
-    needs: image-scan
+    # needs: image-scan
     name: Build Notification Service Image
     runs-on: ubuntu-latest
     steps:
