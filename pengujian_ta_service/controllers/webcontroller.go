@@ -43,7 +43,7 @@ func LoginUsers(w http.ResponseWriter, r *http.Request) {
 
 	data := viewData{Nonce: nonce}
 
-	tmpl, err := template.ParseFiles("static/loginusers.html") // sesuaikan path
+	tmpl, err := template.ParseFiles("static/login.html") // sesuaikan path
 	if err != nil {
 		http.Error(w, "template error: "+err.Error(), http.StatusInternalServerError)
 		return
