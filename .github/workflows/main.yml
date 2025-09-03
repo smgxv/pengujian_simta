@@ -170,56 +170,56 @@ jobs:
       - name: Push Image
         run: docker push smgxv/pengujian-ta-service
   
-  # build-pengujian-user-service:
-  #   needs: image-scan
-  #   name: Build User Service Image
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
-  #     - name: Build Image
-  #       run: docker build -t smgxv/pengujian-user-service -f pengujian_user_service/Dockerfile pengujian_user_service
-  #     - name: Login to DockerHub
-  #       uses: docker/login-action@v1
-  #       with:
-  #         username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
-  #     - name: Push Image
-  #       run: docker push smgxv/pengujian-user-service
+  build-pengujian-user-service:
+    needs: image-scan
+    name: Build User Service Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build Image
+        run: docker build -t smgxv/pengujian-user-service -f pengujian_user_service/Dockerfile pengujian_user_service
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Push Image
+        run: docker push smgxv/pengujian-user-service
 
-  # build-pengujian-document-service:
-  #   needs: image-scan
-  #   name: Build Document Service Image
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
-  #     - name: Build Image
-  #       run: docker build -t smgxv/pengujian-document-service -f pengujian_document_service/Dockerfile pengujian_document_service
-  #     - name: Login to DockerHub
-  #       uses: docker/login-action@v1
-  #       with:
-  #         username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
-  #     - name: Push Image
-  #       run: docker push smgxv/pengujian-document-service
+  build-pengujian-document-service:
+    needs: image-scan
+    name: Build Document Service Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build Image
+        run: docker build -t smgxv/pengujian-document-service -f pengujian_document_service/Dockerfile pengujian_document_service
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Push Image
+        run: docker push smgxv/pengujian-document-service
   
-  # build-pengujian-notification-service:
-  #   needs: image-scan
-  #   name: Build Notification Service Image
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
-  #     - name: Build Image
-  #       run: docker build -t smgxv/pengujian-notification-service -f pengujian_notification_service/Dockerfile pengujian_notification_service
-  #     - name: Login to DockerHub
-  #       uses: docker/login-action@v1
-  #       with:
-  #         username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
-  #     - name: Push Image
-  #       run: docker push smgxv/pengujian-notification-service
+  build-pengujian-notification-service:
+    needs: image-scan
+    name: Build Notification Service Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build Image
+        run: docker build -t smgxv/pengujian-notification-service -f pengujian_notification_service/Dockerfile pengujian_notification_service
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Push Image
+        run: docker push smgxv/pengujian-notification-service
 
   # Deploy ke lingkungan sementara 
   deploy-pengujian-ta-service:
@@ -240,59 +240,59 @@ jobs:
             docker run -d -p 8085:8085 --name pengujian-ta-service smgxv/pengujian-ta-service
             docker network connect simta_net pengujian-ta-service
 
-  # deploy-pengujian-user-service:
-  #   needs: build-pengujian-user-service
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Deploy User Service to VPS
-  #       uses: appleboy/ssh-action@master
-  #       with:
-  #         host: ${{ secrets.VPS_HOST }}
-  #         username: ${{ secrets.VPS_USERNAME }}
-  #         password: ${{ secrets.VPS_PASSWORD }}
-  #         port: ${{ secrets.VPS_PORT }}
-  #         script: |
-  #           docker stop pengujian-user-service || true && docker rm pengujian-user-service || true
-  #           docker system prune -af
-  #           docker pull smgxv/pengujian-user-service
-  #           docker run -d -p 8086:8086 --name pengujian-user-service smgxv/pengujian-user-service
-  #           docker network connect simta_net pengujian-user-service
+  deploy-pengujian-user-service:
+    needs: build-pengujian-user-service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy User Service to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            docker stop pengujian-user-service || true && docker rm pengujian-user-service || true
+            docker system prune -af
+            docker pull smgxv/pengujian-user-service
+            docker run -d -p 8086:8086 --name pengujian-user-service smgxv/pengujian-user-service
+            docker network connect simta_net pengujian-user-service
 
-  # deploy-pengujian-document-service:
-  #   needs: build-pengujian-document-service
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Deploy Document Service to VPS
-  #       uses: appleboy/ssh-action@master
-  #       with:
-  #         host: ${{ secrets.VPS_HOST }}
-  #         username: ${{ secrets.VPS_USERNAME }}
-  #         password: ${{ secrets.VPS_PASSWORD }}
-  #         port: ${{ secrets.VPS_PORT }}
-  #         script: |
-  #           docker stop pengujian-document-service || true && docker rm pengujian-document-service || true
-  #           docker system prune -af
-  #           docker pull smgxv/pengujian-document-service
-  #           docker run -d -p 8087:8087 --name pengujian-document-service smgxv/pengujian-document-service
-  #           docker network connect simta_net pengujian-document-service
+  deploy-pengujian-document-service:
+    needs: build-pengujian-document-service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Document Service to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            docker stop pengujian-document-service || true && docker rm pengujian-document-service || true
+            docker system prune -af
+            docker pull smgxv/pengujian-document-service
+            docker run -d -p 8087:8087 --name pengujian-document-service smgxv/pengujian-document-service
+            docker network connect simta_net pengujian-document-service
 
-  # deploy-pengujian-notification-service:
-  #   needs: build-pengujian-notification-service
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Deploy Notification Service to VPS
-  #       uses: appleboy/ssh-action@master
-  #       with:
-  #         host: ${{ secrets.VPS_HOST }}
-  #         username: ${{ secrets.VPS_USERNAME }}
-  #         password: ${{ secrets.VPS_PASSWORD }}
-  #         port: ${{ secrets.VPS_PORT }}
-  #         script: |
-  #           docker stop pengujian-notification-service || true && docker rm pengujian-notification-service || true
-  #           docker system prune -af
-  #           docker pull smgxv/pengujian-notification-service
-  #           docker run -d -p 8088:8088 --name pengujian-notification-service -v /home/youruser/uploads:/app/uploads smgxv/pengujian-notification-service
-  #           docker network connect simta_net pengujian-notification-service
+  deploy-pengujian-notification-service:
+    needs: build-pengujian-notification-service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Notification Service to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            docker stop pengujian-notification-service || true && docker rm pengujian-notification-service || true
+            docker system prune -af
+            docker pull smgxv/pengujian-notification-service
+            docker run -d -p 8088:8088 --name pengujian-notification-service -v /home/youruser/uploads:/app/uploads smgxv/pengujian-notification-service
+            docker network connect simta_net pengujian-notification-service
 
   # # SAST - SONARCLOUD
   # sast-analysis:
@@ -319,7 +319,11 @@ jobs:
   # DAST - OWASP ZAP untuk /taruna/dashboard
   zap-dast-taruna:
     runs-on: ubuntu-latest
-    needs: deploy-pengujian-ta-service
+    needs: 
+      - deploy-pengujian-ta-service
+      - deploy-pengujian-document-service
+      - deploy-pengujian-user-service
+      - deploy-pengujian-notification-service
     steps:
       - name: Pull ZAP image (GHCR)
         run: docker pull ghcr.io/zaproxy/zaproxy:stable
