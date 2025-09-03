@@ -115,14 +115,14 @@
     <!-- Login Form -->
     <div class="form login">
       <header>Login</header>
-      <form onsubmit="event.preventDefault(); login();">
+      <form id="loginForm">
         <div class="mb-3">
           <input type="text" class="form-control" placeholder="Email address" id="email" required />
         </div>
         <div class="mb-3">
           <input type="password" class="form-control" placeholder="Password" id="password" required />
         </div>
-        <button type="submit">Login</button>
+        <button class="home-btn" id="homeBtn">Home</button>
         <div id="error" class="error"></div>
       </form>
     </div>
@@ -132,61 +132,60 @@
   </section>
 
   <!-- Script login -->
-  <script nonce="{{.Nonce}}">
-    async function login() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const errorElement = document.getElementById('error');
+<script nonce="{{.Nonce}}">
+  async function login() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const errorElement = document.getElementById('error');
 
-      try {
-        const response = await fetch('http://104.43.89.154:8085/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, password })
-        });
+    try {
+      const response = await fetch('/login', {               // pakai relative URL ke origin
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
 
-        let data;
-        const contentType = response.headers.get("Content-Type");
-
-        if (contentType && contentType.includes("application/json")) {
-          data = await response.json();
-        } else {
-          const text = await response.text();
-          throw new Error(text || 'Login gagal');
-        }
-
-        if (!response.ok || (data && data.error)) {
-          throw new Error((data && data.error) || 'Login gagal');
-        }
-
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('role', data.role);
-        localStorage.setItem('userId', data.id);
-        document.cookie = `token=${data.token}; path=/`;
-
-        const userRole = data.role.toLowerCase();
-        if (userRole === 'admin') {
-          window.location.replace('/admin/dashboard');
-        } else if (userRole === 'taruna') {
-          window.location.replace('/taruna/dashboard');
-        } else if (userRole === 'dosen') {
-          window.location.replace('/dosen/dashboard');
-        } else {
-          throw new Error('Role tidak valid');
-        }
-
-      } catch (error) {
-        errorElement.textContent = error.message || 'Terjadi kesalahan saat login';
+      let data;
+      const contentType = response.headers.get("Content-Type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(text || 'Login gagal');
       }
+
+      if (!response.ok || (data && data.error)) {
+        throw new Error((data && data.error) || 'Login gagal');
+      }
+
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('role', data.role);
+      localStorage.setItem('userId', data.id);
+      document.cookie = `token=${data.token}; path=/`;
+
+      const userRole = (data.role || '').toLowerCase();
+      if (userRole === 'admin')      window.location.replace('/admin/dashboard');
+      else if (userRole === 'taruna') window.location.replace('/taruna/dashboard');
+      else if (userRole === 'dosen')  window.location.replace('/dosen/dashboard');
+      else throw new Error('Role tidak valid');
+
+    } catch (err) {
+      document.getElementById('error').textContent = err.message || 'Terjadi kesalahan saat login';
     }
+  }
 
+  // Gantikan event inline dengan listener
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('loginForm');
+    form.addEventListener('submit', (e) => { e.preventDefault(); login(); });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      sessionStorage.removeItem('isRedirecting');
-    });
-  </script>
+    document.getElementById('homeBtn')
+      .addEventListener('click', () => { window.location.href = '/dashboard'; });
+
+    sessionStorage.removeItem('isRedirecting');
+  });
+</script>
+
 </body>
 </html>

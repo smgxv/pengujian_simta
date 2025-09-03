@@ -35,23 +35,27 @@ func cspMiddleware(next http.Handler) http.Handler {
 			http.Error(w, "failed to generate nonce", http.StatusInternalServerError)
 			return
 		}
-		ctx := context.WithValue(r.Context(), nonceKey, nonce)
-		r = r.WithContext(ctx)
+		r = r.WithContext(context.WithValue(r.Context(), nonceKey, nonce))
 
 		csp := "default-src 'self'; " +
+			// inline JS via nonce. (Tidak ada unsafe-inline)
 			"script-src 'self' 'nonce-" + nonce + "'; " +
-			"style-src 'self' 'nonce-" + nonce + "'; " +
-			"img-src 'self' data:; " + // tidak ada http:/https:
-			"font-src 'self'; " + // tidak ada http:/https:
-			"connect-src 'self'; " + // HAPUS http:/https:/ws:/wss:
-			"frame-ancestors 'none'; " +
-			"base-uri 'self'; form-action 'self'; object-src 'none'"
+			// izinkan CSS inline via nonce + Bootstrap CSS dari jsDelivr
+			"style-src 'self' 'nonce-" + nonce + "' https://cdn.jsdelivr.net; " +
+			// font lokal saja (tambah domain lain kalau perlu)
+			"font-src 'self'; " +
+			// gambar lokal + data: (favicon/base64)
+			"img-src 'self' data:; " +
+			// hanya koneksi ke origin sendiri (ubah jika ada API eksternal)
+			"connect-src 'self'; " +
+			"frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
 
 		w.Header().Set("Content-Security-Policy", csp)
 		w.Header().Set("X-Frame-Options", "DENY")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 		w.Header().Set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+
 		next.ServeHTTP(w, r)
 	})
 }
