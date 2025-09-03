@@ -18,13 +18,30 @@ type viewData struct {
 
 // Fungsi untuk menampilkan dashboard
 func Index(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("static/dashboard.html")
-	temp.Execute(w, nil)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	// ambil nonce dari context (diset di cspMiddleware)
+	nonce, _ := r.Context().Value("csp-nonce").(string)
+
+	data := viewData{Nonce: nonce}
+
+	// render HTML pakai template
+	tmpl := template.Must(template.ParseFiles("static/dashboard.html"))
+	tmpl.Execute(w, data)
 }
 
 func LoginUsers(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("static/login.html")
-	temp.Execute(w, nil)
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	// ambil nonce dari context (diset di cspMiddleware)
+	nonce, _ := r.Context().Value("csp-nonce").(string)
+
+	data := viewData{Nonce: nonce}
+
+	// render HTML pakai template
+	tmpl := template.Must(template.ParseFiles("static/login.html"))
+	tmpl.Execute(w, data)
 }
 
 // ADMIN WEB SERVICE

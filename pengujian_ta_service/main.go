@@ -35,17 +35,15 @@ func cspMiddleware(next http.Handler) http.Handler {
 			http.Error(w, "failed to generate nonce", http.StatusInternalServerError)
 			return
 		}
-
-		// simpan nonce ke context supaya bisa dipakai di controller/template
 		ctx := context.WithValue(r.Context(), nonceKey, nonce)
 		r = r.WithContext(ctx)
 
 		csp := "default-src 'self'; " +
 			"script-src 'self' 'nonce-" + nonce + "'; " +
 			"style-src 'self' 'nonce-" + nonce + "'; " +
-			"img-src 'self' data:; " +
-			"font-src 'self'; " +
-			"connect-src 'self' http: https: ws: wss:; " +
+			"img-src 'self' data:; " + // tidak ada http:/https:
+			"font-src 'self'; " + // tidak ada http:/https:
+			"connect-src 'self'; " + // HAPUS http:/https:/ws:/wss:
 			"frame-ancestors 'none'; " +
 			"base-uri 'self'; form-action 'self'; object-src 'none'"
 
@@ -54,7 +52,6 @@ func cspMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 		w.Header().Set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
-
 		next.ServeHTTP(w, r)
 	})
 }
