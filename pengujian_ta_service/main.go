@@ -1,6 +1,9 @@
 package main
 
 import (
+	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"log"
 	"net/http"
 	"time"
@@ -11,39 +14,43 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// ✅ Middleware CSP untuk HTTP (tanpa upgrade-insecure-requests)
+// key untuk context
+type ctxKey string
+
+const nonceKey ctxKey = "csp-nonce"
+
+// generator nonce
+func genNonce() (string, error) {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(b), nil
+}
+
 func cspMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		nonce, err := genNonce()
+		if err != nil {
+			http.Error(w, "failed to generate nonce", http.StatusInternalServerError)
+			return
+		}
 
-		// --- Jika TIDAK pakai CDN/Google Fonts, mulai dari policy minimal ini:
+		// simpan nonce ke context supaya bisa dipakai di controller/template
+		ctx := context.WithValue(r.Context(), nonceKey, nonce)
+		r = r.WithContext(ctx)
+
 		csp := "default-src 'self'; " +
-			"script-src 'self' 'unsafe-inline'; " +
-			"script-src-attr 'unsafe-inline'; " + // izinkan onclick/onchange inline
-			"style-src 'self' 'unsafe-inline'; " +
-			"style-src-attr 'unsafe-inline'; " +
-			"img-src 'self' data: http: https:; " + // izinkan http & https gambar/icon
-			"font-src 'self' http: https:; " +
-			"connect-src 'self' http: https: ws: wss:; " + // AJAX/WebSocket di HTTP OK
+			"script-src 'self' 'nonce-" + nonce + "'; " +
+			"style-src 'self' 'nonce-" + nonce + "'; " +
+			"img-src 'self' data:; " +
+			"font-src 'self'; " +
+			"connect-src 'self' http: https: ws: wss:; " +
 			"frame-ancestors 'none'; " +
-			"base-uri 'self'; " +
-			"form-action 'self'; " +
-			"object-src 'none'"
-
-		// --- Jika PAKAI CDN/Google Fonts, pakai versi ini sebagai ganti csp di atas:
-		// csp := "default-src 'self'; " +
-		// 	"script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; " +
-		// 	"script-src-attr 'unsafe-inline'; " +
-		// 	"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
-		// 	"style-src-attr 'unsafe-inline'; " +
-		// 	"img-src 'self' data: http: https:; " +
-		// 	"font-src 'self' http: https: https://fonts.gstatic.com; " +
-		// 	"connect-src 'self' http: https: ws: wss:; " +
-		// 	"frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+			"base-uri 'self'; form-action 'self'; object-src 'none'"
 
 		w.Header().Set("Content-Security-Policy", csp)
-
-		// Tambahan header keamanan
-		w.Header().Set("X-Frame-Options", "DENY") // anti clickjacking (legacy)
+		w.Header().Set("X-Frame-Options", "DENY")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 		w.Header().Set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")

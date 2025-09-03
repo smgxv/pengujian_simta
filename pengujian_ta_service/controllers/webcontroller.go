@@ -12,6 +12,10 @@ import (
 	"time"
 )
 
+type viewData struct {
+	Nonce string
+}
+
 // Fungsi untuk menampilkan dashboard
 func Index(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("static/dashboard.html")
@@ -348,11 +352,16 @@ func Notification(w http.ResponseWriter, r *http.Request) {
 // TARUNA WEB SERVICE
 // TarunaDashboard menangani tampilan dashboard untuk taruna
 func TarunaDashboard(w http.ResponseWriter, r *http.Request) {
-	// Set header content type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// ✅ Langsung serve file tanpa validasi token / role
-	http.ServeFile(w, r, "static/taruna/taruna_dashboard.html")
+	// ambil nonce dari context (diset di cspMiddleware)
+	nonce, _ := r.Context().Value("csp-nonce").(string)
+
+	data := viewData{Nonce: nonce}
+
+	// render HTML pakai template
+	tmpl := template.Must(template.ParseFiles("static/taruna/taruna_dashboard.html"))
+	tmpl.Execute(w, data)
 }
 
 func ICP(w http.ResponseWriter, r *http.Request) {

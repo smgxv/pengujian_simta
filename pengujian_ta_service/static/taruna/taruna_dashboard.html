@@ -64,7 +64,7 @@
 			src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2973766580778258"
 			crossorigin="anonymous"
 		></script>
-		<script>
+		<script nonce="{{.Nonce}}">
 			window.dataLayer = window.dataLayer || [];
 			function gtag() {
 				dataLayer.push(arguments);
@@ -74,7 +74,7 @@
 			gtag("config", "G-GBZ3SGGX85");
 		</script>
 		<!-- Google Tag Manager -->
-		<script>
+		<script nonce="{{.Nonce}}">
 			(function (w, d, s, l, i) {
 				w[l] = w[l] || [];
 				w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
@@ -88,7 +88,7 @@
 		</script>
 		<!-- End Google Tag Manager -->
 
-		<style>
+		<style nonce="{{.Nonce}}">
 		body {
 			background: #f4f6fb;
 			min-height: 100vh;
@@ -704,7 +704,7 @@
 		<!-- End Google Tag Manager (noscript) -->
 
 
-		<script>
+		<script nonce="{{.Nonce}}">
 		// JS notifikasi
 		document.addEventListener("DOMContentLoaded", function () {
 			fetch("http://104.43.89.154:8088/notifications?role=Taruna")
