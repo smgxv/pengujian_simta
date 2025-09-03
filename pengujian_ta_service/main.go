@@ -15,9 +15,9 @@ import (
 )
 
 // key untuk context
-type ctxKey string
+type CtxKey string
 
-const nonceKey ctxKey = "csp-nonce"
+const NonceKey CtxKey = "csp-nonce"
 
 // generator nonce
 func genNonce() (string, error) {
@@ -32,22 +32,17 @@ func cspMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		nonce, err := genNonce()
 		if err != nil {
-			http.Error(w, "failed to generate nonce", http.StatusInternalServerError)
+			http.Error(w, "failed to generate nonce", 500)
 			return
 		}
-		r = r.WithContext(context.WithValue(r.Context(), nonceKey, nonce))
+
+		// simpan nonce ke context dengan key & tipe yang sama
+		r = r.WithContext(context.WithValue(r.Context(), NonceKey, nonce))
 
 		csp := "default-src 'self'; " +
-			// inline JS via nonce. (Tidak ada unsafe-inline)
 			"script-src 'self' 'nonce-" + nonce + "'; " +
-			// izinkan CSS inline via nonce + Bootstrap CSS dari jsDelivr
-			"style-src 'self' 'nonce-" + nonce + "' https://cdn.jsdelivr.net; " +
-			// font lokal saja (tambah domain lain kalau perlu)
-			"font-src 'self'; " +
-			// gambar lokal + data: (favicon/base64)
-			"img-src 'self' data:; " +
-			// hanya koneksi ke origin sendiri (ubah jika ada API eksternal)
-			"connect-src 'self'; " +
+			"style-src  'self' 'nonce-" + nonce + "' https://cdn.jsdelivr.net; " +
+			"img-src 'self' data:; font-src 'self'; connect-src 'self'; " +
 			"frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
 
 		w.Header().Set("Content-Security-Policy", csp)
@@ -55,7 +50,6 @@ func cspMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 		w.Header().Set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
-
 		next.ServeHTTP(w, r)
 	})
 }

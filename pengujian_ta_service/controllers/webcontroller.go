@@ -12,6 +12,11 @@ import (
 	"time"
 )
 
+// Export key agar dipakai sama di main.go dan controllers
+type CtxKey string
+
+const NonceKey CtxKey = "csp-nonce"
+
 type viewData struct {
 	Nonce string
 }
@@ -31,17 +36,22 @@ func Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginUsers(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// ambil nonce dari context (diset di cspMiddleware)
-	nonce, _ := r.Context().Value("csp-nonce").(string)
+	// Ambil nonce dari context (harus pakai key & tipe yang sama)
+	nonce, _ := r.Context().Value(NonceKey).(string)
 
 	data := viewData{Nonce: nonce}
 
-	// render HTML pakai template
-	tmpl := template.Must(template.ParseFiles("static/login.html"))
-	tmpl.Execute(w, data)
+	tmpl, err := template.ParseFiles("static/login/loginusers.html") // sesuaikan path
+	if err != nil {
+		http.Error(w, "template error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := tmpl.Execute(w, data); err != nil {
+		http.Error(w, "render error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 // ADMIN WEB SERVICE
