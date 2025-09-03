@@ -319,6 +319,7 @@ jobs:
   # DAST - OWASP ZAP untuk /taruna/dashboard
   zap-dast-taruna:
     runs-on: ubuntu-latest
+    needs: deploy-pengujian-ta-service
     steps:
       - name: Pull ZAP image (GHCR)
         run: docker pull ghcr.io/zaproxy/zaproxy:stable
