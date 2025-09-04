@@ -12,15 +12,6 @@ import (
 	"time"
 )
 
-// Export key agar dipakai sama di main.go dan controllers
-type CtxKey string
-
-const NonceKey CtxKey = "csp-nonce"
-
-type viewData struct {
-	Nonce string
-}
-
 // Fungsi untuk menampilkan dashboard
 func Index(w http.ResponseWriter, r *http.Request) {
 	// Set header content type

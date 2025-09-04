@@ -1,8 +1,13 @@
 package main
 
 import (
+	"context"
+	"crypto/rand"
+	"encoding/base64"
+	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"ta_service/controllers"
@@ -10,6 +15,89 @@ import (
 
 	"github.com/gorilla/mux"
 )
+
+// kunci context utk nonce
+type ctxKey string
+
+const cspNonceKey ctxKey = "csp-nonce"
+
+// generator nonce per-request
+func genNonce() (string, error) {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(b), nil
+}
+
+// ganti ini sesuai kebutuhan Anda:
+var (
+	// asal host aplikasi web Anda (UI)
+	selfOrigin = "http://104.43.89.154:8085"
+
+	// daftar CDN yang benar-benar digunakan (hapus yang tidak dipakai)
+	allowedCDN = []string{
+		"https://cdn.jsdelivr.net", // contoh: Bootstrap/JS libs
+		// "https://cdnjs.cloudflare.com",
+		// "https://unpkg.com",
+		// "https://fonts.googleapis.com",
+		// "https://fonts.gstatic.com",
+	}
+
+	// daftar origin microservice/API yang di-call via fetch/XHR/WebSocket
+	// tambahkan semua host:port yang relevan (tanpa wildcard)
+	backendOrigins = []string{
+		"http://104.43.89.154:8085", // jika API di host yg sama
+		// "http://104.43.89.154:8081",
+		// "http://104.43.89.154:8082",
+	}
+)
+
+// middleware CSP
+// middleware CSP
+func cspMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		nonce, err := genNonce()
+		if err != nil {
+			http.Error(w, "failed to generate nonce", http.StatusInternalServerError)
+			return
+		}
+
+		// gabung origin yg diizinkan
+		cdn := strings.Join(allowedCDN, " ")
+		backends := strings.Join(backendOrigins, " ")
+
+		// --- KEBIJAKAN CSP ---
+		csp := fmt.Sprintf(
+			"script-src 'self' 'nonce-%s' 'strict-dynamic' %s; "+
+				"style-src 'self' 'nonce-%s' %s; "+
+				"img-src 'self' data: %s; "+
+				"font-src 'self' %s; "+
+				"connect-src 'self' %s; "+
+				"base-uri 'self'; "+
+				"frame-ancestors 'none'; "+
+				"object-src 'none'; "+
+				"form-action 'self'; "+
+				"upgrade-insecure-requests",
+			nonce, cdn,
+			nonce, cdn,
+			cdn,
+			cdn,
+			backends,
+		)
+
+		// set header
+		w.Header().Set("Content-Security-Policy", csp)
+		w.Header().Set("Referrer-Policy", "no-referrer")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("X-Frame-Options", "DENY")
+		w.Header().Set("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+
+		// teruskan nonce ke context utk template
+		ctx := context.WithValue(r.Context(), cspNonceKey, nonce)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
 
 // ✅ Middleware CORS global
 func corsMiddleware(next http.Handler) http.Handler {
@@ -31,7 +119,9 @@ func main() {
 	router := mux.NewRouter()
 
 	// Urutan middleware
+	// urutan penting: CORS dulu, lalu CSP
 	router.Use(corsMiddleware)
+	router.Use(cspMiddleware)
 
 	// ✅ STATIC FILES
 	staticDirs := map[string]string{
