@@ -43,6 +43,7 @@ func cspMiddleware(next http.Handler) http.Handler {
 			"script-src 'self' 'nonce-" + nonce + "'; " +
 			"style-src  'self' 'nonce-" + nonce + "' https://cdn.jsdelivr.net; " +
 			"img-src 'self' data:; font-src 'self'; connect-src 'self'; " +
+			"connect-src 'self' http://104.43.89.154:8085; " +
 			"frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
 
 		w.Header().Set("Content-Security-Policy", csp)
@@ -57,12 +58,19 @@ func cspMiddleware(next http.Handler) http.Handler {
 // ✅ Middleware CORS global
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://104.43.89.154:8085")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		allowed := map[string]bool{
+			"http://104.43.89.154:8085": true,
+			"https://securesimta.my.id": true,
+		}
+		origin := r.Header.Get("Origin")
+		if allowed[origin] {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Vary", "Origin")
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+		}
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-		if r.Method == "OPTIONS" {
+		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
