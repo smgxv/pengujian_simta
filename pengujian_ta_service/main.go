@@ -30,31 +30,30 @@ func genNonce() (string, error) {
 	return base64.StdEncoding.EncodeToString(b), nil
 }
 
-// ganti ini sesuai kebutuhan Anda:
+// ============ CONFIG ============
 var (
-	// asal host aplikasi web Anda (UI)
-	selfOrigin = "http://104.43.89.154:8085"
-
-	// daftar CDN yang benar-benar digunakan (hapus yang tidak dipakai)
+	// CDN/library yang dipakai
 	allowedCDN = []string{
-		"https://cdn.jsdelivr.net", // contoh: Bootstrap/JS libs
-		// "https://cdnjs.cloudflare.com",
-		// "https://unpkg.com",
-		// "https://fonts.googleapis.com",
-		// "https://fonts.gstatic.com",
+		"https://cdn.jsdelivr.net",
+		// Google Fonts (CSS & font files):
+		"https://fonts.googleapis.com",
+		"https://fonts.gstatic.com",
+		// Kalau BUTUH GTM/GA/Ads, buka komentar di bawah:
+		// "https://www.googletagmanager.com",
+		// "https://www.google-analytics.com",
+		// "https://pagead2.googlesyndication.com",
 	}
 
-	// daftar origin microservice/API yang di-call via fetch/XHR/WebSocket
-	// tambahkan semua host:port yang relevan (tanpa wildcard)
+	// Microservice/API yang diakses dari browser (tanpa wildcard)
 	backendOrigins = []string{
-		"http://104.43.89.154:8085", // jika API di host yg sama
-		// "http://104.43.89.154:8081",
-		// "http://104.43.89.154:8082",
+		"http://104.43.89.154:8085", // UI / API utama
+		"http://104.43.89.154:8086", // user-service (contoh)
+		"http://104.43.89.154:8087",
+		"http://104.43.89.154:8088", // notification-service (contoh)
 	}
 )
 
-// middleware CSP
-// middleware CSP
+// ============ CSP ============
 func cspMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		nonce, err := genNonce()
@@ -63,26 +62,39 @@ func cspMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		cdn := strings.Join(allowedCDN, " ")
-		backends := strings.Join(backendOrigins, " ")
+		// pisahkan host untuk tiap direktif
+		// style: jsDelivr + Google Fonts CSS
+		styleHosts := []string{
+			"https://cdn.jsdelivr.net",
+			"https://fonts.googleapis.com",
+		}
+		// font: Google Fonts file + jsDelivr (jika ada font via jsDelivr)
+		fontHosts := []string{
+			"https://fonts.gstatic.com",
+			"https://cdn.jsdelivr.net",
+		}
+		// script host eksternal minimum (jsDelivr). Tanpa 'strict-dynamic'
+		scriptHosts := []string{
+			"https://cdn.jsdelivr.net",
+			// kalau butuh GTM/GA/Ads, tambahkan sesuai kebutuhan:
+			// "https://www.googletagmanager.com",
+			// "https://www.google-analytics.com",
+			// "https://pagead2.googlesyndication.com",
+		}
 
-		// CSP tanpa wildcard, tanpa 'unsafe-inline', tanpa upgrade-insecure-requests
-		// default-src 'none' → hardening
 		csp := fmt.Sprintf(
-			"default-src 'none'; "+
-				"script-src 'self' 'nonce-%s' 'strict-dynamic' %s; "+
+			// sederhanakan: default ke self
+			"default-src 'self'; "+
+				"script-src 'self' 'nonce-%s' %s; "+
 				"style-src  'self' 'nonce-%s' %s; "+
 				"img-src    'self' data:; "+
 				"font-src   'self' %s; "+
 				"connect-src 'self' %s; "+
-				"base-uri   'self'; "+
-				"frame-ancestors 'none'; "+
-				"object-src 'none'; "+
-				"form-action 'self'",
-			nonce, cdn,
-			nonce, cdn,
-			cdn,
-			backends,
+				"base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'",
+			nonce, strings.Join(scriptHosts, " "),
+			nonce, strings.Join(styleHosts, " "),
+			strings.Join(fontHosts, " "),
+			strings.Join(backendOrigins, " "),
 		)
 
 		w.Header().Set("Content-Security-Policy", csp)
@@ -91,43 +103,32 @@ func cspMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("X-Frame-Options", "DENY")
 		w.Header().Set("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
 
-		// teruskan nonce ke context utk template
-		ctx := context.WithValue(r.Context(), "csp-nonce", nonce) // konsisten: key string
+		ctx := context.WithValue(r.Context(), "csp-nonce", nonce)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-// daftar origin yang diizinkan CORS
+// ============ CORS ============
 var allowedOrigins = map[string]bool{
-	"http://104.43.89.154:8085": true, // UI/host utama kamu
-	// tambahkan origin lain bila ada UI yang berbeda
+	"http://104.43.89.154:8085": true, // UI utama
+	// tambah origin lain bila ada domain/port berbeda
 }
 
-// Middleware CORS yang aman (whitelist + credentials)
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
-
-		// hanya set header CORS jika origin termasuk whitelist
 		if allowedOrigins[origin] {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
-			w.Header().Set("Vary", "Origin") // penting utk caching proxy/CDN
-
+			w.Header().Set("Vary", "Origin")
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept")
-			// (opsional) batasi max umur preflight
 			w.Header().Set("Access-Control-Max-Age", "600")
 		}
-
-		// preflight
 		if r.Method == http.MethodOptions {
-			// Bila bukan origin yang diizinkan, tetap beri 204 agar browser tidak hang,
-			// tapi tanpa header CORS tidak akan bisa dipakai oleh JS.
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
-
 		next.ServeHTTP(w, r)
 	})
 }
