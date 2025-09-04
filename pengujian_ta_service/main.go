@@ -63,30 +63,28 @@ func cspMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// gabung origin yg diizinkan
 		cdn := strings.Join(allowedCDN, " ")
 		backends := strings.Join(backendOrigins, " ")
 
-		// --- KEBIJAKAN CSP ---
+		// CSP tanpa wildcard, tanpa 'unsafe-inline', tanpa upgrade-insecure-requests
+		// default-src 'none' → hardening
 		csp := fmt.Sprintf(
-			"script-src 'self' 'nonce-%s' 'strict-dynamic' %s; "+
-				"style-src 'self' 'nonce-%s' %s; "+
-				"img-src 'self' data: %s; "+
-				"font-src 'self' %s; "+
+			"default-src 'none'; "+
+				"script-src 'self' 'nonce-%s' 'strict-dynamic' %s; "+
+				"style-src  'self' 'nonce-%s' %s; "+
+				"img-src    'self' data:; "+
+				"font-src   'self' %s; "+
 				"connect-src 'self' %s; "+
-				"base-uri 'self'; "+
+				"base-uri   'self'; "+
 				"frame-ancestors 'none'; "+
 				"object-src 'none'; "+
-				"form-action 'self'; "+
-				"upgrade-insecure-requests",
+				"form-action 'self'",
 			nonce, cdn,
 			nonce, cdn,
-			cdn,
 			cdn,
 			backends,
 		)
 
-		// set header
 		w.Header().Set("Content-Security-Policy", csp)
 		w.Header().Set("Referrer-Policy", "no-referrer")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
@@ -94,23 +92,42 @@ func cspMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
 
 		// teruskan nonce ke context utk template
-		ctx := context.WithValue(r.Context(), "csp-nonce", nonce)
+		ctx := context.WithValue(r.Context(), "csp-nonce", nonce) // konsisten: key string
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-// ✅ Middleware CORS global
+// daftar origin yang diizinkan CORS
+var allowedOrigins = map[string]bool{
+	"http://104.43.89.154:8085": true, // UI/host utama kamu
+	// tambahkan origin lain bila ada UI yang berbeda
+}
+
+// Middleware CORS yang aman (whitelist + credentials)
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://104.43.89.154:8085")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		origin := r.Header.Get("Origin")
 
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
+		// hanya set header CORS jika origin termasuk whitelist
+		if allowedOrigins[origin] {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Vary", "Origin") // penting utk caching proxy/CDN
+
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept")
+			// (opsional) batasi max umur preflight
+			w.Header().Set("Access-Control-Max-Age", "600")
+		}
+
+		// preflight
+		if r.Method == http.MethodOptions {
+			// Bila bukan origin yang diizinkan, tetap beri 204 agar browser tidak hang,
+			// tapi tanpa header CORS tidak akan bisa dipakai oleh JS.
+			w.WriteHeader(http.StatusNoContent)
 			return
 		}
+
 		next.ServeHTTP(w, r)
 	})
 }
