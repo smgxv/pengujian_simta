@@ -12,6 +12,10 @@ import (
 	"time"
 )
 
+type ViewData struct {
+	Nonce string
+}
+
 // Fungsi untuk menampilkan dashboard
 func Index(w http.ResponseWriter, r *http.Request) {
 	// Set header content type
@@ -22,11 +26,19 @@ func Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginUsers(w http.ResponseWriter, r *http.Request) {
-	// Set header content type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// Serve the admin dashboard HTML file
-	http.ServeFile(w, r, "static/login.html")
+	// Ambil nonce yang sudah diset di middleware CSP
+	nonce, _ := r.Context().Value("csp-nonce").(string)
+
+	// Inject ke template
+	data := ViewData{Nonce: nonce}
+
+	tmpl := template.Must(template.ParseFiles("static/login.html"))
+	if err := tmpl.Execute(w, data); err != nil {
+		http.Error(w, "Template error", http.StatusInternalServerError)
+		return
+	}
 }
 
 // ADMIN WEB SERVICE
