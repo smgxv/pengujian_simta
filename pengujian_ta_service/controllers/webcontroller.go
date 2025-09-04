@@ -23,35 +23,19 @@ type viewData struct {
 
 // Fungsi untuk menampilkan dashboard
 func Index(w http.ResponseWriter, r *http.Request) {
+	// Set header content type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// ambil nonce dari context (diset di cspMiddleware)
-	nonce, _ := r.Context().Value("csp-nonce").(string)
-
-	data := viewData{Nonce: nonce}
-
-	// render HTML pakai template
-	tmpl := template.Must(template.ParseFiles("static/dashboard.html"))
-	tmpl.Execute(w, data)
+	// Serve the admin dashboard HTML file
+	http.ServeFile(w, r, "static/dashboard.html")
 }
 
 func LoginUsers(w http.ResponseWriter, r *http.Request) {
+	// Set header content type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// Ambil nonce dari context (harus pakai key & tipe yang sama)
-	nonce, _ := r.Context().Value(NonceKey).(string)
-
-	data := viewData{Nonce: nonce}
-
-	tmpl, err := template.ParseFiles("static/login.html") // sesuaikan path
-	if err != nil {
-		http.Error(w, "template error: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if err := tmpl.Execute(w, data); err != nil {
-		http.Error(w, "render error: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// Serve the admin dashboard HTML file
+	http.ServeFile(w, r, "static/login.html")
 }
 
 // ADMIN WEB SERVICE
@@ -379,16 +363,11 @@ func Notification(w http.ResponseWriter, r *http.Request) {
 // TARUNA WEB SERVICE
 // TarunaDashboard menangani tampilan dashboard untuk taruna
 func TarunaDashboard(w http.ResponseWriter, r *http.Request) {
+	// Set header content type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// ambil nonce dari context (diset di cspMiddleware)
-	nonce, _ := r.Context().Value("csp-nonce").(string)
-
-	data := viewData{Nonce: nonce}
-
-	// render HTML pakai template
-	tmpl := template.Must(template.ParseFiles("static/taruna/taruna_dashboard.html"))
-	tmpl.Execute(w, data)
+	// ✅ Langsung serve file tanpa validasi token / role
+	http.ServeFile(w, r, "static/taruna/taruna_dashboard.html")
 }
 
 func ICP(w http.ResponseWriter, r *http.Request) {
