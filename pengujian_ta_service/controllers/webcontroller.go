@@ -367,11 +367,21 @@ func Notification(w http.ResponseWriter, r *http.Request) {
 // TARUNA WEB SERVICE
 // TarunaDashboard menangani tampilan dashboard untuk taruna
 func TarunaDashboard(w http.ResponseWriter, r *http.Request) {
-	// Set header content type
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// ✅ Langsung serve file tanpa validasi token / role
-	http.ServeFile(w, r, "static/taruna/taruna_dashboard.html")
+	nonce, _ := r.Context().Value("csp-nonce").(string)
+	if nonce == "" {
+		// (opsional) bantu debug
+		log.Println("⚠️ nonce kosong - cek middleware CSP & urutan router.Use(...)")
+	}
+
+	data := ViewData{Nonce: nonce}
+	tmpl := template.Must(template.ParseFiles("static/taruna/taruna_dashboard.html"))
+	if err := tmpl.Execute(w, data); err != nil {
+		http.Error(w, "Template error", http.StatusInternalServerError)
+		return
+	}
 }
 
 func ICP(w http.ResponseWriter, r *http.Request) {
