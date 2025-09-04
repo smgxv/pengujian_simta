@@ -94,7 +94,7 @@ func cspMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
 
 		// teruskan nonce ke context utk template
-		ctx := context.WithValue(r.Context(), cspNonceKey, nonce)
+		ctx := context.WithValue(r.Context(), "csp-nonce", nonce)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

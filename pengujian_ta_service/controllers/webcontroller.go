@@ -28,12 +28,13 @@ func Index(w http.ResponseWriter, r *http.Request) {
 func LoginUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// Ambil nonce yang sudah diset di middleware CSP
 	nonce, _ := r.Context().Value("csp-nonce").(string)
+	if nonce == "" {
+		// (opsional) bantu debug
+		log.Println("⚠️ nonce kosong - cek middleware CSP & urutan router.Use(...)")
+	}
 
-	// Inject ke template
 	data := ViewData{Nonce: nonce}
-
 	tmpl := template.Must(template.ParseFiles("static/login.html"))
 	if err := tmpl.Execute(w, data); err != nil {
 		http.Error(w, "Template error", http.StatusInternalServerError)
